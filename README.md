@@ -1,2 +1,2 @@
 # Leslie-Pinto-Portfolio
-A collection of source code my personal and group programming projects
+A collection of source code I have written for personal and group programming projects
