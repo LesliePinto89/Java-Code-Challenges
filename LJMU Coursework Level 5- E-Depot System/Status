@@ -1,0 +1,5 @@
+package depot;
+
+public enum Status {
+	PENDING,ARCHIVE,ACTIVE
+}
