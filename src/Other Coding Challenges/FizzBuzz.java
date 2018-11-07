@@ -14,18 +14,20 @@ public class FizzBuzz {
 				continue;
 			}
 			if (noRemainder3 == 0 && noRemainder5 == 0) {
-				System.out.println(i + " " + fizzBuzz);
+				System.out.println(fizzBuzz);
 				continue;
 			}
 
 			if (noRemainder3 == 0) {
-				System.out.println(i + " " + fizz);
+				System.out.println(fizz);
 				continue;
 			}
 
 			if (noRemainder5 == 0) {
-				System.out.println(i + " " + buzz);
+				System.out.println(buzz);
 			}
+			
+			else {System.out.println(i);}
 		}
 	}
 }
