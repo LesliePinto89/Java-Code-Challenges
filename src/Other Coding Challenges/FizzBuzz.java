@@ -15,15 +15,13 @@ public class FizzBuzz {
 			}
 			if (noRemainder3 == 0 && noRemainder5 == 0) {
 				System.out.println(fizzBuzz);
-				continue;
 			}
 
-			if (noRemainder3 == 0) {
+			else if (noRemainder3 == 0) {
 				System.out.println(fizz);
-				continue;
 			}
 
-			if (noRemainder5 == 0) {
+			else if (noRemainder5 == 0) {
 				System.out.println(buzz);
 			}
 			
