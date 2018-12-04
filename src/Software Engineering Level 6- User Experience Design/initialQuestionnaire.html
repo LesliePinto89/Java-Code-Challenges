@@ -1,0 +1,138 @@
+<!DOCTYPE html> 
+<html>
+	<head>
+		<!-- This is a comment tag -->
+		<meta charset="UTF-8" />
+		<title>Initial Questionnaire Page</title>
+		<link rel="stylesheet" href="css/introAndEnd.css" type="text/css" media="screen,projection" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="experiment.js"></script>
+		<script>
+		
+		getResults();
+		var user_type = results["USER_TYPE"];
+		
+		$(document).ready(function() {
+			
+				// Listen for the submit button to be clicked
+				$("#clickMe").click(function(e) {
+					// Stop the submit button from submitting
+					e.preventDefault();
+					
+					//Check the form has been filled in
+					if (!$("input[name='gender']:checked").val()) 
+					{
+						alert("You need to click on one of the options from the first question!");
+					}
+					else if (!$("input[name='age']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the second question!");
+					}
+					
+					else if (!$("input[name='experience']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the third question!");
+					}
+					else if (!$("input[name='use']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the forth question!");
+					}
+					else if (!$("input[name='guidelines']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the sixth question!");
+					}
+					
+					else if (!$("input[name='research']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the seventh question!");
+					}
+					else
+					{
+						// form is filled in - now randomize experiment after submit
+						if(user_type == "ODD"){
+					     callNextPage("experimentOriginalInstructionPage.html", 
+							"user-gender:" + $("input[name='gender']:checked").val(), 
+							"user-age:" + $("input[name='age']:checked").val(),
+							"user-experience:" + $("input[name='experience']:checked").val(), 
+							"user-use:" + $("input[name='use']:checked").val(),
+							"user-guidelines:" + $("input[name='guidelines']:checked").val(), 
+							"user-research:" + $("input[name='research']:checked").val());
+				}
+						else if (user_type == "EVEN"){
+					callNextPage("experimentSolutionInstructionPage.html",
+							"user-gender:" + $("input[name='gender']:checked").val(), 
+							"user-age:" + $("input[name='age']:checked").val(),
+							"user-experience:" + $("input[name='experience']:checked").val(), 
+							"user-use:" + $("input[name='use']:checked").val(),
+							"user-guidelines:" + $("input[name='guidelines']:checked").val(), 
+							"user-research:" + $("input[name='research']:checked").val());
+					}
+					}
+				});
+			});
+				
+		</script>
+	</head>
+	<body>
+		<header>
+			<h1>Demographic data questionnaire</h1>
+		</header>
+		<div id="mainBody">
+		<form>
+		
+					<h2>Q1) What is your gender?</h2>
+			Male<input type="radio" name="gender" value="1" />
+			Female<input type="radio" name="gender" value="2" />
+			Don't want to answer<input type="radio" name="gender" value="3" />
+			<hr />
+			
+			<h2>Q2) What is your age?</h2>
+			18-24<input type="radio" name="age" value="1" />
+			25-30<input type="radio" name="age" value="2" />
+			30-35<input type="radio" name="age" value="3" />
+			36-40<input type="radio" name="age" value="4" />
+			other<input type="radio" name="age" value="5" />
+			Don't want to answer<input type="radio" name="age" value="6" />
+			<hr />
+			
+			<h2>Q3) How much IT experience do you have?</h2>
+			None at all<input type="radio" name="experience" value="1" />
+			A little<input type="radio" name="experience" value="2" />
+			I have a good understanding<input type="radio" name="experience" value="3" />
+			I have extensive experience<input type="radio" name="experience" value="4" />
+			I don't want to answer<input type="radio" name="experience" value="5" />
+			<hr />
+		
+		<h2>Q4) How much or how little experience do you have with the Tidal.com before this experiment?</h2>
+			None at all<input type="radio" name="use" value="1" />
+			A little<input type="radio" name="use" value="2" />
+			I have a good understanding<input type="radio" name="use" value="3" />
+			I have extensive experience<input type="radio" name="use" value="4" />
+			I don't want to answer<input type="radio" name="use" value="5" />
+			
+			<hr />
+			
+			
+			
+			<h2>Q5) What level of guidelines do you expect when creating an online account?</h2>
+			The minimum amount required<input type="radio" name="guidelines" value="1" />
+			The required amount plus some optional details<input type="radio" name="guidelines" value="2" />
+			As much as I can give<input type="radio" name="guidelines" value="3" />
+            I don't want to answer<input type="radio" name="guidelines" value="4" />
+			<hr />
+			
+			<h2>Q6) How much background research do you do on a company before you create an online account?</h2>
+			Not at all<input type="radio" name="research" value="1" />
+			I do a little amount of background research<input type="radio" name="research" value="2" />
+			I do a fair amount of background research<input type="radio" name="research" value="3" />
+			I do extensive background research<input type="radio" name="research" value="4" />
+            I don't want to answer<input type="radio" name="research" value="5" />
+			<hr />
+			<center><button class="navButtonOne" id="clickMe">Submit</button></center></div>
+			
+</form>
+		</div>
+		<footer>
+		</footer>
+	</body>
+</html>
