@@ -1,0 +1,104 @@
+/* This is a CSS comment */
+* {
+	padding:10px;
+	margin:5px;
+	color: #feda6a;
+}
+body {
+	font-family: Arial, Verdana, sans-serif;
+	font-style: normal;
+	font-size: 100%;
+	background-color: #393f4d;
+}
+
+p {
+	color: #feda6a;
+	text-align: left;
+	font-size: 22px;
+}
+header, div{
+	border: 1px solid #d4d4dc;
+	padding: 10px 0;
+	background-color: #1d1e22;
+	/*min-height: 100px;*/
+}
+nav {
+	border: 1px solid #d4d4dc;
+	min-height: 40px;
+	padding-top: 3px;
+}
+footer {
+	border: 1px solid #d4d4dc;
+	min-height: 30px;
+	background-color: #1d1e22;
+}
+
+h1, footer p {
+	color: palegoldenrod;
+	text-align: center;
+}
+
+h3 {
+	color: palegoldenrod;
+	text-align: left;
+	font-size: 20px;
+}
+
+
+
+
+#comments{
+  width: 60%;
+    height:200px;
+	color:black;
+	font-size:20px;
+}
+
+h2 {
+	color: palegoldenrod;
+	text-align: left;
+}
+
+.navButtonOne {
+	padding: 15px;
+	background-color: red;
+	color: white;
+	font-size: 20px;
+}
+
+.navButtonTwo {
+	padding: 15px;
+	background-color: blue;
+	color: white;
+	font-size: 20px;
+}
+.navButtonHover {
+	background-color: red;
+}
+
+textarea {
+	display: block;
+	padding: 10px;
+	margin: 10px auto;
+}
+
+#startOptionsContainer {
+}
+
+#holdNavs {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+}
+
+
+.parent {
+  display: flex;
+  height: 300px; /* Or whatever */
+}
+
+.child {
+  width: 100px;  /* Or whatever */
+  height: 100px; /* Or whatever */
+  margin: auto;  /* Magic! */
+}
