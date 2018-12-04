@@ -1,0 +1,126 @@
+<!DOCTYPE html> 
+<html>
+	<head>
+		<!-- This is a comment tag -->
+		<meta charset="UTF-8" />
+		<title>End Of Solution Experiment Questionnaire Page</title>
+		<link rel="stylesheet" href="css/introAndEnd.css" type="text/css" media="screen,projection" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="experiment.js"></script>
+		<script>
+		
+		getResults();
+		var user_type = results["USER_TYPE"];
+		var getPassword = results["OptionB_password"];
+		$(document).ready(function() {
+			
+				// Listen for the submit button to be clicked
+				$("#clickMe").click(function(e) {
+					// Stop the submit button from submitting
+					e.preventDefault();
+					
+					//Check the form has been filled in
+					if (!$("input[name='User-security']:checked").val()) 
+					{
+						alert("You need to click on one of the options from the first question!");
+					}
+					else if (!$("input[name='Task-completion']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the second question!");
+					}
+					
+					else if (!$("input[name='Trust']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the third question!");
+					}
+					else if (!$("input[name='Validation']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the fourth question!");
+					}
+					
+					else if (!$("input[name='Recommend-System']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the fifth question!");
+					}
+					else if(user_type == "EVEN"){
+					     callNextPage("experimentOriginalInstructionPage.html", 
+							"exp-optionB-User-security:" + $("input[name='User-security']:checked").val(), 
+							"exp-optionB-Task-completion:" + $("input[name='Task-completion']:checked").val(),
+							"exp-optionB-Trust:" + $("input[name='Trust']:checked").val(), 
+							"exp-optionB-Recommend-System:" + $("input[name='Recommend-System']:checked").val())
+							
+				}
+						else {
+					callNextPage("finalQuestionnaire.html",
+							"exp-optionB-User-security:" + $("input[name='User-security']:checked").val(), 
+							"exp-optionB-Task-completion:" + $("input[name='Task-completion']:checked").val(),
+							"exp-optionB-Trust:" + $("input[name='Trust']:checked").val(), 
+							"exp-optionB-Trust:" + $("input[name='Validation']:checked").val(), 
+							"exp-optionB-Recommend-System:" + $("input[name='Recommend-System']:checked").val())
+					}
+					});
+				});
+				
+		</script>
+	</head>
+	<body>
+		<header>
+			<h1>End of optionB system questionnaire</h1>
+		</header>
+		<div id="mainBody">
+		
+		<form>
+		
+			<h2>Q1) How satisfied or disatisfied are you with the password security?</h2>
+			I am not satisfied at all<input type="radio" name="User-security" value="1" />
+			I am a little unsatisfied<input type="radio" name="User-security" value="2" />
+			Neutral<input type="radio" name="User-security" value="3" />
+			I am a little satisfied<input type="radio" name="User-security" value="4" />
+			I am very satisfied<input type="radio" name="User-security" value="5" />
+			Don't know, No opinion<input type="radio" name="User-security" value="6" />
+			<hr />
+			
+			<h2>Q2) How fast or slow do you think the task was to complete?</h2>
+			Very slow<input type="radio" name="Task-completion" value="1" />
+			Little slow<input type="radio" name="Task-completion" value="2" />
+			Neutral<input type="radio" name="Task-completion" value="3" />
+			Little fast<input type="radio" name="Task-completion" value="4" />
+			Very fast<input type="radio" name="Task-completion" value="5" />
+			Don't know, No opinion<input type="radio" name="Task-completion" value="6" />
+			<hr />
+			
+			<h2>Q3)How much or little do you trust this system with your personal data?</h2>
+			I have no trust<input type="radio" name="Trust" value="1" />
+			I have very little trust them a little bit<input type="radio" name="Trust" value="2" />
+			Neutral<input type="radio" name="Trust" value="3" />
+			I have some trust<input type="radio" name="Trust" value="4" />
+			I completely trust the system<input type="radio" name="Trust" value="5" />
+			Don't know, No opinion<input type="radio" name="Trust" value="6" />
+			<hr />
+			
+			<h2>Q3)How satisfied or disatisfied are you with password's validation?</h2>
+			I am not satisfied at all<input type="radio" name="Validation" value="1" />
+			I am a little unsatisfied<input type="radio" name="Validation" value="2" />
+			Neutral<input type="radio" name="Validation" value="3" />
+			I am a little satisfied<input type="radio" name="Validation" value="4" />
+			I am very satisfied<input type="radio" name="Validation" value="5" />
+			Don't know, No opinion<input type="radio" name="Validation" value="6" />
+			<hr />
+			
+			<h2>Q4)How likely or unlikely are to recommend this system to others?</h2>
+			I am unlikely at all<input type="radio" name="Recommend-System" value="1" />
+			I am a little unlikely<input type="radio" name="Recommend-System" value="2" />
+			Neutral<input type="radio" name="Recommend-System" value="3" />
+			I am a little likely<input type="radio" name="Recommend-System" value="4" />
+			I am very likely<input type="radio" name="Recommend-System" value="5" />
+			Don't know, No opinion<input type="radio" name="Recommend-System" value="5" />
+			<hr />
+			
+			<center><button class="navButtonTwo" id="clickMe">Submit</button></div></div
+			
+</form>
+		</div>
+		<footer>
+		</footer>
+	</body>
+</html>
