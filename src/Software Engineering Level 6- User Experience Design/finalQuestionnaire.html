@@ -1,0 +1,103 @@
+<!DOCTYPE html> 
+<html>
+	<head>
+		<!-- This is a comment tag -->
+		<meta charset="UTF-8" />
+		<title>Final Questionnaire Page</title>
+		<link rel="stylesheet" href="css/introAndEnd.css" type="text/css" media="screen,projection" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="experiment.js"></script>
+		<script>
+		
+		getResults();
+		var veryEnd;
+		var start = results["USER_START_TIME"];
+		$(document).ready(function() {
+				// Listen for the submit button to be clicked
+				$("#clickMe").click(function(e) {
+					// Stop the submit button from submitting
+					e.preventDefault();
+					
+					
+					//Check the form has been filled in
+					if (!$("input[name='Winner']:checked").val()) 
+					{
+						alert("You need to click on one of the options from the first question!");
+					}
+					else if (!$("input[name='Faster']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the second question!");
+					}
+					
+					else if (!$("input[name='Protect']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the third question!");
+					}
+					else if (!$("input[name='Payment']:checked").val())
+					{
+					 	alert("You need to click on one of the options from the forth question!");
+					}
+
+					else
+					{
+					var veryEnd = new Date();
+					var timeTaken = veryEnd.getTime() - parseFloat(start);
+					
+					     callNextPage("summaryPage.html", 
+							"user-winner:" + $("input[name='Winner']:checked").val(), 
+							"user-faster:" + $("input[name='Faster']:checked").val(),
+							"user-protect:" + $("input[name='Protect']:checked").val(), 
+							"user-payment:" + $("input[name='Payment']:checked").val(),
+							"user-comments:" + $("#comments").val(), 
+							 "Verystart_to_Veryend:" + timeTaken);
+						}
+					});
+				});
+			
+				
+		</script>
+	</head>
+	<body>
+		<header>
+			<h1>Comparison of both systems</h1>
+		</header>
+		
+		<div id="mainBody">
+		
+		<form>
+		
+			<h2>Q1) Which system was easier to use?</h2>
+			The first system<input type="radio" name="Winner" value="1" />
+			The second system<input type="radio" name="Winner" value="2" />
+			Don't know / No opinion<input type="radio" name="Winner" value="3" />
+			<hr />
+			
+			<h2>Q2) Which of the two systems do you feel was faster for creating a strong password?</h2>
+			The first system<input type="radio" name="Faster" value="1" />
+			The second system<input type="radio" name="Faster" value="2" />
+			Don't know / No opinion<input type="radio" name="Faster" value="3" />
+			<hr />
+			
+			<h2>Q3) Which of the two systems do you feel better protects your account from unauthorized use?</h2>
+			The first system<input type="radio" name="Protect" value="1" />
+			The second system<input type="radio" name="Protect" value="2" />
+			Don't know / No opinion<input type="radio" name="Protect" value="3" />
+
+			<hr />
+		
+		<h2>Q4) Which system do you trust more to give your payment details for buy music subscriptions?</h2>
+			The first system<input type="radio" name="Payment" value="1" />
+			The second system<input type="radio" name="Payment" value="2" />
+			Don't know / No opinion<input type="radio" name="Payment" value="3" />
+			<hr />
+			
+		<h2>Q5) Optional - Do you have any positive or negative comments on either the first or second system?</h2>
+			<textarea id="comments" name="Feelings" placeholder="Please type your comments here, or else click the submit button"></textarea>
+			<hr />
+			<center><button class="navButtonTwo" id="clickMe">Submit</button></center>
+</form>
+		</div>
+		<footer>
+		</footer>
+	</body>
+</html>
