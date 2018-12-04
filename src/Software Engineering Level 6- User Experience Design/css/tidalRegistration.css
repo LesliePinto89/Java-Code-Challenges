@@ -1,0 +1,409 @@
+/* This is a CSS comment */
+* {
+	padding:0;
+	margin:0;
+}
+body {
+	font-family: Arial, Verdana, sans-serif;
+	font-style: normal;
+	font-size: 100%;
+	background-color: black;
+}
+img {
+	width: 100%;
+}
+
+.mainContainer {
+    width: 900px;
+    margin: 0 auto;
+    left: 90px;
+	position: relative;
+    top:50px;
+	}
+
+#topHolder{
+}
+
+
+#formLogo {
+    position: relative;
+    width: 50%;
+    margin: 0 auto;
+	
+}
+
+#form {
+    position: relative;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+}
+
+
+#logoHolder{
+       position: absolute;
+    top: 76%;
+    left: 38%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    background-color: #555;
+    color: white;
+    font-size: 16px;
+    padding: 0px 24px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: center;
+    width: 19% !important;
+    background-color: #ffffff !important;
+    color: black;
+    height: 65px;
+}
+
+#formHolder {
+    margin: 0 auto;
+    width: 50%;
+	background-color: #f8f8f8;
+}
+
+#innerformHolder {
+	margin: 0 auto;
+    width: 100%;
+	background-color: #f8f8f8;
+}
+
+#password {
+    position: absolute;
+    top: 68%;
+    left: 38%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    background-color: #555;
+    font-size: 14px;
+    padding: 0px 20px;
+    border: 1px solid grey;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: left;
+    width: 18% !important;
+    background-color: #ffffff !important;
+	font:  90% "Lucida Sans Unicode",sans-serif;
+    color: black;
+    height: 56px;
+}
+
+#endExperimentButton{
+	position: absolute; 
+	top: 20px; 
+	z-index:4;
+	width: 180px;
+	height: 100px;
+	font-size:20px;
+	left: 10%;
+}
+
+#passwordOriginal {
+     position: absolute;
+    top: 62%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    background-color: #555;
+    color: white;
+    font-size: 14px;
+    padding: 0px 20px;
+    border: 1px solid grey;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: left;
+    width: 40% !important;
+    background-color: #ffffff !important;
+    color: black;
+    height: 70px;
+	border: 2px solid lightBlue;
+}
+
+#password::-webkit-input-placeholder {
+color: black !important;
+}
+
+#holderDiv{
+
+}
+
+.boxcontainer {
+    position: absolute;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+	top: 74%;
+	 left: 45%;
+}
+
+/* Hide the browser's default checkbox */
+.boxcontainer input {
+    position: absolute;
+    opacity: 0;
+    height: 0;
+    width: 0;
+}
+
+/* Create a custom checkbox */
+#checkmark {
+    position: absolute;
+    bottom: -20px;
+    right: 1px;
+    height: 40px;
+    width: 40px;
+    background-color: red;
+	display: none;
+}
+
+/* On mouse-over, add a grey background color */
+.boxcontainer:hover input ~ #checkmark {
+    background-color: red;
+}
+
+/* When the checkbox is checked, add a blue background */
+.boxcontainer input:checked ~ #checkmark {
+    background-color: green;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+#checkmark:after {
+  
+    position: absolute;
+   content: "";
+}
+
+ #checkmark.hidden:after {
+        display: none;
+    }
+
+/* Show the checkmark when checked */
+.boxcontainer input:checked ~ #checkmark:after {
+    display: block;
+}
+
+/* Style the checkmark/indicator */
+.boxcontainer #checkmark:after {
+    left: 15px;
+    top: 6px;
+    width: 7px;
+    height: 19px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+#meter {
+	position:absolute;
+	top: 73%;
+	left: 27%;
+	display: none;}
+
+	
+	
+#checkPasswordText
+
+{
+    position: absolute;
+    top: 75%;
+    left: 80%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    background-color: #555;
+    color: white;
+    font-size: 12px;
+    padding: 0px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: left;
+    width: 16% !important;
+    background-color: #ffffff !important;
+    color: black;
+    height: 46px;
+}
+
+
+#submit {
+    position: absolute;
+    top: 97%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    color: white;
+    font-size: 24px;
+    padding: 0px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: left;
+    width: 44% !important;
+    background-color: black !important;
+    color: white;
+    height: 46px;
+	text-align: center;
+		font-family: 'nationale-regular', sans-serif;
+}
+
+#submitTwo{
+    position: absolute;
+    top: 90%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    font-size: 16px;
+    padding: 0px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: center;
+    width: 44% !important;
+    background-color: black !important;
+    color: #ffffff;
+    height: 46px;
+	font-family: 'nationale-regular', sans-serif;
+}
+	
+}
+
+#row {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+
+.container {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+}
+
+
+
+
+#title {
+    color: white;
+    font-size: 20px;
+    position: relative;
+    margin: 0 auto;
+    padding: 0 270px;
+}
+
+
+
+
+
+.container img {
+    width: 100%;
+    height: auto;
+}
+
+.container .btn {
+    position: absolute;
+    top: 85%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    background-color: #555;
+    color: white;
+    font-size: 16px;
+    padding: 12px 24px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: center;
+    width: 90% !important;
+    background-color: #00ffff !important;
+    color: black;
+    height: 65px;
+}
+
+
+
+.container .btn:hover {
+    background-color: black;
+}
+
+p.test{
+	
+	position: absolute;
+	font-size:200px;
+	top:50px;
+}
+
+
+#error{
+	
+	z-index:5;
+	top:50px;
+	margin: 10px auto;
+}
+
+.containerTwo {
+    position: relative;
+    width: 400px;
+    margin: 0 auto;
+    float: left;
+}
+
+.containerTwo img {
+    width: 100%;
+    height: auto;
+}
+
+.containerTwo .btn {
+    position: absolute;
+    top: 85%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    background-color: #555;
+    color: white;
+    font-size: 16px;
+    padding: 12px 24px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: center;
+    width: 90% !important;
+    background-color: #ffffff !important;
+    color: black;
+    height: 65px;
+    top: 319px;
+}
+
+h1, h2, footer p {
+	color: palegoldenrod;
+	text-align: center;
+}
+
+
+.containerTwo .btn:hover {
+    background-color: black;
+}
+
+div {
+	min-height: 23px;
+	width: 100%;
+}
+
+.indentBoth {
+	margin: 0 15%;
+}
+textarea {
+	display: block;
+	padding: 10px;
+	margin: 10px auto;
+}
