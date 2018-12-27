@@ -9,24 +9,20 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Patch;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.Sequencer;
-import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Synthesizer;
 import javax.sound.midi.Transmitter;
 
 public class LoadMIDISupport  {
-	
-	
-	private Synthesizer synth;
+	private MidiDevice device = null;
 	private MidiChannel channel;
 	private Instrument [] instruments;
 	private Sequencer seq = null;
 	private Transmitter seqTrans= null;
 	private Receiver synthRcvr= null;
+	private Receiver seqRcvr= null;
 	
 	protected void prepareMIDI() throws InvalidMidiDataException, MidiUnavailableException {
-	// System.out.print(Arrays.toString(MidiSystem.getMidiDeviceInfo()));
 	ArrayList<MidiDevice.Info> synthInfos = new ArrayList<MidiDevice.Info>();
-	MidiDevice device = null;
 	MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
 	for (int i = 0; i < infos.length; i++) {
 		try {
@@ -47,52 +43,69 @@ public class LoadMIDISupport  {
 		}
 	}
 
-	try {
-		seq = MidiSystem.getSequencer();
-		seqTrans = seq.getTransmitter();
-		// synth = MidiSystem.getSynthesizer();
+	try {		
 		synthRcvr = device.getReceiver();
+		seq = MidiSystem.getSequencer();
+		seqRcvr = seq.getReceiver();
+		seqTrans = seq.getTransmitter();
 		seqTrans.setReceiver(synthRcvr);
 		seq.open();
+
+		
 	} catch (MidiUnavailableException e) {
 		// handle or throw exception
 	}
 	device.getMaxTransmitters();
 	device.getMaxReceivers();
 	
-	synth = MidiSystem.getSynthesizer();
-	synth.open();
-	instruments = synth.getDefaultSoundbank().getInstruments();
-	//test.loadInstrument(instruments[instrument]);  
-	channel = synth.getChannels()[0];
-	
+	instruments = ((Synthesizer) device).getDefaultSoundbank().getInstruments();
+	channel = ((Synthesizer) device).getChannels()[0];	
 }
-	//Found selected synthesizer
-	protected Synthesizer returnSynth(){	
-		return synth;
+
+	
+	public void getAudioBytes(){
+	AudioInputStream originalInputStream = AudioSystem.getAudioInputStream(inputStream);
+	//Format of data read in
+	AudioFormat originalFormat = originalInputStream.getFormat();
+	//Normalize the data to something we know
+	decodedFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
+	originalFormat.getSampleRate(), … );
+	//Input stream of the normalized format.
+	AudioInputStream decodedInputStream = AudioSystem.getAudioInputStream(decodedFormat,
+	originalInputStream);
+	SourceDataLine line = (SourceDataLine)AudioSystem.getLine(info);
+	line.open(decodedFormat);
+	line.start();
+	
 	}
 	
-	//Found selected sequencer
+	protected Transmitter returnSeqTransmitter(){
+		return seqTrans;
+	}
+	protected Synthesizer returnSynth(){	
+		return (Synthesizer) device;
+	}
 	protected Sequencer returnSequencer(){	
 		return seq;
 	}
 	
-	//Found MidiChannel from selected synthesizer
+	protected Receiver returnSequencerReceiver(){	
+		return seqRcvr;
+	}
+	
+	
+	
 	protected MidiChannel getMidiChannel(){	
 		return channel;
 	}
-	
 	protected void newMidiChannel(MidiChannel newChannel){	
 		this.channel = newChannel;
 	}
-	
-	//Found Instruments from the selected synthesizer's soundbank
 	protected Instrument [] getListOfMidiChannels(){	
 		return instruments;
 	}
 	
-	 public MidiChannel selectInstrument (String choice){
-	    
+	 public void selectInstrument (String choice){
 		 Patch patch =null;
 		 int bankNumber = 0;
 		 int programNumber = 0;
@@ -102,14 +115,12 @@ public class LoadMIDISupport  {
 				 bankNumber = patch.getBank();
 				 programNumber = patch.getProgram();
 				 channel.programChange(bankNumber, programNumber);
-				 return channel;
+				  break;
 			 } 	 
 			 
 			 else if (i == instruments.length-1){
 				 break; 				 
 			 }
 		  }
- 	     
-	     return channel;
 	    }
 }
