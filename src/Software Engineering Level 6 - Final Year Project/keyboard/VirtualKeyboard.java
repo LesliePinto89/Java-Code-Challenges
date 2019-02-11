@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
-
+import midi.Chord;
 import midi.MidiMessageTypes;
 import midi.StoreMetaEvents;
 import midiDevices.MidiReciever;
@@ -41,7 +41,7 @@ public class VirtualKeyboard {
 
 	//Will contain Instantiated classes from main menu
 	//private static VirtualKeyboard midiGui;
-	private MidiReciever loadReciever;
+
 	private MidiMessageTypes midiMessageTypes;
 	private GetInstruments loadInstruments;
 	private MIDIFileManager fileManager;
@@ -73,8 +73,7 @@ public class VirtualKeyboard {
 	 * @param loadMIDI
 	 *            - The MIDI devices needed in the application
 	 */
-	public VirtualKeyboard(MidiReciever getSuport, MIDIFileManager loadedFileManager) {
-		this.loadReciever = getSuport;
+	public VirtualKeyboard(MIDIFileManager loadedFileManager) {
 		this.fileManager = loadedFileManager;
 		
 	}
@@ -207,20 +206,20 @@ public class VirtualKeyboard {
 		tempoList.setEditable(true);
 		tempoList.setBounds(200, 110, 250, 52);
 		tempoList.setSelectedIndex(12);
-		KeyboardInteractions tempoBoxActionListener = new KeyboardInteractions(midiMessageTypes,null,loadReciever,tempoList);
+		KeyboardInteractions tempoBoxActionListener = new KeyboardInteractions(midiMessageTypes,null,tempoList);
 		tempoList.addActionListener(tempoBoxActionListener);
 		keyboardLayered.add(tempoList);
 	}
 	
 	public void instrumentChoices() {
 		loadInstruments = new GetInstruments();
-		loadInstruments.setupInstruments(loadReciever);
+		loadInstruments.setupInstruments();
 		loadInstruments.storeInstrumentsNames = loadInstruments.allInstruments(loadInstruments.getListOfMidiChannels());
 		instrumentList = new JComboBox<String>(loadInstruments.storeInstrumentsNames);
 		instrumentList.setName("instrumentList");
 		instrumentList.setEditable(true);
 		instrumentList.setBounds(0, 110, 200, 52);
-		KeyboardInteractions instrumentsBoxActionListener = new KeyboardInteractions(null,loadInstruments,loadReciever,instrumentList);
+		KeyboardInteractions instrumentsBoxActionListener = new KeyboardInteractions(null,loadInstruments,instrumentList);
 		instrumentList.addActionListener(instrumentsBoxActionListener);
 		keyboardLayered.add(instrumentList);
 	}
@@ -243,7 +242,7 @@ public class VirtualKeyboard {
 		playMIDI.setFocusPainted(false);
 		
 		playMIDI.setName("playButton");	
-		ActionListener playButtonActionListener = new KeyboardInteractions(loadReciever,playMIDI);
+		ActionListener playButtonActionListener = new KeyboardInteractions(playMIDI);
 		playMIDI.addActionListener(playButtonActionListener);
 		keyboardLayered.add(playMIDI);
 		
@@ -266,7 +265,7 @@ public class VirtualKeyboard {
 		recordMIDI.setText("Off");
 		
 		
-		ActionListener recordButtonActionListener = new KeyboardInteractions(loadReciever,recordMIDI);
+		ActionListener recordButtonActionListener = new KeyboardInteractions(recordMIDI);
 		recordMIDI.addActionListener(recordButtonActionListener);
 		keyboardLayered.add(recordMIDI);
 		
@@ -295,7 +294,7 @@ public class VirtualKeyboard {
 		saveMIDI.setSelectedIcon(saveOnIcon);
 		saveMIDI.setName("saveButton");
 		keyboardLayered.add(saveMIDI);	
-		ActionListener saveButtonActionListener = new KeyboardInteractions(fileManager,saveMIDI,saveNumber);
+		ActionListener saveButtonActionListener = new KeyboardInteractions(fileManager,saveMIDI);
 		saveMIDI.addActionListener(saveButtonActionListener);
 	}
 	
@@ -306,8 +305,9 @@ public class VirtualKeyboard {
 			//Note givenNote = new Note();
 			String noteName = pressedNote.getText();
 			int getValue = Note.convertToPitch(noteName);
-
-			MouseListener mouseListener = new KeyboardInteractions(midiMessageTypes,loadReciever,pressedNote,getValue);
+			
+			
+			MouseListener mouseListener = new KeyboardInteractions(midiMessageTypes,pressedNote,getValue);
 			pressedNote.addMouseListener(mouseListener);
 			
 			/*pressedNote.addMouseListener(new MouseAdapter() {
@@ -361,13 +361,50 @@ public class VirtualKeyboard {
 	}
 
 	
-
+	public void createChord() throws InvalidMidiDataException{
+		 JPanel chordOptions = new JPanel(); 
+		 chordOptions.setBounds(810, 62, 481, 324);
+		 chordOptions.setBackground(Color.decode("#F0FFFF"));
+		 keyboardLayered.add(chordOptions);
+			
+		DefaultListModel<String> chordList = new DefaultListModel<String>();
+		 JList<String> jChordList = new JList<String>(chordList);
+		 JScrollPane chordListScroller;
+		  int JChordlistIndex;
+		  
+		 int _W = 330;
+		int line1 = 80;
+	     int h_list = 100;
+		int line2 = line1 + h_list + 50;
+		  
+		  jChordList.setBounds(0, line1 + 50, _W, h_list);
+		  jChordList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		  jChordList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+		  jChordList.setVisibleRowCount(-1);
+		  
+		  chordListScroller = new JScrollPane(jChordList);
+		  chordListScroller.setPreferredSize(new Dimension(_W - 10, h_list));
+		  chordListScroller.setBounds(0, line1 + 50, _W - 10, h_list);
+		 
+		//JToggleButton chord = new JToggleButton("Chords");
+		//chord.setBounds(secondFrame.getWidth() / 3 + 310,secondFrame.getHeight() / 2 - 120, 100, 42);
+		//chord.setName("Chords");	
+		
+		
+		
+		//Chord newChord = new Chord();
+		
+		//ActionListener chordsButtonActionListener = new KeyboardInteractions(chordProgression);
+		//chordProgression.addActionListener(chordsButtonActionListener);
+		//keyboardLayered.add(chordProgression);
+	}
+	
 
 	public void createChordProgression () throws InvalidMidiDataException{
 		JToggleButton chordProgression = new JToggleButton("Chords");
 		chordProgression.setBounds(secondFrame.getWidth() / 3 + 310,secondFrame.getHeight() / 2 - 120, 100, 42);
 		chordProgression.setName("Chord Progression");	
-		ActionListener chordsButtonActionListener = new KeyboardInteractions(loadReciever,chordProgression);
+		ActionListener chordsButtonActionListener = new KeyboardInteractions(chordProgression);
 		chordProgression.addActionListener(chordsButtonActionListener);
 		keyboardLayered.add(chordProgression);
 		
@@ -420,11 +457,11 @@ public class VirtualKeyboard {
 	 */
 	public void createVirtualKeyboard() throws InvalidMidiDataException, MidiUnavailableException, IOException {
 	
-		loadReciever.startConnection();
-		midiMessageTypes = new MidiMessageTypes(loadReciever);
+		midiMessageTypes = new MidiMessageTypes();
 		instrumentChoices();
 		pianoLayers = new JLayeredPane();
 		pianoLayers.setBounds(10, 300, secondFrame.getWidth(), 422);		
+		
 		//changed this part
 		createWholeKeys();
 		createSharpKeys();
@@ -436,8 +473,8 @@ public class VirtualKeyboard {
 		
 		drawPiano();
 		changeTempo();
-		createChordProgression();
-		
+		createChord();
+		//createChordProgression();		
 	}
 
 	public void drawPiano() throws IOException{

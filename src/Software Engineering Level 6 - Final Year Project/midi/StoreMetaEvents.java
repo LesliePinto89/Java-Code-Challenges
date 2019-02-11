@@ -10,30 +10,20 @@ import javax.sound.midi.Track;
 import midiDevices.MidiReciever;
 
 public class StoreMetaEvents {
-	private MidiReciever reciever;
-	//private static ArrayList<Long> metaTickEventMessages = new ArrayList<Long>();
-	//private MetaMessage[] metaBytesEventMessages;
-	private Track trk;
-	//private static byte[] eachEventBytes = new byte [metaTickEventMessages.size()];
-	               
-	public StoreMetaEvents(MidiReciever carriedReciever) {
-		this.reciever = carriedReciever;
 
+	private Track trk;
+	               
+	public StoreMetaEvents() {
 	}
 
-	// Will use to show visualization with complete recorded sequence
+	// Will use to show visualisation with complete recorded sequence
 	public void createFullSequenceMetaData() throws InvalidMidiDataException {
 		int i = 1;
 		
-		Track[] tracks = reciever.getSequence().getTracks();
+		Track[] tracks = MidiReciever.getInstance().getSequence().getTracks();
 		//metaBytesEventMessages = new MetaMessage [reciever.getSequence().getTracks()[0].size()];
 		
 		for (Track track : tracks) {
-		//	track.get(track.size()-1).getMessage();
-			//MidiMessage convertToShort = (MidiMessage) track.get(track.size()-1).getMessage();
-			
-			//MetaMessage findTrackEnd = (MetaMessage) convertToShort;
-
 			 if (i == track.size()-1) {
 				 break;}
 			generateMetaData(track);
@@ -43,7 +33,7 @@ public class StoreMetaEvents {
 
 	// Used the completion sequence track rather than a per meta event message
 	public final void generateMetaData(Track track) throws InvalidMidiDataException {
-		 trk = reciever.getSequence().createTrack();
+		 trk = MidiReciever.getInstance().getSequence().createTrack();
 		for (int ii = 0; ii < track.size(); ii++) {
 			MidiEvent me = track.get(ii);
 			MidiMessage mm = me.getMessage();
@@ -76,12 +66,4 @@ public class StoreMetaEvents {
 	public Track getMetaTrack() {
 		return trk;
 	}
-
-	//public MetaMessage [] getMetaMessageData() {
-	//	return metaBytesEventMessages;
-	//}
-	
-	//public ArrayList<Long> getMetaTickData() {
-	//	return metaTickEventMessages;
-	//}
 }

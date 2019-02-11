@@ -13,14 +13,13 @@ import midiDevices.MidiReciever;
 
 public class MIDIFileManager {
 
-	private MidiReciever reciever;
 	private File createdMIDIFile;
 	private ArrayList<File> storedMIDISavedFiles = new ArrayList<File>();
 	private JFileChooser fileChooser;
 	private File defaultDirectory;
 	
-	public MIDIFileManager(MidiReciever carriedReciever){
-		this.reciever = carriedReciever;
+	public MIDIFileManager(){
+		//this.reciever = carriedReciever;
          fileChooser = new JFileChooser();
 		 defaultDirectory = new File (System.getProperty("user.home") + System.getProperty("file.separator")+ "/Desktop/save folder".toString());
 		 
@@ -64,7 +63,7 @@ public class MIDIFileManager {
 		
 	public void saveNewMIDIFile(JToggleButton saveMIDI) {
 		// Valid when user has made a sequence
-		if (reciever.getSequence() != null) {
+		if (MidiReciever.getInstance().getSequence() != null) {
 			//JFileChooser saveFile = new JFileChooser();
 
 			int sf = fileChooser.showSaveDialog(fileChooser);
@@ -72,12 +71,12 @@ public class MIDIFileManager {
 			File newFile = fileChooser.getSelectedFile();
 			storeMIDIFileArray(newFile);
 			if (sf == JFileChooser.APPROVE_OPTION) {
-				int[] allowedMidiTypes = MidiSystem.getMidiFileTypes(reciever.getSequence());
+				int[] allowedMidiTypes = MidiSystem.getMidiFileTypes(MidiReciever.getInstance().getSequence());
 				if (allowedMidiTypes.length == 0) {
 					System.err.println("No supported MIDI file types.");
 				} else {
 					try {
-						MidiSystem.write(reciever.getSequence(), allowedMidiTypes[0], getCurrentMIDIFile());
+						MidiSystem.write(MidiReciever.getInstance().getSequence(), allowedMidiTypes[0], getCurrentMIDIFile());
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}

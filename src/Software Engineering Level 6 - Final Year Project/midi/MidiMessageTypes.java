@@ -17,12 +17,10 @@ public class MidiMessageTypes {
 	private String  rememberedTempo;
 	private boolean tempoSelected = false;
 	private MidiChannel channel;
-	private MidiReciever reciever;
 	
 
-	public MidiMessageTypes (MidiReciever carriedReciever){
-		this.reciever = carriedReciever;
-		channel = ((Synthesizer) carriedReciever.returnDevice()).getChannels()[0];
+	public MidiMessageTypes (){
+		channel = ((Synthesizer) MidiReciever.getInstance().returnDevice()).getChannels()[0];
 	}
 	
 	public enum tempoNames {
@@ -89,7 +87,7 @@ public class MidiMessageTypes {
 	
 	
 	public void saveSelectedTempo(String choice) {
-		reciever.returnSequencer().setTempoInBPM(tempoMarkersMap.get(choice));
+		MidiReciever.getInstance().returnSequencer().setTempoInBPM(tempoMarkersMap.get(choice));
 	}
 	
 	

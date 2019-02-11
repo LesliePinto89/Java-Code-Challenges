@@ -16,9 +16,9 @@ public class GetInstruments   {
 	
 	
 	//Start of instrument selection
-	public void setupInstruments (MidiReciever carriedReciever){
-		instruments = ((Synthesizer) carriedReciever.returnDevice()).getDefaultSoundbank().getInstruments();
-		channel = ((Synthesizer) carriedReciever.returnDevice()).getChannels()[0];
+	public void setupInstruments (){
+		instruments = ((Synthesizer) MidiReciever.getInstance().returnDevice()).getDefaultSoundbank().getInstruments();
+		channel = ((Synthesizer) MidiReciever.getInstance().returnDevice()).getChannels()[0];
 	}
 	
 

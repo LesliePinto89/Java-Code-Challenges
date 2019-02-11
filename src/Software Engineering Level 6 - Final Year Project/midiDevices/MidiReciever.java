@@ -1,8 +1,6 @@
 package midiDevices;
 
-import java.io.IOException;
 import java.util.ArrayList;
-
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
@@ -16,9 +14,17 @@ import javax.sound.midi.Synthesizer;
 import javax.sound.midi.Track;
 import javax.sound.midi.Transmitter;
 
-public class MidiReciever implements Receiver {
+import tools.MIDIRecord;
 
-	protected MidiDevice device;
+public class MidiReciever implements Receiver {
+	//static Timer timer;
+	//static Timer timerSustain;
+	//private double ticksPerSecond;
+	//private double tickSize;
+	//private int restResolution = 0;
+	//private boolean endSustainCycle = false;
+	
+	private MidiDevice device;
 	private Sequencer sequencer;
 	private Transmitter seqTrans;
 	private Receiver seqRcvr;
@@ -26,12 +32,31 @@ public class MidiReciever implements Receiver {
 	private boolean stopRecording = true;
 	private boolean stopPianoFreePlay = false;
 	private boolean firstRecording = true;
-	protected Sequence sequence;
-	private long startTick = 0;	
+	private Sequence sequence;
 	private int resolution;
-	private int ticksPerSecond;
-	private int tickSize;
 	private Track track;
+	private int sequenceCounter = 0;
+
+	private MIDIRecord carriedRecord;
+	
+
+	//A singleton pattern so that only one instance of this class 
+	//can be accessed and instantiated
+	private static volatile MidiReciever instance = null;
+
+    private MidiReciever() {}
+
+    public static MidiReciever getInstance() {
+        if (instance == null) {
+            synchronized(MidiReciever.class) {
+                if (instance == null) {
+                    instance = new MidiReciever();
+                }
+            }
+        }
+
+        return instance;
+    }
 	
 	public void startConnection() throws InvalidMidiDataException, MidiUnavailableException {
 		ArrayList<MidiDevice.Info> synthInfos = new ArrayList<MidiDevice.Info>();
@@ -45,7 +70,21 @@ public class MidiReciever implements Receiver {
 		device = MidiSystem.getMidiDevice(synthInfos.get(0));
 		loadUp();
 	}
+
+	public int getCurrentSequenceResolution() {
+		return resolution; 
+	}
 	
+	
+	// To keep instance of record class object (Could use singleton pattern
+	// alternative)
+	public void storedRecordStart(MIDIRecord storedRecord) {
+		carriedRecord = storedRecord;
+	}
+
+	public MIDIRecord getStoredRecordStart() {
+		return carriedRecord;
+	}
 
 	public void loadUp() throws MidiUnavailableException {
 		if (!(device.isOpen())) {
@@ -67,44 +106,28 @@ public class MidiReciever implements Receiver {
 	public Track getTrack() {
 		return track;
 	}
-	
-	public int calculateTick(){
-		//System.out.print(sequence);
-		resolution = sequence.getResolution();
-		float tempo = sequencer.getTempoInBPM();
-		ticksPerSecond =  (int) (60000 / (tempo * resolution));
-		
-		//This was needed in bettwe version but not in working other version
-		//might or might not be the btter solution
-		ticksPerSecond = ticksPerSecond* 60;
-		//might need to remote cast as time is not working properly
-		//ticksPerSecond = (int) (resolution * (tempo / 60));
-		 tickSize = 1 / ticksPerSecond;
-		 return ticksPerSecond;
-		
-	}
-	
-	
-	public void setStartTick(long startTick) {
-		this.startTick = startTick;
+
+	public void setSequenceCounter(int seqCounter) {
+		sequenceCounter = seqCounter;
 	}
 
-	public long getStartTick() {
-		return startTick;
+	public int getSequenceCounter() {
+		return sequenceCounter;
 	}
+
 	public void storeSeq(Sequence sequence) {
-		this.sequence = sequence;
+		this.sequence = sequence;	
+		resolution = sequence.getResolution(); // stored resolution as its base
 	}
 
 	public Sequence getSequence() {
 		return sequence;
 	}
-	
-	//test code
-	public void createNewSequence () throws InvalidMidiDataException {
-     sequence = new Sequence(Sequence.PPQ, 192);
+
+	public void createNewSequence() throws InvalidMidiDataException {
+		sequence = new Sequence(Sequence.PPQ, 480);
 	}
-	
+
 	public MidiDevice returnDevice() {
 		return device;
 	}
@@ -117,11 +140,11 @@ public class MidiReciever implements Receiver {
 		return sequencer;
 	}
 
-	protected Receiver returnSequencerReceiver() {
+	public Receiver returnSequencerReceiver() {
 		return seqRcvr;
 	}
 
-	protected Transmitter returnSeqTransmitter() {
+	public Transmitter returnSeqTransmitter() {
 		return seqTrans;
 	}
 
@@ -129,25 +152,26 @@ public class MidiReciever implements Receiver {
 	public void close() {
 	}
 
-	public void freeNotePlay(int pitch) throws InvalidMidiDataException {
-		ShortMessage noteOnMessage = new ShortMessage(ShortMessage.NOTE_ON, 0, pitch, 100);
-		send(noteOnMessage, -1);
-
-	}
-	
-	public void freeNoteStop(int pitch) throws InvalidMidiDataException {
-		ShortMessage noteOnMessage = new ShortMessage(ShortMessage.NOTE_OFF, 0, pitch, 100);
-		send(noteOnMessage, -1);
-
-	}
-
+	//Handles MIDI wire protocol play back
 	@Override
 	public void send(MidiMessage message, long timeStamp) {
 		synthRcvr.send(message, timeStamp);
 
 	}
+	public void freeNotePlay(int pitch) throws InvalidMidiDataException {
+		ShortMessage noteOnMessage = new ShortMessage(ShortMessage.NOTE_ON, 0, pitch, 100);
+		send(noteOnMessage, -1);
+		System.out.println("It has reached here");
 
-	//CONDITION VARIABLES/////////////////////////////////
+	}
+
+	public void freeNoteStop(int pitch) throws InvalidMidiDataException {
+		//Changed from note off, 100 velocity to note on 0 velocity for testing purposes
+		ShortMessage noteOnMessage = new ShortMessage(ShortMessage.NOTE_ON, 0, pitch, 0);
+		send(noteOnMessage, -1);
+	}
+
+	// CONDITION VARIABLES/////////////////////////////////
 	public void setFirstRecording(boolean firstRec) {
 		this.firstRecording = firstRec;
 	}
@@ -171,11 +195,8 @@ public class MidiReciever implements Receiver {
 	public boolean isFreePlayEnded() {
 		return stopPianoFreePlay;
 	}
-	
-	public boolean isRunning(){
+
+	public boolean isRunning() {
 		return sequencer.isRunning();
 	}
-	/////////////////////////////////////////////////////////
-	
-	
 }

@@ -68,8 +68,8 @@ public class Note {
 	}
 	
 	 public static int convertToPitch(String note) {
-   	  String sym = "";
-   	  int oct = 0;;
+   	  String symbol = "";
+   	  int octave = 0;;
    	  
    	//EnumSet<allNotesNoteType> allNotesEnums = EnumSet.allOf(allNotesNoteType.class);
    			//String [] storeNotes = new String [allNotesEnums.size()];
@@ -83,19 +83,19 @@ public class Note {
    	  // If the length is two, then grab the symbol and number.
    	  // Otherwise, it must be a two-char note.
    	  if (splitNote.length == 2) {
-   	    sym += splitNote[0];
-   	    oct = splitNote[1];
+   		symbol += splitNote[0];
+   		octave = splitNote[1];
    	  } else if (splitNote.length == 3) {
-   	    sym += Character.toString(splitNote[0]);
-   	    sym += Character.toString(splitNote[1]);
-   	    oct = splitNote[2];
+   		symbol += Character.toString(splitNote[0]);
+   		symbol += Character.toString(splitNote[1]);
+   		octave = splitNote[2];
    	  }
 
    	  // Find the corresponding note in the array.
    	  for (int i = 0; i < notes.length; i++)
    	  for (int j = 0; j < notes[i].length; j++) {
-   	    if (notes[i][j].equals(sym)) {
-   	        return Character.getNumericValue(oct+1) * 12 + i;
+   	    if (notes[i][j].equals(symbol)) {
+   	        return Character.getNumericValue(octave+1) * 12 + i;
    	    }
    	  }
 

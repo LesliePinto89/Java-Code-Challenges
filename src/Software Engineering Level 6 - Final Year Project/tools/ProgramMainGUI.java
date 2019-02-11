@@ -21,6 +21,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
 import keyboard.VirtualKeyboard;
+import midi.DurationTimer;
 import midiDevices.MidiReciever;
 import java.awt.BorderLayout;
 
@@ -35,13 +36,11 @@ public class ProgramMainGUI implements MouseListener {
 	protected int screenWidth;
 	protected int screenHeight;
 	protected Dimension screenSize;
-	
-	private static MidiReciever getReciever;
 	private static VirtualKeyboard midiGui;
 	private static ProgramMainGUI loadProgram;
 	private static MIDIFilePlayer filePlayer;
 	private static MIDIFileManager fileManager;
-	
+
 	public void loadProgramWindowFrameGUI() throws IOException {
 		screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		screenWidth = (int) screenSize.getWidth();
@@ -61,21 +60,26 @@ public class ProgramMainGUI implements MouseListener {
 		return carriedJPanel;
 
 	}
-	
-	public static void loadApplication() throws IOException, InvalidMidiDataException, MidiUnavailableException{
+
+	public static void loadApplication() throws IOException, InvalidMidiDataException, MidiUnavailableException {
 		loadProgram = new ProgramMainGUI();
-		getReciever = new MidiReciever();
+
+		// Instantiated the class once and then call its start connection
+		// method.The class uses the singleton design pattern so it can be referenced
+		// throughout the application.
 		
-		//Might need to remove this from the keyboard class
-		getReciever.startConnection();
-		///////////////////////////////////////////
+		MidiReciever.getInstance();
+		MidiReciever.getInstance().startConnection();
+
 		
-		fileManager = new MIDIFileManager(getReciever);
-		filePlayer = new MIDIFilePlayer(getReciever,fileManager);
-		midiGui = new VirtualKeyboard(getReciever,fileManager);
+		DurationTimer.getInstance();
+		
+		fileManager = new MIDIFileManager();
+		filePlayer = new MIDIFilePlayer(fileManager);
+		midiGui = new VirtualKeyboard(fileManager);
 		loadProgram.loadProgramWindowFrameGUI();
 		loadProgram.loadProgramOptions();
-		
+
 	}
 
 	public JLabel addPanelImage(BufferedImage carriedBufferedImage, Container carriedObject) {
@@ -135,8 +139,6 @@ public class ProgramMainGUI implements MouseListener {
 		Object obj = e.getSource();
 
 		if (obj.equals(freePlayPanel)) {
-			//MidiReciever getReciever = new MidiReciever();
-			//VirtualKeyboard midiGui = new VirtualKeyboard(getReciever);
 			try {
 				frame.setVisible(false);
 				midiGui.drawKeyboardGUI();
@@ -146,13 +148,10 @@ public class ProgramMainGUI implements MouseListener {
 			}
 		}
 		if (obj.equals(midiPlayer)) {
-			
-			//MidiReciever reciever = new MidiReciever();
-			 
 			try {
 				frame.setVisible(false);
 				filePlayer.drawMusicPlayerGUI();
-				
+
 			} catch (InvalidMidiDataException | MidiUnavailableException | IOException e1) {
 				e1.printStackTrace();
 			}
