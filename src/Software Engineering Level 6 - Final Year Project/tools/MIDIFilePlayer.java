@@ -34,8 +34,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
 import keyboard.KeyboardInteractions;
+import keyboard.VirtualKeyboard;
 import midi.StoreMetaEvents;
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -47,6 +48,10 @@ import java.awt.event.MouseListener;
 
 public class MIDIFilePlayer extends JPanel {
 
+	
+	
+	
+	
 	private DefaultListModel<String> songList = new DefaultListModel<String>();
 	private JList<String> jSongList = new JList<String>(songList);
 	private JScrollPane listScroller;
@@ -92,7 +97,8 @@ public class MIDIFilePlayer extends JPanel {
 	private Dimension screenSize;
 	private JPanel holdBar;
 
-	private MIDIFileManager midiFileManager;
+
+	//Leave here untul maek classes singlton
 	private StoreMetaEvents newMetaEvents;
 	private CustomSwingComponents makeComponents;
 	private File retrieveFile;
@@ -100,13 +106,28 @@ public class MIDIFilePlayer extends JPanel {
 	private int startTick = 0;
 	private int endTick = 0;
 
-	public MIDIFilePlayer(MIDIFileManager carriedMidiFileManager) {
-		
-		this.midiFileManager = carriedMidiFileManager;
-		newMetaEvents = new StoreMetaEvents();
-		makeComponents = new CustomSwingComponents();
+	
+	//A singleton pattern so that only one instance of this class 
+	//can be accessed and instantiated
+	private static volatile MIDIFilePlayer instance = null;
 
-	}
+    private MIDIFilePlayer() {}
+
+    public static MIDIFilePlayer getInstance() {
+        if (instance == null) {
+            synchronized(MIDIFilePlayer.class) {
+                if (instance == null) {
+                    instance = new MIDIFilePlayer();
+                   // newMetaEvents = new StoreMetaEvents();
+            		//makeComponents = new CustomSwingComponents();
+                }
+            }
+        }
+
+        return instance;
+    }
+	
+
 
 	public void drawGUIContentHolder() throws InvalidMidiDataException, MidiUnavailableException, IOException {
 
@@ -204,24 +225,24 @@ public class MIDIFilePlayer extends JPanel {
 		containsButtons.setBounds(0, line1, 180, btn_h);
 		btnPrev.setText("<<");
 		btnPrev.setName("prevFile");
-		ActionListener prevSelectedFileActionListener = new MIDIFilePlayerInteractions(this, btnPrev);
+		ActionListener prevSelectedFileActionListener = new MIDIFilePlayerInteractions(btnPrev);
 		btnPlay.addActionListener(prevSelectedFileActionListener);
-		MetaEventListener prevMetaListener = new MIDIFilePlayerInteractions(this, btnPrev);
-		MidiReciever.getInstance().returnSequencer().addMetaEventListener(prevMetaListener);
+		MetaEventListener prevMetaListener = new MIDIFilePlayerInteractions(btnPrev);
+		MidiReceiver.getInstance().returnSequencer().addMetaEventListener(prevMetaListener);
 
 		btnPlay.setText(">");
 		btnPlay.setName("playFile");
-		ActionListener playSelectedFileActionListener = new MIDIFilePlayerInteractions(this, btnPlay);
+		ActionListener playSelectedFileActionListener = new MIDIFilePlayerInteractions(btnPlay);
 		btnPlay.addActionListener(playSelectedFileActionListener);
-		MetaEventListener playMetaListener = new MIDIFilePlayerInteractions(this, btnPlay);
-		MidiReciever.getInstance().returnSequencer().addMetaEventListener(playMetaListener);
+		MetaEventListener playMetaListener = new MIDIFilePlayerInteractions(btnPlay);
+		MidiReceiver.getInstance().returnSequencer().addMetaEventListener(playMetaListener);
 
 		btnNext.setText(">>");
 		btnNext.setName("nextFile");
-		ActionListener nextSelectedFileActionListener = new MIDIFilePlayerInteractions(this,  btnNext);
+		ActionListener nextSelectedFileActionListener = new MIDIFilePlayerInteractions(btnNext);
 		btnPlay.addActionListener(nextSelectedFileActionListener);
-		MetaEventListener nextMetaListener = new MIDIFilePlayerInteractions(this, btnNext);
-		MidiReciever.getInstance().returnSequencer().addMetaEventListener(nextMetaListener);
+		MetaEventListener nextMetaListener = new MIDIFilePlayerInteractions(btnNext);
+		MidiReceiver.getInstance().returnSequencer().addMetaEventListener(nextMetaListener);
 
 		containsButtons.add(btnPrev);
 		containsButtons.add(btnPlay);
@@ -332,7 +353,7 @@ public class MIDIFilePlayer extends JPanel {
 	 * //and add a new midi file to JList
 	 */
 	public void addAllMIDIFilesToJList() {
-		midiFileManager.getSongList(songList);
+		MIDIFileManager.getInstance().getSongList(songList);
 	}
 
 	//When the user clicks "select file" button, its adds the file to the songlist
@@ -353,7 +374,7 @@ public class MIDIFilePlayer extends JPanel {
 	///////////////////////////////////////////////////////////
 
 	public Sequence playSelectedFile() throws InvalidMidiDataException, IOException {
-		storedMIDISavedFiles = midiFileManager.getFilesSongList();
+		storedMIDISavedFiles = MIDIFileManager.getInstance().getFilesSongList();
 		File matchingFile = storedMIDISavedFiles.get(getListSelectedIndex());
 		Sequence sequence = MidiSystem.getSequence(matchingFile);
 		// Track test = sequence.getTracks()[0];
@@ -361,10 +382,10 @@ public class MIDIFilePlayer extends JPanel {
 	}
 
 	public void playMidiFile() throws InvalidMidiDataException, IOException {
-		Sequence sequence = MidiSystem.getSequence(midiFileManager.selectMIDIFile());
-		MidiReciever.getInstance().returnSequencer().setSequence(sequence); // load it into //
+		Sequence sequence = MidiSystem.getSequence(MIDIFileManager.getInstance().selectMIDIFile());
+		MidiReceiver.getInstance().returnSequencer().setSequence(sequence); // load it into //
 															// sequencer
-		MidiReciever.getInstance().returnSequencer().start(); // start the playback
+		MidiReceiver.getInstance().returnSequencer().start(); // start the playback
 	}
 
 	public File getStoredFile() {
@@ -391,7 +412,7 @@ public class MIDIFilePlayer extends JPanel {
 		 * jSongList.addMouseListener(jListSelectListener);
 		 */
 
-		MouseListener jListSelectListener = new MIDIFilePlayerInteractions(this, jSongList);
+		MouseListener jListSelectListener = new MIDIFilePlayerInteractions(jSongList);
 		jSongList.addMouseListener(jListSelectListener);
 		//////////////////////////////////
 
@@ -405,17 +426,21 @@ public class MIDIFilePlayer extends JPanel {
 	public JButton createSelectFileButton() {
 		selectMidiFileButton = new JButton("Select File");
 		selectMidiFileButton.setBounds(279, 5, 81, 23);
-		selectMidiFileButton.setName("Select Midi File");
-		ActionListener selectButtonActionListener = new MIDIFilePlayerInteractions(this, midiFileManager, 
-				selectMidiFileButton);
+		selectMidiFileButton.setName("SelectMidiFile");
+		ActionListener selectButtonActionListener = new MIDIFilePlayerInteractions(selectMidiFileButton);
 		selectMidiFileButton.addActionListener(selectButtonActionListener);
 		return selectMidiFileButton;
 	}
 
 	public void generateMetaFromFile() throws InvalidMidiDataException {
 		// int i = 0;
+		
+		//If .mid file already has a track for meta messages, this code below is not needed
 		newMetaEvents.createFullSequenceMetaData();
 		Track metaTrack = newMetaEvents.getMetaTrack();
+		//////////////////////////////////////////////////////////
+		
+		
 		boolean noteOn = false;
 		boolean noteOff = false;
 		// Messages

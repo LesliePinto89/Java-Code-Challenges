@@ -10,12 +10,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import midi.Chord;
 import midi.MidiMessageTypes;
 import midi.StoreMetaEvents;
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
 import tools.GetInstruments;
 import tools.MIDIFileManager;
 import tools.MIDIFilePlayerInteractions;
@@ -35,10 +36,48 @@ public class VirtualKeyboard {
 	private JComboBox<String> instrumentList;
 	private JComboBox<String> tempoList;
 	
-	private int PITCH_OCTAVE = 2;
-	private int START_WHOTE_NOTE_POSITION = 22;
-	private int START_SHARP_NOTE_POSITION = 42;
+	
+	//A singleton pattern so that only one instance of this class 
+		//can be accessed and instantiated
+		private static volatile VirtualKeyboard instance = null;
 
+	    private VirtualKeyboard() {}
+
+	    public static VirtualKeyboard getInstance() {
+	        if (instance == null) {
+	            synchronized(VirtualKeyboard.class) {
+	                if (instance == null) {
+	                    instance = new VirtualKeyboard();
+	                }
+	            }
+	        }
+
+	        return instance;
+	    }
+	
+	
+	
+	 int _W = 330;
+		int line1 = 80;
+	     int h_list = 100;
+		int line2 = line1 + h_list + 50;
+	
+	
+	
+	
+	
+	
+	private int PITCH_OCTAVE = 2;
+	//private int START_WHOTE_NOTE_POSITION = 22;
+	//private int START_SHARP_NOTE_POSITION = 42;
+
+	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	private int screenWidth = (int) screenSize.getWidth();
+	private int screenHeight  = (int) screenSize.getHeight();
+	
+	private int START_WHOTE_NOTE_POSITION = screenWidth /80;
+	private int START_SHARP_NOTE_POSITION = screenWidth /35;
+///35.5 defaut for sharp was 42;
 	//Will contain Instantiated classes from main menu
 	//private static VirtualKeyboard midiGui;
 
@@ -53,10 +92,9 @@ public class VirtualKeyboard {
 	private JLayeredPane pianoLayers;
 	private JPanel pianoBacking;
 	
-	private Dimension screenSize;
-	private int screenWidth;
-	private int screenHeight;
+
 	private JFrame secondFrame;
+	
 	
 	public void storeButtons(JButton noteButton) {
 		naturalKeys.add(noteButton);
@@ -73,10 +111,10 @@ public class VirtualKeyboard {
 	 * @param loadMIDI
 	 *            - The MIDI devices needed in the application
 	 */
-	public VirtualKeyboard(MIDIFileManager loadedFileManager) {
-		this.fileManager = loadedFileManager;
+	//public VirtualKeyboard(MIDIFileManager loadedFileManager) {
+		//this.fileManager = loadedFileManager;
 		
-	}
+	//}
 
 	
 	/**
@@ -117,14 +155,18 @@ public class VirtualKeyboard {
 				else if (button.getText().startsWith("F")) {
 					START_SHARP_NOTE_POSITION += 32;
 				}
-				button.setBounds(START_SHARP_NOTE_POSITION, 145, 20, 126);
+				//button.setBounds(START_SHARP_NOTE_POSITION, 145, 20, 126);
+				button.setBounds(START_SHARP_NOTE_POSITION, 145, screenWidth /55, 126);
+			
 				button.setFont(new Font("Arial", Font.PLAIN, 6));
 				button.setVerticalAlignment(SwingConstants.BOTTOM);
 				button.setMargin(new Insets(1, 1, 1, 1));
 
 				styleKeys(button);
 				storeButtons(button);
-				START_SHARP_NOTE_POSITION += 37;
+				
+				//START_SHARP_NOTE_POSITION += 37;
+				START_SHARP_NOTE_POSITION +=screenWidth /35.5;
 			}
 		}
 	}
@@ -135,12 +177,13 @@ public class VirtualKeyboard {
 	 */
 	public void createWholeKeys() throws InvalidMidiDataException, MidiUnavailableException {
 		EnumSet<Note.NoteType> naturalKeysEnums = EnumSet.allOf(Note.NoteType.class);
-
+		// screenWidth, screenHeight
 		boolean endOctave = false;
 		while (endOctave == false) {
 			for (Note.NoteType getNote : naturalKeysEnums) {
 				JButton button = new JButton(getNote.toString() + Integer.toString(PITCH_OCTAVE));
-				button.setBounds(START_WHOTE_NOTE_POSITION, 145, 35, 196);
+				//button.setBounds(START_WHOTE_NOTE_POSITION, 145, 35, 196);
+				button.setBounds(START_WHOTE_NOTE_POSITION, 145, screenWidth /37, 196);
 				button.setFont(new Font("Arial", Font.PLAIN, 10));
 				button.setVerticalAlignment(SwingConstants.BOTTOM);
 				button.setMargin(new Insets(1, 1, 1, 1));
@@ -155,7 +198,7 @@ public class VirtualKeyboard {
 				styleKeys(button);
 				storeButtons(button);
 
-				START_WHOTE_NOTE_POSITION += 35;
+				START_WHOTE_NOTE_POSITION +=  screenWidth /37;
 				if (getNote.toString().equals("B")) {
 					PITCH_OCTAVE++;
 				}
@@ -170,21 +213,11 @@ public class VirtualKeyboard {
 	 *            channels - Stores instruments names
 	 * @return array that stores the instruments names in memory
 	 */
-	//public String[] allInstruments(Instrument[] channels) {
-	//	String[] tempStorage = new String[channels.length];
-		//for (int i = 0; i < channels.length; i++) {
-		//	tempStorage[i] = channels[i].getName();
-		//}
-	//	return tempStorage;
-	//}
 
 	
 	public void addToKeyboardLayout(Component entry){
 		keyboardLayered.add(entry);
 	}
-	
-	
-	
 	
 	
 	/**
@@ -204,7 +237,7 @@ public class VirtualKeyboard {
 		tempoList = new JComboBox<String>(midiMessageTypes.storedTemposMapKeys());
 		tempoList.setName("tempoList");
 		tempoList.setEditable(true);
-		tempoList.setBounds(200, 110, 250, 52);
+		tempoList.setBounds(screenWidth /2 + 200, screenHeight /16, 250, 52);
 		tempoList.setSelectedIndex(12);
 		KeyboardInteractions tempoBoxActionListener = new KeyboardInteractions(midiMessageTypes,null,tempoList);
 		tempoList.addActionListener(tempoBoxActionListener);
@@ -218,7 +251,7 @@ public class VirtualKeyboard {
 		instrumentList = new JComboBox<String>(loadInstruments.storeInstrumentsNames);
 		instrumentList.setName("instrumentList");
 		instrumentList.setEditable(true);
-		instrumentList.setBounds(0, 110, 200, 52);
+		instrumentList.setBounds(screenWidth /2, screenHeight /16, 200, 52);
 		KeyboardInteractions instrumentsBoxActionListener = new KeyboardInteractions(null,loadInstruments,instrumentList);
 		instrumentList.addActionListener(instrumentsBoxActionListener);
 		keyboardLayered.add(instrumentList);
@@ -274,10 +307,6 @@ public class VirtualKeyboard {
 	}
 	
 	public void saveMIDIButton() throws IOException{
-		
-		//fileManager = new MIDIFileManager();
-
-		int saveNumber = 0;
 		JToggleButton saveMIDI = new JToggleButton();
 		saveMIDI.setBounds(secondFrame.getWidth() / 3 + 260, secondFrame.getHeight() / 2 - 30, 70, 62);
 		BufferedImage saveOff = ImageIO.read(new File("src/Images/midi document.png"));
@@ -294,7 +323,7 @@ public class VirtualKeyboard {
 		saveMIDI.setSelectedIcon(saveOnIcon);
 		saveMIDI.setName("saveButton");
 		keyboardLayered.add(saveMIDI);	
-		ActionListener saveButtonActionListener = new KeyboardInteractions(fileManager,saveMIDI);
+		ActionListener saveButtonActionListener = new KeyboardInteractions(saveMIDI);
 		saveMIDI.addActionListener(saveButtonActionListener);
 	}
 	
@@ -361,45 +390,121 @@ public class VirtualKeyboard {
 	}
 
 	
-	public void createChord() throws InvalidMidiDataException{
-		 JPanel chordOptions = new JPanel(); 
-		 chordOptions.setBounds(810, 62, 481, 324);
-		 chordOptions.setBackground(Color.decode("#F0FFFF"));
-		 keyboardLayered.add(chordOptions);
-			
-		DefaultListModel<String> chordList = new DefaultListModel<String>();
-		 JList<String> jChordList = new JList<String>(chordList);
-		 JScrollPane chordListScroller;
-		  int JChordlistIndex;
-		  
-		 int _W = 330;
-		int line1 = 80;
-	     int h_list = 100;
-		int line2 = line1 + h_list + 50;
-		  
-		  jChordList.setBounds(0, line1 + 50, _W, h_list);
-		  jChordList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		  jChordList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-		  jChordList.setVisibleRowCount(-1);
-		  
-		  chordListScroller = new JScrollPane(jChordList);
-		  chordListScroller.setPreferredSize(new Dimension(_W - 10, h_list));
-		  chordListScroller.setBounds(0, line1 + 50, _W - 10, h_list);
+	public JPanel leftSideChordNames (){
+		Chord.getInstance();
+		JPanel instancePanel = new JPanel();
+		DefaultListModel<String> majorChordList = new DefaultListModel<String>();
+		 JList<String> jListMajorChords = new JList<String>(majorChordList);
+		 jListMajorChords.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+		 jListMajorChords.setBounds(0, line1 + 50, _W, h_list);
+		 jListMajorChords.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		 jListMajorChords.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+		 jListMajorChords.setVisibleRowCount(-1);
+		 jListMajorChords.setBorder(new LineBorder(Color.BLUE));
+		 jListMajorChords.setName("Major");
 		 
-		//JToggleButton chord = new JToggleButton("Chords");
-		//chord.setBounds(secondFrame.getWidth() / 3 + 310,secondFrame.getHeight() / 2 - 120, 100, 42);
-		//chord.setName("Chords");	
-		
-		
-		
-		//Chord newChord = new Chord();
-		
-		//ActionListener chordsButtonActionListener = new KeyboardInteractions(chordProgression);
-		//chordProgression.addActionListener(chordsButtonActionListener);
-		//keyboardLayered.add(chordProgression);
+		 MouseListener jListChordSelectListener = new KeyboardInteractions(jListMajorChords);
+		 jListMajorChords.addMouseListener(jListChordSelectListener);
+
+		 JScrollPane majorChordListScroller;
+		 majorChordListScroller = new JScrollPane(jListMajorChords);
+		 majorChordListScroller.setPreferredSize(new Dimension(_W - 10, tabbedPane.getHeight() /4 ));
+		 majorChordListScroller.setBounds(0, line1 + 50, _W - 10, h_list);
+		    
+		 Chord.majorChordNamesList[] majorChordNames = Chord. majorChordNamesList.values();
+		    
+		 
+		 for (int i = 0; i < majorChordNames.length; i++) {
+		    	majorChordList.addElement(majorChordNames[i].name());
+		    }
+		  
+			DefaultListModel<String> minorChordList = new DefaultListModel<String>();
+			 JList<String> jListMinorChords = new JList<String>(minorChordList);
+			 jListMinorChords.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+			 jListMinorChords.setBounds(0, line1 + 50, _W, h_list);
+			 jListMinorChords.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+			 jListMinorChords.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+			 jListMinorChords.setVisibleRowCount(-1);
+			 jListMinorChords.setName("Minor");
+			 
+			 MouseListener jMinorListChordSelectListener = new KeyboardInteractions(jListMinorChords);
+			 jListMinorChords.addMouseListener(jMinorListChordSelectListener);
+			 
+			 JScrollPane minorChordListScroller;
+			 minorChordListScroller = new JScrollPane(jListMinorChords);
+			 minorChordListScroller.setPreferredSize(new Dimension(_W - 10, tabbedPane.getHeight() /4 ));
+			 minorChordListScroller.setBounds(0, line1 + 50, _W - 10, h_list);
+		    Chord.minorChordNamesList[] minorChordNames = Chord.minorChordNamesList.values();
+		   
+		    for (int i = 0; i < minorChordNames.length; i++) {
+		    	minorChordList.addElement(minorChordNames[i].name());
+		    
+		    }
+		    
+		    JLabel majorChords = new JLabel ();
+		    majorChords.setText("Major Chords");
+		    instancePanel.add(majorChords);
+		    instancePanel.add(majorChordListScroller);
+		    JLabel minorChords = new JLabel ();
+		    minorChords.setText("Minor Chords");
+		    instancePanel.add(minorChords);			    
+		    instancePanel.add(minorChordListScroller);	
+		    
+		    //Store to get name from list model in interactions class
+		    Chord.getInstance().storeMajorListModel(majorChordList);
+		    Chord.getInstance().storeMinorListModel(minorChordList);
+		    return instancePanel;
+		   
 	}
 	
+	public void createTabbedBar() throws InvalidMidiDataException{
+		// Make other functions tabs
+				tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+				tabbedPane.setBounds(0, 0, screenWidth / 2, screenHeight / 3);
+				
+	                 JPanel leftPane = leftSideChordNames();
+				    JPanel rightPane = new JPanel ();
 
+				
+				JSplitPane splitPane = new JSplitPane();
+				splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+				  splitPane.setContinuousLayout(true);
+				  splitPane.setLeftComponent(leftPane);  
+				  splitPane.setRightComponent(rightPane);
+		         splitPane.setOneTouchExpandable(true);
+		          splitPane.setDividerLocation(tabbedPane.getWidth() /2);
+
+				tabbedPane.addTab("Chords", splitPane);
+				tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+
+				
+				JComponent panel2 = makeTextPanel("Panel #2");
+				tabbedPane.addTab("Tab 2", panel2
+				               );
+				tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+
+				JComponent panel3 = makeTextPanel("Panel #3");
+				tabbedPane.addTab("Tab 3", panel3);
+				tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
+
+				JComponent panel4 = makeTextPanel(
+				        "Panel #4 (has a preferred size of 410 x 50).");
+				panel4.setPreferredSize(new Dimension(410, 50));
+				tabbedPane.addTab("Tab 4",  panel4);
+				tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
+				keyboardLayered.add(tabbedPane,new Integer(0), 0);
+	}
+	
+	private JComponent makeTextPanel(String text) {
+        JPanel panel = new JPanel(false);
+        JLabel filler = new JLabel(text);
+        filler.setHorizontalAlignment(JLabel.CENTER);
+        panel.setLayout(new GridLayout(1, 1));
+        panel.add(filler);
+        return panel;
+    }
+	
+	
 	public void createChordProgression () throws InvalidMidiDataException{
 		JToggleButton chordProgression = new JToggleButton("Chords");
 		chordProgression.setBounds(secondFrame.getWidth() / 3 + 310,secondFrame.getHeight() / 2 - 120, 100, 42);
@@ -423,9 +528,9 @@ public class VirtualKeyboard {
 	 */
 	public void drawKeyboardGUI() throws InvalidMidiDataException, MidiUnavailableException, IOException {
 
-		 screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		  screenWidth = (int) screenSize.getWidth();
-		  screenHeight = (int) screenSize.getHeight();
+		 //screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		 // screenWidth = (int) screenSize.getWidth();
+		 // screenHeight = (int) screenSize.getHeight();
 
 		// Make new Content Pane
 		 keyboardLayered = new JLayeredPane();
@@ -434,25 +539,18 @@ public class VirtualKeyboard {
 		secondFrame.setBounds(0, 0, screenWidth, screenHeight);
 		secondFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		secondFrame.setContentPane(keyboardLayered);
+		
+		//secondFrame.pack();
+		
 		secondFrame.setVisible(true);
 		
-		
-
-
-
-		// Make other functions tabs
-		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(0, 0, 500, 52);
-		keyboardLayered.add(tabbedPane,new Integer(0), 0);
-		
-
 	}
-	
 	
 	/**
 	 * Main keyboard layout, with method calls to its various components.
 	 * 
 	 * @throws IOException
+	 * @wbp.parser.entryPoint
 	 * 
 	 */
 	public void createVirtualKeyboard() throws InvalidMidiDataException, MidiUnavailableException, IOException {
@@ -473,7 +571,8 @@ public class VirtualKeyboard {
 		
 		drawPiano();
 		changeTempo();
-		createChord();
+		createTabbedBar();
+		
 		//createChordProgression();		
 	}
 

@@ -9,23 +9,49 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
 
 public class MIDIFileManager {
 
+	
+	
 	private File createdMIDIFile;
 	private ArrayList<File> storedMIDISavedFiles = new ArrayList<File>();
-	private JFileChooser fileChooser;
-	private File defaultDirectory;
+	private static JFileChooser fileChooser;
+	private static File defaultDirectory;
 	
-	public MIDIFileManager(){
+
+	//A singleton pattern so that only one instance of this class 
+	//can be accessed and instantiated
+	private static volatile MIDIFileManager instance = null;
+
+    private MIDIFileManager() {}
+
+    public static MIDIFileManager getInstance() {
+        if (instance == null) {
+            synchronized(MidiReceiver.class) {
+                if (instance == null) {
+                    instance = new MIDIFileManager();
+                    fileChooser = new JFileChooser();
+           		 defaultDirectory = new File (System.getProperty("user.home") + System.getProperty("file.separator")+ "/Desktop/save folder".toString());
+           		 
+           		 //Will vary based on default directory
+           		fileChooser.setCurrentDirectory(defaultDirectory);
+                }
+            }
+        }
+
+        return instance;
+    }
+	
+	/*public MIDIFileManager(){
 		//this.reciever = carriedReciever;
          fileChooser = new JFileChooser();
 		 defaultDirectory = new File (System.getProperty("user.home") + System.getProperty("file.separator")+ "/Desktop/save folder".toString());
 		 
 		 //Will vary based on default directory
 		fileChooser.setCurrentDirectory(defaultDirectory);
-	}
+	}*/
 	
 	public DefaultListModel<String> getSongList (DefaultListModel<String> carriedListModel){
 		for (File fileEntry : defaultDirectory.listFiles()){
@@ -63,7 +89,7 @@ public class MIDIFileManager {
 		
 	public void saveNewMIDIFile(JToggleButton saveMIDI) {
 		// Valid when user has made a sequence
-		if (MidiReciever.getInstance().getSequence() != null) {
+		if (MidiReceiver.getInstance().getSequence() != null) {
 			//JFileChooser saveFile = new JFileChooser();
 
 			int sf = fileChooser.showSaveDialog(fileChooser);
@@ -71,20 +97,18 @@ public class MIDIFileManager {
 			File newFile = fileChooser.getSelectedFile();
 			storeMIDIFileArray(newFile);
 			if (sf == JFileChooser.APPROVE_OPTION) {
-				int[] allowedMidiTypes = MidiSystem.getMidiFileTypes(MidiReciever.getInstance().getSequence());
+				int[] allowedMidiTypes = MidiSystem.getMidiFileTypes(MidiReceiver.getInstance().getSequence());
 				if (allowedMidiTypes.length == 0) {
 					System.err.println("No supported MIDI file types.");
 				} else {
 					try {
-						MidiSystem.write(MidiReciever.getInstance().getSequence(), allowedMidiTypes[0], getCurrentMIDIFile());
+						MidiSystem.write(MidiReceiver.getInstance().getSequence(), allowedMidiTypes[0], getCurrentMIDIFile());
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
 				}
 
 				JOptionPane.showMessageDialog(null, "File has been saved", "File Saved",
-						JOptionPane.INFORMATION_MESSAGE);
-				JOptionPane.showMessageDialog(null, "Do you want to delele the sequence", "Delete Sequence?",
 						JOptionPane.INFORMATION_MESSAGE);
 
 				// true for rewrite, false for override

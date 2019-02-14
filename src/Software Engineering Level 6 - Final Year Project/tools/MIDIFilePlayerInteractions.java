@@ -16,12 +16,11 @@ import javax.swing.JButton;
 import javax.swing.JList;
 
 import midi.StoreMetaEvents;
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
 
 public class MIDIFilePlayerInteractions implements ActionListener, MouseListener, MetaEventListener {
 
 	private JButton selectFile;
-	private MIDIFileManager fileManager;
 	private Track[] sequenceTracks;
 	private Track sequenceMetaTrack;
 
@@ -32,19 +31,16 @@ public class MIDIFilePlayerInteractions implements ActionListener, MouseListener
 	private MIDIFilePlayer player;
 	private JList<String> songList;
 
-	public MIDIFilePlayerInteractions(MIDIFilePlayer carriedFilePlayer, JList<String> carriedSongList) {
-		this.player = carriedFilePlayer;
+	public MIDIFilePlayerInteractions(JList<String> carriedSongList) {
 		this.songList = carriedSongList;
 	}
 
 	// Select MIDI file from midi player GUI
-	public MIDIFilePlayerInteractions(MIDIFilePlayer carriedFilePlayer, MIDIFileManager loadedFileManager,
-			JButton carriedJButton) {
-		this.fileManager = loadedFileManager;
-		this.selectFile = carriedJButton;
-		this.player = carriedFilePlayer;
+	//public MIDIFilePlayerInteractions(JButton carriedJButton) {
+		//this.selectFile = carriedJButton;
+		
 
-	}
+	//}
 
 	// Stored Meta event messages
 	public MIDIFilePlayerInteractions(Track[] carriedTracks, Track carriedMetaTrack) {
@@ -53,9 +49,12 @@ public class MIDIFilePlayerInteractions implements ActionListener, MouseListener
 
 	}
 
-	public MIDIFilePlayerInteractions(MIDIFilePlayer carriedFilePlayer,
-			JButton carriedButton) {
+	public MIDIFilePlayerInteractions(JButton carriedButton) {
 		switch (carriedButton.getName()) {
+		case "SelectMidiFile" :   
+			this.selectFile = carriedButton;
+		break;
+		
 		case "prevFile":
 			this.prevFile = carriedButton;
 			break;
@@ -69,7 +68,7 @@ public class MIDIFilePlayerInteractions implements ActionListener, MouseListener
 			break;
 		}
 	
-		this.player = carriedFilePlayer;
+		
 	}
 
 	@Override
@@ -79,7 +78,7 @@ public class MIDIFilePlayerInteractions implements ActionListener, MouseListener
 		// User clicks on JList options
 		if (obj.equals(songList)) {
 			int index = songList.locationToIndex(arg0.getPoint());
-			player.storedJListSelectedIndex(index);
+			MIDIFilePlayer.getInstance().storedJListSelectedIndex(index);
 			// System.out.println("Double clicked on Item " + index);
 		}
 
@@ -114,8 +113,8 @@ public class MIDIFilePlayerInteractions implements ActionListener, MouseListener
 		Object obj = arg0.getSource();
 
 		if (obj.equals(selectFile)) {
-			File desiredFile = fileManager.selectMIDIFile();
-			player.storedFoundFile(desiredFile);
+			File desiredFile = MIDIFileManager.getInstance().selectMIDIFile();
+			MIDIFilePlayer.getInstance().storedFoundFile(desiredFile);
 		}
 
 		else if (obj.equals(prevFile)) {
@@ -131,9 +130,9 @@ public class MIDIFilePlayerInteractions implements ActionListener, MouseListener
 		}
 
 		else if (obj.equals(nextFile)) {
-			int index = player.getListSelectedIndex();
+			int index = MIDIFilePlayer.getInstance().getListSelectedIndex();
 
-			player.storedJListSelectedIndex(index++);
+			MIDIFilePlayer.getInstance().storedJListSelectedIndex(index++);
 			playFeature();
 		}
 	}
@@ -141,19 +140,22 @@ public class MIDIFilePlayerInteractions implements ActionListener, MouseListener
 	public void playFeature() {
 		try {
 
-			if (MidiReciever.getInstance().isRunning() == true) {
-				MidiReciever.getInstance().returnSequencer().stop();
+			if (MidiReceiver.getInstance().isRunning() == true) {
+				MidiReceiver.getInstance().returnSequencer().stop();
 				playFile.setText(">");
 			}
 
 			else {
 				playFile.setText("||");
 				// Replace sequence with file in this feature
-				MidiReciever.getInstance().storeSeq(player.playSelectedFile());
-				MidiReciever.getInstance().returnSequencer().setSequence(MidiReciever.getInstance().getSequence());
-			    player.generateMetaFromFile();
-			    MidiReciever.getInstance().returnSequencer().setTickPosition(0);
-			    MidiReciever.getInstance().returnSequencer().start();
+				MidiReceiver.getInstance().storeSeq(MIDIFilePlayer.getInstance().playSelectedFile());
+				MidiReceiver.getInstance().returnSequencer().setSequence(MidiReceiver.getInstance().getSequence());
+			    
+				//If by some chance the .mid file does not have meta data, or is a MIDI 1 multi-track file
+				//running this function below with provide meta data 
+				//player.generateMetaFromFile();
+			    MidiReceiver.getInstance().returnSequencer().setTickPosition(0);
+			    MidiReceiver.getInstance().returnSequencer().start();
 			}
 
 		} catch (InvalidMidiDataException | IOException e) {
@@ -166,7 +168,7 @@ public class MIDIFilePlayerInteractions implements ActionListener, MouseListener
 	@Override
 	public void meta(MetaMessage meta) {
 		if (meta.getType() == 0x2F) {
-			MidiReciever.getInstance().returnSequencer().stop();
+			MidiReceiver.getInstance().returnSequencer().stop();
 			playFile.setText(">");
 		}
 	}

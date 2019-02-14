@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 import javax.swing.JButton;
 
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
 
 public class DurationTimer {
 
@@ -79,32 +79,26 @@ public class DurationTimer {
 				public void run() {	
 					// Added the smallest value of a 1/64 note of the set resolution used in the 
 					// cycle to determine exact note through use of cumulative tick values during sustain.
-					buildDuration(MidiReciever.getInstance().getCurrentSequenceResolution() / 16);
-					
-					//Original code incase above does not work, but is hard coded to 480 PPQ
-					//buildSustain(30);
-					
-					//System.out.print("Sustain value: " + sustainResolution + ",");
+					buildDuration(MidiReceiver.getInstance().getCurrentSequenceResolution() / 16);
 				}
 			};
 
-			// create thread to print counter value
 			Thread t = new Thread(new Runnable() {
 
 				@Override
 				public void run() {
-					// System.out.println("Value of exit is: "+exit);
+					
 					while (!exit) {
 
 						try {
 							//MIGHT NEED TO GET RID OF THIS CODE INCASE THE SUSTAIN AFFECT OF SOME
 							//NOTES GET RUINED OR THE TIMING AFTER NO SOUND GETS AFFECTED
-							if(getCycledDuration() == MidiReciever.getInstance().getCurrentSequenceResolution() * 4){
+							if(getCycledDuration() == MidiReceiver.getInstance().getCurrentSequenceResolution() * 4){
 								System.out.println("Current duration value: "+getCycledDuration());
-								System.out.println("Is this a whole note value: "+MidiReciever.getInstance().getCurrentSequenceResolution() * 4);
+								System.out.println("Is this a whole note value: "+MidiReceiver.getInstance().getCurrentSequenceResolution() * 4);
 								timerDuration.cancel();
 								stop();
-								//break;
+								
 							}
           					Thread.sleep(1000);
 						} catch (InterruptedException ex) {
@@ -127,4 +121,84 @@ public class DurationTimer {
 			
 		}
 	}
+	
+	
+	//Turned off now that using epoch difference per rest time
+	/*	public void setClockTimer(boolean noteIsOn) {
+			
+			 if(noteIsOn ==true){
+				 System.out.println("Timer stopped properly");
+				 timer.cancel();
+				// endTimer = true; //Added this messed with code a bit
+			 }
+	    	
+			 else {
+	    		
+		      TimerTask timerTask = new TimerTask() {
+
+		            @Override
+		            public void run() {
+		             if(endTimer == true){
+		            		 
+		            	 MidiReciever.getInstance().storeRestTickCycle(ppqAddedSpeed);
+		             }
+		               else if(endTimer == false){
+		            	 
+		            	  // System.out.println("This is the ppqPerQuarter: "+MidiReciever.getInstance().ticksPerQuarterUsingPPQ());
+		            	  // ppqAddedSpeed = MidiReciever.getInstance().ticksPerQuarterUsingPPQ();
+		            	   
+		            	   System.out.println("This is the Clock of ticksPerSixteenthsUsingPPQ: "+MidiReciever.getInstance().getRestTickCycle());
+		            	   ppqAddedSpeed = MidiReciever.getInstance().ticksPerSixteenthsUsingPPQ();
+		            	 }    
+		        }  
+		      };
+		        
+		        //create thread to print counter value
+		        Thread t = new Thread(new Runnable() {
+
+		            @Override
+		            public void run() {
+		                while (true) {
+		                    try {
+		                        //System.out.println("Thread reading counter is: " + ppqAddedPerSecond);
+		                       	                    	
+		                    	if (recordClick % 2 == 0) {
+
+		                    		endTimer = true;
+		                    		
+		                           // ppqAddedPerSecond = 0;
+		                            
+		                            timer.cancel();//end the timer
+		                           // ppqAddedPerSecond = reciever.ppqPerSecond();
+		                            MidiReciever.getInstance().storeRestTickCycle(0);
+		                            MidiReciever.getInstance().defaultSetStartTick(0);
+		                            
+		                            break;//end this loop
+		                        }
+		                    	
+		                    	
+		                        Thread.sleep(1000);
+		                    } catch (InterruptedException ex) {
+		                        ex.printStackTrace();
+		                    }
+		                }
+		            }
+		            
+		        });
+
+		        timer = new Timer("MyTimer");//create a new timer
+		        timer.scheduleAtFixedRate(timerTask, 0, 250);//start timer in 250ms for 1/16
+		        
+		        //Original code before above change
+		       //timer.scheduleAtFixedRate(timerTask, 0, 1000);//start timer in 30ms to increment  counter
+
+		        t.start();//start thread to display counter
+		        
+		     	if (noteIsOn == true) {
+		        timer.cancel();//end the timer
+		     	}
+			 }
+		    }
+		    */
+	
 }

@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.Timer;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;
@@ -12,31 +13,34 @@ import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
+import javax.swing.ListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
+import midi.Chord;
 import midi.DurationTimer;
 import midi.MidiMessageTypes;
 import tools.MIDIFileManager;
+import tools.MIDIFilePlayer;
 import tools.MIDIRecord;
 import tools.GetInstruments;
 
 public class KeyboardInteractions implements ActionListener, ChangeListener, MouseListener {
 
-	//Swing components
+	// Swing components
 	private JSlider slider;
 	private JToggleButton recordMIDI;
-	
+
 	private JButton pressedNote;
 	private JToggleButton playMIDI;
 	private JToggleButton saveMIDI;
 	private JComboBox<String> instrumentList;
 	private JComboBox<String> tempoList;
-	
 
-	//MIDI Timing and message variables
+	// MIDI Timing and message variables
 	private int durationValue;
 	private long startTick;
 	int resolution;
@@ -44,15 +48,15 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	boolean noteIsOn = true;
 	private int playedNotePitch;
 
-	//Included classes
+	// Included classes
 	private MidiMessageTypes messageTypes;
-	private MIDIFileManager fileManager;
+
 	private MIDIRecord record;
 	private GetInstruments getInstruments = null;
-	
-	//Soon to include class
-	//Chords
-	//ChordProgression 
+
+	// Soon to include class
+	// Chords
+	// ChordProgression
 
 	public static final int DAMPER_PEDAL = 64;
 	public static final int DAMPER_ON = 127;
@@ -60,9 +64,21 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	private boolean sustain = false; // is the sustain pedal depressed?
 	private boolean endDurationCycle = false;
 
-
+	private JList<String> minorChordsList;
+	private JList<String> majorChordsList;
 
 	public KeyboardInteractions() {
+	}
+
+	public KeyboardInteractions(JList<String> carriedChordsList) {
+
+		if (carriedChordsList.getName().equals("Major")) {
+			this.majorChordsList = carriedChordsList;
+		}
+
+		else if (carriedChordsList.getName().equals("Minor")) {
+			this.minorChordsList = carriedChordsList;
+		}
 	}
 
 	public KeyboardInteractions(MidiMessageTypes loadMessageTypes, GetInstruments loadInstruments,
@@ -93,8 +109,10 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 			this.recordMIDI = optionButton;
 			record = new MIDIRecord();
 			record.recordReciever();
-
-			MidiReciever.getInstance().storedRecordStart(record);
+			MidiReceiver.getInstance().storedRecordStart(record);
+			break;
+		case "saveButton" : 
+			this.saveMIDI = optionButton;
 			break;
 		default:
 			break;
@@ -104,10 +122,9 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 
 	// Construct Save Button
 	// Have to bring in load as the sequence is not brought in without it
-	public KeyboardInteractions(MIDIFileManager loadedFileManager, JToggleButton saveMIDI) {
-		this.fileManager = loadedFileManager;
-		this.saveMIDI = saveMIDI;
-	}
+	//public KeyboardInteractions(JToggleButton saveMIDI) {
+		//this.saveMIDI = saveMIDI;
+	//}
 
 	// Construct Volume JSlider
 	public KeyboardInteractions(MidiMessageTypes loadMessageTypes, JSlider slider) {
@@ -138,13 +155,64 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	public void mousePressed(MouseEvent pressed) {
 		Object obj = pressed.getSource();
 
-		if (obj.equals(pressedNote)) {
+		//Major and Minor chord JList elements
+		if (obj.getClass() == JList.class) {
+			String selectedChord = "";
+
+			//If user not clicked major chords, process minor chords
+			if (majorChordsList == null){
+				 if (minorChordsList.getName().equals("Minor")) {
+						int index = minorChordsList.locationToIndex(pressed.getPoint());
+						minorChordsList.setModel(Chord.getInstance().getMinorListModel());
+						selectedChord = Chord.getInstance().getMinorListModel().getElementAt(index);
+					}
+			} 
+			//If user not clicked minor chords, process major chords
+			else if (minorChordsList == null){
+				if (majorChordsList.getName().equals("Major")) {
+					int index = majorChordsList.locationToIndex(pressed.getPoint());
+					majorChordsList.setModel(Chord.getInstance().getMajorListModel());
+					selectedChord = Chord.getInstance().getMajorListModel().getElementAt(index);
+				}
+			}
+			
+			String foundNotes = "";
+			Chord.allChordNamesList[] allChordsEnums = Chord.allChordNamesList.values();
+			String[] chordsNotes = new String[allChordsEnums.length];
+			int i = 0;
+
+			for (Chord.allChordNamesList e : allChordsEnums) {
+				if (selectedChord == e.name()) {
+					chordsNotes = e.getChord();
+
+					foundNotes = chordsNotes[i] + chordsNotes[i+1] + chordsNotes[i+2];
+					break;
+				}
+
+			}
+
+			try {
+				Chord.getInstance().generateChord(selectedChord, foundNotes);
+
+			} catch (InvalidMidiDataException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// EnumSet<Chord.SharpNoteType> sharpKeysEnums =
+			// EnumSet.allOf(Note.SharpNoteType.class);
+			// String noteName = item.toString();
+
+			// Chord.getInstance().storedJChordListSelectedIndex(index);
+			// System.out.println("Double clicked on Item " + index);
+		}
+
+		else if (obj.equals(pressedNote)) {
 
 			// Free play mode
-			if (MidiReciever.getInstance().isFreePlayEnded() == false) {
+			if (MidiReceiver.getInstance().isFreePlayEnded() == false) {
 
 				try {
-					MidiReciever.getInstance().freeNotePlay(playedNotePitch);
+					MidiReceiver.getInstance().freeNotePlay(playedNotePitch);
 				} catch (InvalidMidiDataException e1) {
 					e1.printStackTrace();
 				}
@@ -152,26 +220,25 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 			}
 
 			// Record mode
-			else if (MidiReciever.getInstance().isRecEnded() == false) {
+			else if (MidiReceiver.getInstance().isRecEnded() == false) {
 
-				// This condition is used if user does change tempo when making a
+				// This condition is used if user does change tempo when making
+				// a
 				// recording.
 				if (messageTypes.isTempoSelected() == true) {
 
-					// Remembers and sets the new tempo change by user, as the start
-					// recording function to create a sequence resets reverts it to default
+					// Remembers and sets the new tempo change by user, as the
+					// start
+					// recording function to create a sequence resets reverts it
+					// to default
 					messageTypes.saveSelectedTempo(messageTypes.getSelectedTempo());
 				}
 
-			
-                
-				if (MidiReciever.getInstance().getTrack().size() == 1) {
+				if (MidiReceiver.getInstance().getTrack().size() == 1) {
 
-					
-					
-					MidiReciever.getInstance().returnSequencer().startRecording();
+					MidiReceiver.getInstance().returnSequencer().startRecording();
 
-					startTick = 0; //MidiReciever.getInstance().getLastTick();
+					startTick = 0; // MidiReciever.getInstance().getLastTick();
 					System.out.println("First Note start tick value is: " + startTick);
 
 				}
@@ -192,14 +259,15 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 				 * 
 				 * }
 				 */
-				else if (MidiReciever.getInstance().getTrack().size() >= 3) {
+				else if (MidiReceiver.getInstance().getTrack().size() >= 3) {
 
-					// Get the current time in milliseconds, and remove the last note's off time from itself.
-					// To get absolute time to later user.Storage of the current time in memory is not needed,
+					// Get the current time in milliseconds, and remove the last
+					// note's off time from itself.
+					// To get absolute time to later user.Storage of the current
+					// time in memory is not needed,
 					// only each note's off time.
 					Instant instantOnTime = Instant.now();
 					long timeStampMillisOnTime = instantOnTime.toEpochMilli();
-				
 
 					long diffBetweenRest = timeStampMillisOnTime - DurationTimer.getInstance().getNoteOffTimeStamp();
 					System.out.println("\nTime stamp of difference between last note and new note wihtot division: "
@@ -212,24 +280,22 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 				try {
 
 					ShortMessage message = new ShortMessage();
-					
-					// Allows immediate wire play back while short messages 
+
+					// Allows immediate wire play back while short messages
 					// are added to sequence
-					MidiReciever.getInstance().freeNotePlay(playedNotePitch);
+					MidiReceiver.getInstance().freeNotePlay(playedNotePitch);
 
 					message.setMessage(ShortMessage.NOTE_ON, 0, playedNotePitch, 90);
-					MidiReciever.getInstance().getTrack().add(new MidiEvent(message, startTick));
+					MidiReceiver.getInstance().getTrack().add(new MidiEvent(message, startTick));
 
-					
-               
 					DurationTimer.getInstance().setDurationTimer(pressedNote, false);
-					
+
 					// ShortMessage sustainMessage = new ShortMessage();
 					// sustainMessage.setMessage(ShortMessage.CONTROL_CHANGE, 0,
 					// DAMPER_PEDAL, sustain ? DAMPER_ON : DAMPER_OFF);
 					// reciever.getTrack().add(new MidiEvent(sustainMessage,
 					// startTick));
-	
+
 				} catch (InvalidMidiDataException e1) {
 					e1.printStackTrace();
 				}
@@ -240,23 +306,23 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		if (MidiReciever.getInstance().isFreePlayEnded() == false) {
+		if (MidiReceiver.getInstance().isFreePlayEnded() == false) {
 			try {
-				MidiReciever.getInstance().freeNoteStop(playedNotePitch);
+				MidiReceiver.getInstance().freeNoteStop(playedNotePitch);
 			} catch (InvalidMidiDataException e1) {
 				e1.printStackTrace();
 
 			}
 		}
-		if (MidiReciever.getInstance().isRecEnded() == false) {
-			resolution = MidiReciever.getInstance().returnSequencer().getSequence().getResolution();
+		if (MidiReceiver.getInstance().isRecEnded() == false) {
+			resolution = MidiReceiver.getInstance().returnSequencer().getSequence().getResolution();
 
 			try {
 				durationValue = DurationTimer.getInstance().getCycledDuration();
 
 				ShortMessage turnNoteOff = new ShortMessage();
 				turnNoteOff.setMessage(ShortMessage.NOTE_OFF, 0, playedNotePitch, 0);
-				MidiReciever.getInstance().getTrack().add(new MidiEvent(turnNoteOff, startTick + durationValue - 1));
+				MidiReceiver.getInstance().getTrack().add(new MidiEvent(turnNoteOff, startTick + durationValue - 1));
 
 				// Debug usage
 				System.out.println("Duration value of note is: " + durationValue);
@@ -271,7 +337,7 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 
 				// Used when the user has released a button before or after it
 				// has decayed
-				MidiReciever.getInstance().freeNoteStop(playedNotePitch);
+				MidiReceiver.getInstance().freeNoteStop(playedNotePitch);
 
 				// Make the value of the duration timer be 0 at end of note
 				// messages construction
@@ -288,8 +354,6 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 				long cumulativeTime = startTick + durationValue;
 				DurationTimer.getInstance().storeCumulativeTime(cumulativeTime);
 				System.out.println("The cumultive value of start tick and duration is: " + cumulativeTime);
-
-		
 
 			} catch (InvalidMidiDataException e1) {
 				// TODO Auto-generated catch block
@@ -324,7 +388,7 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 		if (obj.equals(saveMIDI)) {
 
 			// Go to another class to make a midi file
-			fileManager.saveNewMIDIFile(saveMIDI);
+			MIDIFileManager.getInstance().saveNewMIDIFile(saveMIDI);
 		}
 
 		// Go to another class to make enable and disable record feature
@@ -344,15 +408,15 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 		else if (obj.equals(playMIDI)) {
 			// When sequence tracks are not empty, play sequence.
 
-			if (MidiReciever.getInstance().getSequence() != null) {
-				int empty = MidiReciever.getInstance().getSequence().getTracks()[0].size();
-				if (MidiReciever.getInstance().isRecEnded() == true
-						|| empty >= 2 && MidiReciever.getInstance().isRecEnded() == true) {
+			if (MidiReceiver.getInstance().getSequence() != null) {
+				int empty = MidiReceiver.getInstance().getSequence().getTracks()[0].size();
+				if (MidiReceiver.getInstance().isRecEnded() == true
+						|| empty >= 2 && MidiReceiver.getInstance().isRecEnded() == true) {
 					// System.out.println(reciever.returnSequencer().getTickPosition());
-					MidiReciever.getInstance().returnSequencer().setTickPosition(0);
+					MidiReceiver.getInstance().returnSequencer().setTickPosition(0);
 					// System.out.println(reciever.returnSequencer().getTickPosition());
-					MidiReciever.getInstance().returnSequencer().start();
-					if (MidiReciever.getInstance().returnSequencer().isRunning() == true) {
+					MidiReceiver.getInstance().returnSequencer().start();
+					if (MidiReceiver.getInstance().returnSequencer().isRunning() == true) {
 						playMIDI.setSelected(false);
 						playMIDI.setEnabled(true);
 					}

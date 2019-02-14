@@ -8,7 +8,7 @@ import javax.sound.midi.MidiChannel;
 import javax.sound.midi.Synthesizer;
 import javax.swing.JComboBox;
 
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
 
 public class MidiMessageTypes {
 
@@ -20,7 +20,7 @@ public class MidiMessageTypes {
 	
 
 	public MidiMessageTypes (){
-		channel = ((Synthesizer) MidiReciever.getInstance().returnDevice()).getChannels()[0];
+		channel = ((Synthesizer) MidiReceiver.getInstance().returnDevice()).getChannels()[0];
 	}
 	
 	public enum tempoNames {
@@ -87,7 +87,7 @@ public class MidiMessageTypes {
 	
 	
 	public void saveSelectedTempo(String choice) {
-		MidiReciever.getInstance().returnSequencer().setTempoInBPM(tempoMarkersMap.get(choice));
+		MidiReceiver.getInstance().returnSequencer().setTempoInBPM(tempoMarkersMap.get(choice));
 	}
 	
 	

@@ -22,7 +22,7 @@ import javax.swing.JPanel;
 
 import keyboard.VirtualKeyboard;
 import midi.DurationTimer;
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
 import java.awt.BorderLayout;
 
 public class ProgramMainGUI implements MouseListener {
@@ -36,10 +36,9 @@ public class ProgramMainGUI implements MouseListener {
 	protected int screenWidth;
 	protected int screenHeight;
 	protected Dimension screenSize;
-	private static VirtualKeyboard midiGui;
 	private static ProgramMainGUI loadProgram;
-	private static MIDIFilePlayer filePlayer;
-	private static MIDIFileManager fileManager;
+	//private static MIDIFilePlayer filePlayer;
+	//private static MIDIFileManager fileManager;
 
 	public void loadProgramWindowFrameGUI() throws IOException {
 		screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -68,15 +67,18 @@ public class ProgramMainGUI implements MouseListener {
 		// method.The class uses the singleton design pattern so it can be referenced
 		// throughout the application.
 		
-		MidiReciever.getInstance();
-		MidiReciever.getInstance().startConnection();
+		MidiReceiver.getInstance();
+		MidiReceiver.getInstance().startConnection();
 
 		
 		DurationTimer.getInstance();
+		MIDIFileManager.getInstance();
+		MIDIFilePlayer.getInstance();
+		VirtualKeyboard.getInstance();
+		//fileManager = new MIDIFileManager();
+		//filePlayer = new MIDIFilePlayer();
 		
-		fileManager = new MIDIFileManager();
-		filePlayer = new MIDIFilePlayer(fileManager);
-		midiGui = new VirtualKeyboard(fileManager);
+		//midiGui = new VirtualKeyboard();
 		loadProgram.loadProgramWindowFrameGUI();
 		loadProgram.loadProgramOptions();
 
@@ -141,8 +143,8 @@ public class ProgramMainGUI implements MouseListener {
 		if (obj.equals(freePlayPanel)) {
 			try {
 				frame.setVisible(false);
-				midiGui.drawKeyboardGUI();
-				midiGui.createVirtualKeyboard();
+				VirtualKeyboard.getInstance().drawKeyboardGUI();
+				VirtualKeyboard.getInstance().createVirtualKeyboard();
 			} catch (InvalidMidiDataException | MidiUnavailableException | IOException e1) {
 				e1.printStackTrace();
 			}
@@ -150,7 +152,7 @@ public class ProgramMainGUI implements MouseListener {
 		if (obj.equals(midiPlayer)) {
 			try {
 				frame.setVisible(false);
-				filePlayer.drawMusicPlayerGUI();
+				MIDIFilePlayer.getInstance().drawMusicPlayerGUI();
 
 			} catch (InvalidMidiDataException | MidiUnavailableException | IOException e1) {
 				e1.printStackTrace();

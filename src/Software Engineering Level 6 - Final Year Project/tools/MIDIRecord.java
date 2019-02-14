@@ -7,7 +7,7 @@ import javax.sound.midi.Sequence;
 import javax.sound.midi.Track;
 import javax.swing.JToggleButton;
 import midi.StoreMetaEvents;
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
 
 public class MIDIRecord {
 
@@ -21,8 +21,8 @@ public class MIDIRecord {
 	
 	public void recordAction(JToggleButton recordMIDI) throws InvalidMidiDataException{
 		recordClick++;
-		MidiReciever.getInstance().endFreePlay(true);
-		MidiReciever.getInstance().endRecording(false);
+		MidiReceiver.getInstance().endFreePlay(true);
+		MidiReceiver.getInstance().endRecording(false);
 
 		// User clicked record button to start cording
 		if (recordClick % 2 == 1) {
@@ -40,19 +40,19 @@ public class MIDIRecord {
 	public void enableRecord(JToggleButton recordMIDI){
 		recordMIDI.setText("Rec");
 		
-		if (MidiReciever.getInstance().getFirstRecording() == true) {
+		if (MidiReceiver.getInstance().getFirstRecording() == true) {
 			
 			
 			try {
-				MidiReciever.getInstance().setFirstRecording(false);
+				MidiReceiver.getInstance().setFirstRecording(false);
 				Sequence sequence = new Sequence(Sequence.PPQ, 480);
-				MidiReciever.getInstance().storeSeq(sequence);
-				Track track = MidiReciever.getInstance().getSequence().createTrack();
-				MidiReciever.getInstance().storeTrack(track);
-				MidiReciever.getInstance().returnSequencer().setSequence(sequence);
-				MidiReciever.getInstance().returnSequencer().setTempoInBPM(120);			
-				MidiReciever.getInstance().returnSequencer().recordEnable(MidiReciever.getInstance().getTrack(), 0);
-				MidiReciever.getInstance().returnSequencer().setTickPosition(0);
+				MidiReceiver.getInstance().storeSeq(sequence);
+				Track track = MidiReceiver.getInstance().getSequence().createTrack();
+				MidiReceiver.getInstance().storeTrack(track);
+				MidiReceiver.getInstance().returnSequencer().setSequence(sequence);
+				MidiReceiver.getInstance().returnSequencer().setTempoInBPM(120);			
+				MidiReceiver.getInstance().returnSequencer().recordEnable(MidiReceiver.getInstance().getTrack(), 0);
+				MidiReceiver.getInstance().returnSequencer().setTickPosition(0);
 				
 				
 				
@@ -77,24 +77,24 @@ public class MIDIRecord {
 
 		// User clicked record button after stopping recording to start
 		// a new recording
-		else if (MidiReciever.getInstance().getFirstRecording() == false) {
+		else if (MidiReceiver.getInstance().getFirstRecording() == false) {
 
 			try {
 				//Removes all track from sequence to make a new sequence
-				for (Track aTrack : MidiReciever.getInstance().getSequence().getTracks() ){
-					MidiReciever.getInstance().getSequence().deleteTrack(aTrack);
+				for (Track aTrack : MidiReceiver.getInstance().getSequence().getTracks() ){
+					MidiReceiver.getInstance().getSequence().deleteTrack(aTrack);
 				}
-				Track newTrack = MidiReciever.getInstance().getSequence().createTrack();
-				MidiReciever.getInstance().storeTrack(newTrack);
-				MidiReciever.getInstance().returnSequencer().setSequence(MidiReciever.getInstance().getSequence());
-				MidiReciever.getInstance().returnSequencer().recordEnable(MidiReciever.getInstance().getTrack(), -1);
+				Track newTrack = MidiReceiver.getInstance().getSequence().createTrack();
+				MidiReceiver.getInstance().storeTrack(newTrack);
+				MidiReceiver.getInstance().returnSequencer().setSequence(MidiReceiver.getInstance().getSequence());
+				MidiReceiver.getInstance().returnSequencer().recordEnable(MidiReceiver.getInstance().getTrack(), -1);
 
 				// Fixes note delay when re-recording song similar to
 				// memory leaks of scanner.next()
 				
-				MidiReciever.getInstance().returnSequencer().setTickPosition(0);
+				MidiReceiver.getInstance().returnSequencer().setTickPosition(0);
 				
-				MidiReciever.getInstance().returnSequencer().startRecording();
+				MidiReceiver.getInstance().returnSequencer().startRecording();
 
 			} catch (InvalidMidiDataException error1) {
 				error1.printStackTrace();
@@ -105,7 +105,7 @@ public class MIDIRecord {
     public void disableRecord(JToggleButton recordMIDI) throws InvalidMidiDataException{
     
     	//Debugging purposes of track ticks times to log of times in console
-    	Track [] tracks = MidiReciever.getInstance().getSequence().getTracks();
+    	//Track [] tracks = MidiReceiver.getInstance().getSequence().getTracks();
     	
     	//Might remove in case causes problems
     	//MidiReciever.getInstance().storeCumulativeTime(0);
@@ -113,15 +113,19 @@ public class MIDIRecord {
     	//MidiReciever.getInstance().buildSustain(0);
     	////////////////////////////////////////////
     	
-    	MidiReciever.getInstance().endFreePlay(false);
-    	MidiReciever.getInstance().endRecording(true);
+    	MidiReceiver.getInstance().endFreePlay(false);
+    	MidiReceiver.getInstance().endRecording(true);
 		recordMIDI.setText("Off");
-		MidiReciever.getInstance().returnSequencer().stopRecording();
-		MidiReciever.getInstance().returnSequencer().recordDisable(MidiReciever.getInstance().getTrack());
+		MidiReceiver.getInstance().returnSequencer().stopRecording();
+		MidiReceiver.getInstance().returnSequencer().recordDisable(MidiReceiver.getInstance().getTrack());
 		
-		//Add complete sequence's meta data
+		//Add complete sequence's meta data - This is really only useful for multi-track sequences
+		//As the meta data is stored in a track when written to a .mid file
 		StoreMetaEvents newStore = new StoreMetaEvents();
 		newStore.createFullSequenceMetaData();
+		
+		//Debugging purpose which shows new meta track made here but not above track array
+		//Track [] tracksEdited = MidiReceiver.getInstance().getSequence().getTracks();
 	}
     
 	

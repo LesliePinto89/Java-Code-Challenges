@@ -16,7 +16,7 @@ import javax.sound.midi.Transmitter;
 
 import tools.MIDIRecord;
 
-public class MidiReciever implements Receiver {
+public class MidiReceiver implements Receiver {
 	//static Timer timer;
 	//static Timer timerSustain;
 	//private double ticksPerSecond;
@@ -42,21 +42,34 @@ public class MidiReciever implements Receiver {
 
 	//A singleton pattern so that only one instance of this class 
 	//can be accessed and instantiated
-	private static volatile MidiReciever instance = null;
+	private static volatile MidiReceiver instance = null;
 
-    private MidiReciever() {}
+    private MidiReceiver() {}
 
-    public static MidiReciever getInstance() {
+    public static MidiReceiver getInstance() {
         if (instance == null) {
-            synchronized(MidiReciever.class) {
+            synchronized(MidiReceiver.class) {
                 if (instance == null) {
-                    instance = new MidiReciever();
+                    instance = new MidiReceiver();
                 }
             }
         }
 
         return instance;
     }
+    
+    
+    /*
+	//SINGLETON PATTERN Initialisation-on-demand holder idiom
+	 private MidiReciever() {}
+	 private static class LazyHolder {
+	 static final MidiReciever INSTANCE = new MidiReciever();
+	 }
+      public static MidiReciever getInstance() {
+	  return LazyHolder.INSTANCE;
+	  }*/
+	   
+      ///////////////////////////////////
 	
 	public void startConnection() throws InvalidMidiDataException, MidiUnavailableException {
 		ArrayList<MidiDevice.Info> synthInfos = new ArrayList<MidiDevice.Info>();
@@ -161,7 +174,6 @@ public class MidiReciever implements Receiver {
 	public void freeNotePlay(int pitch) throws InvalidMidiDataException {
 		ShortMessage noteOnMessage = new ShortMessage(ShortMessage.NOTE_ON, 0, pitch, 100);
 		send(noteOnMessage, -1);
-		System.out.println("It has reached here");
 
 	}
 

@@ -5,7 +5,7 @@ import javax.sound.midi.MidiChannel;
 import javax.sound.midi.Patch;
 import javax.sound.midi.Synthesizer;
 
-import midiDevices.MidiReciever;
+import midiDevices.MidiReceiver;
 
 public class GetInstruments   {
 
@@ -17,8 +17,8 @@ public class GetInstruments   {
 	
 	//Start of instrument selection
 	public void setupInstruments (){
-		instruments = ((Synthesizer) MidiReciever.getInstance().returnDevice()).getDefaultSoundbank().getInstruments();
-		channel = ((Synthesizer) MidiReciever.getInstance().returnDevice()).getChannels()[0];
+		instruments = ((Synthesizer) MidiReceiver.getInstance().returnDevice()).getDefaultSoundbank().getInstruments();
+		channel = ((Synthesizer) MidiReceiver.getInstance().returnDevice()).getChannels()[0];
 	}
 	
 
