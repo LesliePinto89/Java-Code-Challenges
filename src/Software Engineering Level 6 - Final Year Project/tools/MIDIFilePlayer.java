@@ -48,10 +48,6 @@ import java.awt.event.MouseListener;
 
 public class MIDIFilePlayer extends JPanel {
 
-	
-	
-	
-	
 	private DefaultListModel<String> songList = new DefaultListModel<String>();
 	private JList<String> jSongList = new JList<String>(songList);
 	private JScrollPane listScroller;
@@ -100,7 +96,7 @@ public class MIDIFilePlayer extends JPanel {
 
 	//Leave here untul maek classes singlton
 	private StoreMetaEvents newMetaEvents;
-	private CustomSwingComponents makeComponents;
+	private SwingComponents makeComponents;
 	private File retrieveFile;
 
 	private int startTick = 0;
@@ -333,7 +329,6 @@ public class MIDIFilePlayer extends JPanel {
 		playerOptions.add(contSlbl);
 
 		SeekBar seekbar = new SeekBar();
-
 		// SeekBar
 		seekbar.setBounds(5, 10, _W - 15, 10);
 		playerOptions.add(seekbar);

@@ -6,22 +6,51 @@ import java.util.Set;
 
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.Synthesizer;
+import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 
+import midi.Chord.allChordNamesList;
+import midi.MidiMessageTypes.tempoNames;
 import midiDevices.MidiReceiver;
 
 public class MidiMessageTypes {
 
 	private LinkedHashMap <String,Float> tempoMarkersMap = new LinkedHashMap<String,Float>();
+	private DefaultListModel <String> temposInModel = new DefaultListModel <String>();
 	private EnumSet<tempoNames> tempoEnums = null;
-	private String  rememberedTempo;
-	private boolean tempoSelected = false;
-	private MidiChannel channel;
-	
+	private String rememberedTempo ="AllegroModerato";
+	private static MidiChannel channel;
+	private boolean tempoChanged =false;
+	private static volatile MidiMessageTypes instance = null;
+	private boolean tempoSliderChanged =false;
 
-	public MidiMessageTypes (){
-		channel = ((Synthesizer) MidiReceiver.getInstance().returnDevice()).getChannels()[0];
+
+	public static MidiMessageTypes getInstance() {
+		if (instance == null) {
+			synchronized (Chord.class) {
+				if (instance == null) {
+					instance = new MidiMessageTypes();
+					channel = ((Synthesizer) MidiReceiver.getInstance().returnDevice()).getChannels()[0];
+					instance.storedTemposMap();
+					instance.storeTemposInModel();
+				}
+			}
+		}
+
+		return instance;
 	}
+	
+	private MidiMessageTypes() {
+	}
+	
+	//public MidiMessageTypes (){
+	//	channel = ((Synthesizer) MidiReceiver.getInstance().returnDevice()).getChannels()[0];
+	//}
+	
+	
+	
+	
+	
 	
 	public enum tempoNames {
 		Larghissimo (20), // very, very slow (20 bpm and below)
@@ -56,53 +85,82 @@ public class MidiMessageTypes {
 	public MidiChannel getMidiChannel() {
 		return channel;
 	}
+	
+	 ////////////////////////////////////////////////////////////////////////////
+	
+		public void storedTemposMap (){
+			tempoEnums = EnumSet.allOf(tempoNames.class);
+			for (tempoNames tempo : tempoEnums) {
+				tempoMarkersMap.put(tempo.toString(), tempo.getValue());
+		       }
+		}
+		
+		public LinkedHashMap <String, Float> getTemposMap(){ 
+			return tempoMarkersMap;
+		}
+		
+		////////////////Get map names////////////////////////
+		public String [] storedTemposMapKeys (){
+		    int i = 0;
+			Set<String> tempoMarksNames = tempoMarkersMap.keySet();
+		    String [] convertTempoKeys = new String [tempoMarksNames.size()];
+		    tempoMarksNames.toArray(convertTempoKeys);
+		    
+		    for (String change : convertTempoKeys){
+		    	if(change.equals("AllegroModerato")){
+		    		change = convertTempoKeys[i] + ": "+ tempoMarkersMap.get(change).toString()+" BPM - Default" ;
+		    	}
+		    	else {change = convertTempoKeys[i] + ": "+ tempoMarkersMap.get(change).toString()+" BPM";}
+		    	convertTempoKeys[i++] = change;
+		    }
+			return convertTempoKeys;
+		}
+		
+		
+		////////////////////////////////////////////////////////////////////////////
+		public void storeTemposInModel(){
+			for (String s: storedTemposMapKeys())
+			{
+				temposInModel.addElement(s);
+			}
+		}
+		
+		public DefaultListModel <String> getTemposInModel() {
+			return temposInModel;
+		}	
+		
+		////////////////////////////////////////////////////////////////////////////
+		
+		//Used to keep selected tempo when the start recording functions reset it back to default
+		public void saveTempoSeqEnd(String choice) {
+			MidiReceiver.getInstance().returnSequencer().setTempoInBPM(tempoMarkersMap.get(choice));
+		}
+		
+		public void selectedTempo(String remembered) {
+			rememberedTempo = remembered;
+			//rememberedTempo = rememberedTempo.substring(0, rememberedTempo.indexOf(":"));
+			tempoChanged = true;
+		}
 
-//	protected void newMidiChannel(MidiChannel newChannel) {
-	//	this.channel = newChannel;
-	//}
-	
-	public LinkedHashMap <String, Float> storedTemposMap (){
-		tempoEnums = EnumSet.allOf(tempoNames.class);
-		for (tempoNames tempo : tempoEnums) {
-			tempoMarkersMap.put(tempo.toString(), tempo.getValue());
-	       }
-		 return tempoMarkersMap;
-	}
-	
-	public String [] storedTemposMapKeys (){
-	    int i = 0;
-		Set<String> tempoMarksNames = tempoMarkersMap.keySet();
-	    String [] convertTempoKeys = new String [tempoMarksNames.size()];
-	    tempoMarksNames.toArray(convertTempoKeys);
-	    
-	    for (String change : convertTempoKeys){
-	    	if(change.equals("AllegroModerato")){
-	    		change = convertTempoKeys[i] + ": "+ tempoMarkersMap.get(change).toString()+" BPM - Default" ;
-	    	}
-	    	else {change = convertTempoKeys[i] + ": "+ tempoMarkersMap.get(change).toString()+" BPM";}
-	    	convertTempoKeys[i++] = change;
-	    }
-		return convertTempoKeys;
-	}
-	
-	
-	public void saveSelectedTempo(String choice) {
-		MidiReceiver.getInstance().returnSequencer().setTempoInBPM(tempoMarkersMap.get(choice));
-	}
-	
-	
-	public void selectedTempo(JComboBox<String> tempStore) {
-		rememberedTempo = tempStore.getSelectedItem().toString();
-		rememberedTempo = rememberedTempo.substring(0, rememberedTempo.indexOf(":"));
-		tempoSelected = true;
-	}
-
-	public String getSelectedTempo(){
-		return rememberedTempo;
-	}
-	
-	public boolean isTempoSelected (){
-		return tempoSelected;
-	}
+		public String getSelectedTempo(){
+			return rememberedTempo;
+		}
+		
+		public void tempoChanged(boolean change){
+			tempoChanged = change;
+		} 
+		
+		public boolean checkIfTempoChanged(){
+			return tempoChanged;
+		} 
+		
+		public void tempoSliderChanged(boolean change){
+			tempoSliderChanged = change;
+		} 
+		
+		public boolean checkIfTempoSliderChanged(){
+			return tempoSliderChanged;
+		} 
+		///////////////////////////////////////////////////////////////////////////
 	
 }

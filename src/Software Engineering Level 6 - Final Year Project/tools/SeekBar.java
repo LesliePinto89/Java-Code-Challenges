@@ -57,6 +57,7 @@ public class SeekBar extends JProgressBar implements MouseListener {
 	  setMaximum(10000); //it's smoother this way
 	  addMouseListener(this);
 	  
+	  
 	 }
 	 
 	 /**
@@ -64,7 +65,10 @@ public class SeekBar extends JProgressBar implements MouseListener {
 	  * @throws BasicPlayerException 
 	  */
 	 private void returnValueToPlayer(float val){
-	  //TODO inform our player
+
+
+		 
+		 //TODO inform our player
 	 }
 
 	 private void log(String str)
@@ -75,13 +79,7 @@ public class SeekBar extends JProgressBar implements MouseListener {
 	 public static class BackgroundExecutor {
 		 
 		  private  static ExecutorService backgroundEx = Executors.newCachedThreadPool(); //UI thread shouldn't do math
-		 
-		   
-		 
-		  public BackgroundExecutor(){}
-		 
-		  
-		 
+		  public BackgroundExecutor(){} 
 		  public static  ExecutorService Get() { return backgroundEx;}
 
 	}

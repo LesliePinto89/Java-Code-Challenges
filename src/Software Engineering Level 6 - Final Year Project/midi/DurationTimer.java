@@ -33,7 +33,6 @@ public class DurationTimer {
         return instance;
     }
 	
-	
 	// Stored previous note cumulative value for next note's delta
 	public void storeCumulativeTime(long carriedDeltaTicks) {
 		allDeltas = carriedDeltaTicks;
@@ -51,8 +50,6 @@ public class DurationTimer {
 		return lastNoteOffEpochTime;
 	}
     
-    
-	
 	public void buildDuration(int newDurationRes) {
 		durationResolution = durationResolution + newDurationRes;
 	}

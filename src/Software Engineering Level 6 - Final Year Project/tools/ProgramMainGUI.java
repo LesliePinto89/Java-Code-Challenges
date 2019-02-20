@@ -20,8 +20,11 @@ import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 
+import midiDevices.GetInstruments;
 import keyboard.VirtualKeyboard;
 import midi.DurationTimer;
+import midi.MidiMessageTypes;
+import midi.Scale;
 import midiDevices.MidiReceiver;
 import java.awt.BorderLayout;
 
@@ -63,22 +66,21 @@ public class ProgramMainGUI implements MouseListener {
 	public static void loadApplication() throws IOException, InvalidMidiDataException, MidiUnavailableException {
 		loadProgram = new ProgramMainGUI();
 
-		// Instantiated the class once and then call its start connection
-		// method.The class uses the singleton design pattern so it can be referenced
-		// throughout the application.
+		// Each of these classes use the Singleton pattern as the application
+		// only needs one instance of them for reference.
 		
 		MidiReceiver.getInstance();
 		MidiReceiver.getInstance().startConnection();
-
-		
 		DurationTimer.getInstance();
 		MIDIFileManager.getInstance();
 		MIDIFilePlayer.getInstance();
 		VirtualKeyboard.getInstance();
-		//fileManager = new MIDIFileManager();
-		//filePlayer = new MIDIFilePlayer();
+		MidiMessageTypes.getInstance();
+		GetInstruments.getInstance();
+		Metronome.getInstance();
+		ScreenPrompt.getInstance();
 		
-		//midiGui = new VirtualKeyboard();
+		//Scale.getInstance();
 		loadProgram.loadProgramWindowFrameGUI();
 		loadProgram.loadProgramOptions();
 

@@ -39,9 +39,6 @@ public class MidiReceiver implements Receiver {
 
 	private MIDIRecord carriedRecord;
 	
-
-	//A singleton pattern so that only one instance of this class 
-	//can be accessed and instantiated
 	private static volatile MidiReceiver instance = null;
 
     private MidiReceiver() {}
@@ -84,6 +81,9 @@ public class MidiReceiver implements Receiver {
 		loadUp();
 	}
 
+	
+	
+	
 	public int getCurrentSequenceResolution() {
 		return resolution; 
 	}
@@ -137,9 +137,9 @@ public class MidiReceiver implements Receiver {
 		return sequence;
 	}
 
-	public void createNewSequence() throws InvalidMidiDataException {
-		sequence = new Sequence(Sequence.PPQ, 480);
-	}
+	//public void createNewSequence(int newDivision) throws InvalidMidiDataException {
+		//sequence = new Sequence(Sequence.PPQ, newDivision);
+	//}
 
 	public MidiDevice returnDevice() {
 		return device;

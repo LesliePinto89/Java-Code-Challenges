@@ -5,28 +5,26 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.time.Instant;
-import java.util.EnumSet;
 import java.util.Timer;
+
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;
-import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
-import javax.swing.ListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import midiDevices.MidiReceiver;
+import midi.AddChordToFeatureTab;
 import midi.Chord;
 import midi.DurationTimer;
 import midi.MidiMessageTypes;
 import tools.MIDIFileManager;
-import tools.MIDIFilePlayer;
 import tools.MIDIRecord;
-import tools.GetInstruments;
+import tools.Metronome;
+import midiDevices.GetInstruments;
 
 public class KeyboardInteractions implements ActionListener, ChangeListener, MouseListener {
 
@@ -37,8 +35,9 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	private JButton pressedNote;
 	private JToggleButton playMIDI;
 	private JToggleButton saveMIDI;
-	private JComboBox<String> instrumentList;
-	private JComboBox<String> tempoList;
+	
+	//private JComboBox<String> instrumentList;
+	//private JComboBox<String> tempoList;
 
 	// MIDI Timing and message variables
 	private int durationValue;
@@ -49,10 +48,10 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	private int playedNotePitch;
 
 	// Included classes
-	private MidiMessageTypes messageTypes;
+	//private MidiMessageTypes messageTypes;
 
 	private MIDIRecord record;
-	private GetInstruments getInstruments = null;
+	//private GetInstruments getInstruments = null;
 
 	// Soon to include class
 	// Chords
@@ -66,7 +65,25 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 
 	private JList<String> minorChordsList;
 	private JList<String> majorChordsList;
+	
+	private JList<String> allInstruments;
+	private JList<String> tempoList;
+	
+	//Attempt to make several lists of instruments
+	private JList<String> pianoInstruments;
+	private JList<String> percussionInstruments;
+	private JList<String> organInstruments;
+	private JList<String> guitarInstruments;
+	private JList<String> bassInstruments;
+	private JList<String> stringInstruments;
+	private JList<String> ensembleInstruments;
+	private JList<String> brassInstruments;
+	private JList<String> reedInstruments;
+	private JList<String> pipeInstruments;
 
+	private Metronome metronome = Metronome.getInstance();
+	private MidiMessageTypes messageTypes = MidiMessageTypes.getInstance();
+	
 	public KeyboardInteractions() {
 	}
 
@@ -79,24 +96,50 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 		else if (carriedChordsList.getName().equals("Minor")) {
 			this.minorChordsList = carriedChordsList;
 		}
+		
+		else if (carriedChordsList.getName().equals("Instruments")) {
+			this.allInstruments = carriedChordsList;
 	}
-
-	public KeyboardInteractions(MidiMessageTypes loadMessageTypes, GetInstruments loadInstruments,
-			JComboBox<String> list) {
-		this.messageTypes = loadMessageTypes;
-
-		// Construct instruments box
-		if (list.getName().equals("instrumentList")) {
-			this.getInstruments = loadInstruments;
-			this.instrumentList = list;
+		
+		else if (carriedChordsList.getName().equals("Tempos")) {
+			this.tempoList = carriedChordsList;
+	}
+		
+		
+		
+		
+		
+		/*else if (carriedChordsList.getName().equals("Piano Instruments")) {
+				this.pianoInstruments = carriedChordsList;
+		}
+		else if (carriedChordsList.getName().equals("Percussion Instruments")) {
+			this.percussionInstruments = carriedChordsList;
+	   }*/
+		
+		/*
+		else if (carriedChordsList.getName().equals("MajorProg")) {
+			this.majorChordsList = carriedChordsList;
 		}
 
+		else if (carriedChordsList.getName().equals("MinorProg")) {
+			this.minorChordsList = carriedChordsList;
+		}*/
+	}
+
+	/*public KeyboardInteractions(JComboBox<String> list) {
+		
+		// Construct instruments box
+		//if (list.getName().equals("instrumentList")) {
+			
+		//	this.instrumentList = list;
+		//}
+
 		// Construct tempo markings box
-		else if (list.getName().equals("tempoList")) {
+		 if (list.getName().equals("tempoList")) {
 			this.tempoList = list;
 		}
 
-	}
+	}*/
 
 	public KeyboardInteractions(JToggleButton optionButton) {
 
@@ -127,17 +170,16 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	//}
 
 	// Construct Volume JSlider
-	public KeyboardInteractions(MidiMessageTypes loadMessageTypes, JSlider slider) {
+	public KeyboardInteractions(JSlider slider) {
 		this.slider = slider;
-		this.messageTypes = loadMessageTypes;
 	}
 
 	// Construct Create MIDI track
-	public KeyboardInteractions(MidiMessageTypes loadMessageTypes, JButton pressedNote, int playedNotePitch) {
+	public KeyboardInteractions(JButton pressedNote, int playedNotePitch) {
 
 		this.pressedNote = pressedNote;
 		this.playedNotePitch = playedNotePitch;
-		this.messageTypes = loadMessageTypes;
+		
 	}
 
 	// JSlider volume event
@@ -148,31 +190,105 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 			// channel.controlChange(7, value);
 
 			// experimental
-			messageTypes.getMidiChannel().controlChange(7, value);
+			MidiMessageTypes.getInstance().getMidiChannel().controlChange(7, value);
 		}
 	}
 
 	public void mousePressed(MouseEvent pressed) {
 		Object obj = pressed.getSource();
-
+		String selectedChord = "";
+		
+		 if (obj.equals(allInstruments)) {
+			 String selectedInstrument = "";
+			 GetInstruments loadedInstruments = GetInstruments.getInstance();
+			 int index = allInstruments.locationToIndex(pressed.getPoint());
+			 selectedInstrument = loadedInstruments.getAllInstruments().getElementAt(index);
+			 GetInstruments.getInstance().selectInstrument(selectedInstrument);
+			 loadedInstruments.instrumentChanged(true);
+		}
+		 /*
+		 else if (obj.equals(tempoList)) {
+			 String selectedTempo ="";
+			// MidiMessageTypes loadedTypes = MidiMessageTypes.getInstance();
+			 //Metronome metro = Metronome.getInstance();
+			 int index = tempoList.locationToIndex(pressed.getPoint());
+			 selectedTempo = messageTypes.getTemposInModel().getElementAt(index);
+			 selectedTempo = selectedTempo.substring(0, selectedTempo.indexOf(":"));
+			 
+			 //Might be needed if can use tempo for other functions
+			 messageTypes.selectedTempo(selectedTempo);
+			 messageTypes.saveTempoSeqEnd(selectedTempo);
+			 messageTypes.tempoChanged(true);
+			 try {
+				 metronome.chooseTempo();
+				} catch (InvalidMidiDataException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			 //GetInstruments.getInstance().selectInstrument(selectedInstrument);
+			 
+			 
+				//String choice = tempoList.getSelectedItem().toString();
+				//choice = choice.substring(0, choice.indexOf(":"));
+				//MidiMessageTypes.getInstance().selectedTempo(tempoList);
+				//MidiMessageTypes.getInstance().saveSelectedTempo(choice);
+			}
+		 
+		 
+		 */
+		 
+		 
+		/*if (obj.equals("Piano Instruments")) {
+			 GetInstruments loadedInstruments = GetInstruments.getInstance();
+			 int index = pianoInstruments.locationToIndex(pressed.getPoint());
+			 selectedInstrument = loadedInstruments.getPianoInstruments().getElementAt(index);
+			 GetInstruments.getInstance().selectInstrument(selectedInstrument);
+		}
+		 else if (obj.equals("Percussion Instruments")) {
+			 GetInstruments loadedInstruments = GetInstruments.getInstance();
+			 int index = percussionInstruments.locationToIndex(pressed.getPoint());
+			 selectedInstrument = loadedInstruments.getPianoInstruments().getElementAt(index);
+		}
+		*/
 		//Major and Minor chord JList elements
-		if (obj.getClass() == JList.class) {
-			String selectedChord = "";
-
+		 else if (obj.getClass() == JList.class) {
+	
+			
 			//If user not clicked major chords, process minor chords
-			if (majorChordsList == null){
+			 if (majorChordsList == null){
 				 if (minorChordsList.getName().equals("Minor")) {
 						int index = minorChordsList.locationToIndex(pressed.getPoint());
-						minorChordsList.setModel(Chord.getInstance().getMinorListModel());
-						selectedChord = Chord.getInstance().getMinorListModel().getElementAt(index);
-					}
+						minorChordsList.setModel(AddChordToFeatureTab.getInstance().getMinorChordsInList());
+						selectedChord = AddChordToFeatureTab.getInstance().getMinorChordsInList().getElementAt(index);
+						
+						//Added to change a copy of the enum's new string name and change it
+						//back to original enum to get its value
+						if(selectedChord.contains("b")){
+							selectedChord = selectedChord.replaceAll("b", "FLAT");
+						}
+						else if(selectedChord.contains("#")){
+							selectedChord = selectedChord.replaceAll("#", "SHARP");
+						}
+						///////////////////////////////////////////////////////
+				 }
 			} 
 			//If user not clicked minor chords, process major chords
 			else if (minorChordsList == null){
 				if (majorChordsList.getName().equals("Major")) {
 					int index = majorChordsList.locationToIndex(pressed.getPoint());
-					majorChordsList.setModel(Chord.getInstance().getMajorListModel());
-					selectedChord = Chord.getInstance().getMajorListModel().getElementAt(index);
+					majorChordsList.setModel(AddChordToFeatureTab.getInstance().getMajorChordsInList());
+					selectedChord = AddChordToFeatureTab.getInstance().getMajorChordsInList().getElementAt(index);
+					
+					//Again, a change a copy of the enum's new string name and change it
+					//back to original enum to get its value
+					if(selectedChord.contains("#")){
+						selectedChord = selectedChord.replaceAll("#", "SHARP");
+					}
+					
+					else if(selectedChord.contains("b")){
+						selectedChord = selectedChord.replaceAll("b", "FLAT");
+					}
+					/////////////////////////////////////////////////////
 				}
 			}
 			
@@ -182,7 +298,12 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 			int i = 0;
 
 			for (Chord.allChordNamesList e : allChordsEnums) {
-				if (selectedChord == e.name()) {
+				//Changed the == symbol to equals(). Strange since before I changed the
+				//display of the enum chord names to modified strings, the == symbol worked.
+				//The modified version is for display purposes, but I retrieved the modified
+				//string as a copy of that variable, changed its value to the enum,
+				// and now == wont work.
+				if (selectedChord.equals(e.name())) {
 					chordsNotes = e.getChord();
 
 					foundNotes = chordsNotes[i] + chordsNotes[i+1] + chordsNotes[i+2];
@@ -192,7 +313,7 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 			}
 
 			try {
-				Chord.getInstance().generateChord(selectedChord, foundNotes);
+				AddChordToFeatureTab.getInstance().generateChord(selectedChord, foundNotes);
 
 			} catch (InvalidMidiDataException e) {
 				// TODO Auto-generated catch block
@@ -222,43 +343,12 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 			// Record mode
 			else if (MidiReceiver.getInstance().isRecEnded() == false) {
 
-				// This condition is used if user does change tempo when making
-				// a
-				// recording.
-				if (messageTypes.isTempoSelected() == true) {
-
-					// Remembers and sets the new tempo change by user, as the
-					// start
-					// recording function to create a sequence resets reverts it
-					// to default
-					messageTypes.saveSelectedTempo(messageTypes.getSelectedTempo());
-				}
-
 				if (MidiReceiver.getInstance().getTrack().size() == 1) {
-
 					MidiReceiver.getInstance().returnSequencer().startRecording();
-
 					startTick = 0; // MidiReciever.getInstance().getLastTick();
 					System.out.println("First Note start tick value is: " + startTick);
 
 				}
-				/*
-				 * //I COULD REPLACE THE BELOW CODE WITH if --- >=3 instead of
-				 * two conditions else if
-				 * (MidiReciever.getInstance().getTrack().size() >1 &&
-				 * MidiReciever.getInstance().getTrack().size() <=3 ){ //Add
-				 * last known cummulative time to tick time that has pass till
-				 * this note is started to // deine the rest tme and the tick
-				 * time of the note that broke the rest time startTick =
-				 * MidiReciever.getInstance().getRestTickCycle(); System.out.
-				 * println("Start tick is tick time of current tice per second cycle value: "
-				 * +startTick);
-				 * MidiReciever.getInstance().getStoredRecordStart().
-				 * setClockTimer(true);
-				 * 
-				 * 
-				 * }
-				 */
 				else if (MidiReceiver.getInstance().getTrack().size() >= 3) {
 
 					// Get the current time in milliseconds, and remove the last
@@ -278,13 +368,33 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 				}
 
 				try {
-
+                  // GetInstruments.getInstance().getChannelSetToInstrument();
+					
+					if (GetInstruments.getInstance().checkIfinstrumentChanged() == true){
+						//int bank = GetInstruments.getInstance().getBank();
+						int program = GetInstruments.getInstance().getProgramNumber();
+						ShortMessage changeInstrument = new ShortMessage();
+						changeInstrument.setMessage(ShortMessage.PROGRAM_CHANGE,0,program,0);
+						MidiReceiver.getInstance().getTrack().add(new MidiEvent(changeInstrument, startTick));
+						//reset detect instrument change until it occurs again
+						GetInstruments.getInstance().instrumentChanged(false);
+					}
+					
+					/*  THIS WAS AN ATTEMP TO CHNAGE TEMPO TO RECORDING SEQUENCE
+					if (MidiMessageTypes.getInstance().checkIfTempoChanged() == true){
+						String newTempoName = MidiMessageTypes.getInstance().getSelectedTempo();
+						float tempoValue = MidiMessageTypes.getInstance().getTemposMap().get(newTempoName);				
+						MidiMessageTypes.getInstance().tempoChanged(false);
+					}*/
+					
 					ShortMessage message = new ShortMessage();
 
 					// Allows immediate wire play back while short messages
 					// are added to sequence
 					MidiReceiver.getInstance().freeNotePlay(playedNotePitch);
 
+					//System.out.println("Instrument choice :"+GetInstruments.getInstance().getChannelSetToInstrument());
+					
 					message.setMessage(ShortMessage.NOTE_ON, 0, playedNotePitch, 90);
 					MidiReceiver.getInstance().getTrack().add(new MidiEvent(message, startTick));
 
@@ -424,19 +534,19 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 			}
 		}
 
-		else if (obj.equals(instrumentList)) {
+		//else if (obj.equals(instrumentList)) {
 			// System.out.println(instrumentList);
-			String choice = instrumentList.getSelectedItem().toString();
+		//	String choice = instrumentList.getSelectedItem().toString();
 			// getInstruments.setupInstruments(reciever);
-			getInstruments.selectInstrument(choice);
-		}
+			//GetInstruments.getInstance().selectInstrument(choice);
+		//}
 
-		else if (obj.equals(tempoList)) {
+		/*else if (obj.equals(tempoList)) {
 			String choice = tempoList.getSelectedItem().toString();
 			choice = choice.substring(0, choice.indexOf(":"));
-			messageTypes.selectedTempo(tempoList);
-			messageTypes.saveSelectedTempo(choice);
-		}
+			MidiMessageTypes.getInstance().selectedTempo(tempoList);
+			MidiMessageTypes.getInstance().saveSelectedTempo(choice);
+		}*/
 	}
 
 	@Override
