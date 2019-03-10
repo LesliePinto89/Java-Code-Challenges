@@ -1,11 +1,14 @@
 package tools;
 
+
 import java.util.Timer;
-import java.util.TimerTask;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.Track;
+
 import javax.swing.JToggleButton;
+
+import midi.MidiMessageTypes;
 import midi.StoreMetaEvents;
 import midiDevices.MidiReceiver;
 
@@ -13,13 +16,15 @@ public class MIDIRecord {
 
 	private  int recordClick = 0;
 	static Timer timer;
-	private int ppqAddedSpeed = 0;
-	private boolean endTimer = false;
-	
+	//private int ppqAddedSpeed = 0;
+	//private boolean endTimer = false;
+	private MidiMessageTypes messages = MidiMessageTypes.getInstance();
+	private ProgramMainGUI startUp = ProgramMainGUI.getInstance();
+	private SwingComponents components = SwingComponents.getInstance();
 	public void recordReciever(){	
 	}
 	
-	public void recordAction(JToggleButton recordMIDI) throws InvalidMidiDataException{
+	public void recordAction(JToggleButton recordMIDI) throws InvalidMidiDataException {
 		recordClick++;
 		MidiReceiver.getInstance().endFreePlay(true);
 		MidiReceiver.getInstance().endRecording(false);
@@ -56,18 +61,11 @@ public class MIDIRecord {
 				
 				
 				
-				
-				
-				//metaAndControl();
-				// MetaEventListener test = new
-				// InteractionEventsInterface(pressedNote,keyboard,playedNotePitch,load);
-				// boolean checkMetaEvent =
-				// load.returnSequencer().addMetaEventListener(test);
-
-				// Adds a new track as a side effect to possibly fixing
-				// the double note problem at beginning of record
-				// sequence
-				// load.returnSequencer().startRecording();
+				 if (messages.getDebugStatus()==false){
+				      //Debug mode used when a new recording has ended
+					 messages.clearTimingMessages();
+				     messages.turnOnDebug(true);
+				    }
 			} catch (InvalidMidiDataException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -93,31 +91,75 @@ public class MIDIRecord {
 				// memory leaks of scanner.next()
 				
 				MidiReceiver.getInstance().returnSequencer().setTickPosition(0);
-				
 				MidiReceiver.getInstance().returnSequencer().startRecording();
-
+				
+				//Debug mode used when a new recording is started again while in current feature
+				  if (messages.getDebugStatus()==false){
+				    //Debug mode used when a new recording has ended
+					  messages.clearTimingMessages();
+					  messages.turnOnDebug(true);
+					  //Corrects click order: rec, key, debug, rec, then debug
+					  messages.recordedDebug(false);
+				    }
+				
 			} catch (InvalidMidiDataException error1) {
 				error1.printStackTrace();
 			}
 		}
 		
 	}
+	
+
     public void disableRecord(JToggleButton recordMIDI) throws InvalidMidiDataException{
     
-    	//Debugging purposes of track ticks times to log of times in console
-    	//Track [] tracks = MidiReceiver.getInstance().getSequence().getTracks();
-    	
-    	//Might remove in case causes problems
-    	//MidiReciever.getInstance().storeCumulativeTime(0);
-    	//MidiReciever.getInstance().setSustainTimer(null,true);
-    	//MidiReciever.getInstance().buildSustain(0);
-    	////////////////////////////////////////////
-    	
     	MidiReceiver.getInstance().endFreePlay(false);
     	MidiReceiver.getInstance().endRecording(true);
 		recordMIDI.setText("Off");
 		MidiReceiver.getInstance().returnSequencer().stopRecording();
 		MidiReceiver.getInstance().returnSequencer().recordDisable(MidiReceiver.getInstance().getTrack());
+		
+		
+  if (messages.getDebugStatus()){
+    	//Debug mode used when a new recording has ended
+    	messages.turnOnDebug(false);
+    	
+    	
+       if(messages.getTimingMessages().equals(messages.returnDefault()+"\n\n")){
+    	 
+    	   //Corrects timing values as takes care of equals  default, but does not need a change
+    	   // in varibles, known at the moment 
+    	   //Reset the default message created by Scenerio 2
+    	  // messages.clearTimingMessages();
+    	 //  messages.recordedDebug(false);
+        	}
+       
+       else if(messages.getTimingMessages().contains(messages.returnDefault())){
+      	 //Remove default text
+      	   messages.editTimingMessages();
+      	 //  messages.recordedDebug(false);
+          	}
+    	
+    	//Works for click rec, click debug, click button, click rec to turn off
+    	if(!messages.getTimingMessages().equals("") && !messages.getTimingMessages().equals(messages.returnDefault()+"\n\n")){
+    	messages.recordedDebug(true);
+    	}
+    	
+   
+    	
+//    	//Reset the default message created by Scenerio 2
+//    	if (messages.getTimingMessages().contains(messages.returnDefault())){
+//    		 messages.clearTimingMessages();
+//    		
+//    	}
+    	if(!messages.getTimingMessages().equals("") && !messages.getTimingMessages().contains(messages.returnDefault()))
+    	{
+    	messages.sequenceTimingMessages(">>>>>MIDI TIMING COMPLETE");}
+    	
+   }
+		
+		
+		//Debug mode used when a new recording has ended
+		MidiMessageTypes.getInstance().turnOnDebug(false);
 		
 		//Add complete sequence's meta data - This is really only useful for multi-track sequences
 		//As the meta data is stored in a track when written to a .mid file

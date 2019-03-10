@@ -10,15 +10,15 @@ import javax.sound.midi.Track;
 import midiDevices.MidiReceiver;
 
 public class StoreMetaEvents {
-
-	private Track trk;
+//This was originally not static
+	private static Track trk;
 	private int trackCounter;               
 
 	public StoreMetaEvents() {
 	}
 
 	// Will use to show visualisation with complete recorded sequence
-	public void createFullSequenceMetaData() throws InvalidMidiDataException {
+	public static void createFullSequenceMetaData() throws InvalidMidiDataException {
 		int i = 1;
 		
 		Track[] tracks = MidiReceiver.getInstance().getSequence().getTracks();
@@ -33,7 +33,8 @@ public class StoreMetaEvents {
 	}
 
 	// Used the completion sequence track rather than a per meta event message
-	public final void generateMetaData(Track track) throws InvalidMidiDataException {
+	//This method had a final modifier not static originally
+	public static void generateMetaData(Track track) throws InvalidMidiDataException {
 		
 		trk = MidiReceiver.getInstance().getSequence().createTrack();
 		for (int ii = 0; ii < track.size(); ii++) {

@@ -1,6 +1,7 @@
 package tools;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -110,7 +111,8 @@ public  class Metronome implements MetaEventListener {
    		int featureWidth = SwingComponents.getInstance().getScreenWidth();
   
    		tempoSlider = new JSlider(0, 218, (int)defaultScaleBPM);
-   		tempoSlider.setSize(featureWidth/4 - 20, featureWidth/8);
+   	    //DOES NOT NEED MINIMUM SIZE - RUINS SCALING
+   		tempoSlider.setPreferredSize(new Dimension (featureWidth/4 - 20, featureWidth/8));
    		tempoSlider.setForeground(Color.RED);
    		tempoSlider.setBackground(Color.ORANGE);
    		tempoSlider.setPaintTrack(true); 
@@ -137,11 +139,15 @@ public  class Metronome implements MetaEventListener {
         currentTempo = new JLabel();
         currentTempo.setText(tempoSlider.getValue()+" BPM");
         currentTempo.setForeground(Color.BLACK);
-        currentTempo.setBounds(0, 0, 100, 40);
+        
+        //DOES NOT NEED MINIMUM SIZE - RUINS SCALING
+        currentTempo.setPreferredSize(new Dimension (100, 40));
+        
         
         instancePanel.add(currentTempo);
         instancePanel.add(tempoSlider);
-        instancePanel.setBounds(0, 100, featureWidth/4 - 20, featureWidth/8);
+        instancePanel.setPreferredSize(new Dimension(featureWidth/4 - 20, featureWidth/8));
+        //instancePanel.setBounds(0, 100, featureWidth/4 - 20, featureWidth/8);
         
 		//KeyboardInteractions volumeSliderListener = new KeyboardInteractions(tempoSlider);
 		//tempoSlider.addChangeListener(volumeSliderListener);

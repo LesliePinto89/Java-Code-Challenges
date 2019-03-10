@@ -1,6 +1,7 @@
 package midi;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -14,6 +15,7 @@ public class ListOfScales {
 
 	private static volatile ListOfScales instance = null;
 
+	
 	private ListOfScales() {
 	}
 
@@ -22,70 +24,70 @@ public class ListOfScales {
 			synchronized (ListOfScales.class) {
 				if (instance == null) {
 					instance = new ListOfScales();
-					// instance.storeAllChordsInList();
-					/// instance.storeMajorChordsInList();
-					// instance.storeMinorChordsInList();
 				}
 			}
 		}
-
 		return instance;
 	}
 
-	Note tonic; // Scale degree 1
-	Note supertonic; // Scale degree2
-	Note mediant; // Scale degree 3
-	Note subdominant; // Scale degree 4
-	Note dominant; // Scale degree 5
-	Note submediant; // Scale degree 6
-	Note subTonic; // Scale degree 7
-	Note endOctaveNote; // Scale degree 1 of new scale
-
-	Note eigthNote; // Used in 8 note scales
-
 	private Map<String, Note> mapOfNotes = Note.getNotesMap();
-	private int[] harmonicMinorScale;
-	private int[] melodicScale;
+	private Collection <Integer> currentScaleIntervals;
+	private Scale currentDisplayedScaleColor;
 
-	// Stores 7 note scales (This includes diatonic scales)
-	private ArrayList<Scale> heptatonicModelsScales;
+	//Store all scales
+	public void generateScalesNames (String modelNote){
+		modelNote = modelNote +3;
+		Note key = mapOfNotes.get(modelNote);
 
-	// Stores 6 note scales (This includes whole tone and augmented scales)
-	private ArrayList<Scale> hexatonicScales;
-
-	// Stores 5 note scales
-	private ArrayList<Scale> pentatonicScale;
-
-	public void createHexatonicScale(String userNoteKey, int modelNumber) {
-		Pattern p2 = Pattern.compile("\\d");
-		Matcher m2 = p2.matcher(userNoteKey);
-		if (!m2.find()) {
-			userNoteKey = userNoteKey + "3";
-		}
-		Note foundNote = mapOfNotes.get(userNoteKey);
-		switch (modelNumber) {
-		case 1:
-			hexatonicScales.add(augmentedScale(foundNote));
-			break;
-		case 2:
-			hexatonicScales.add(wholeToneScale(foundNote));
-			break;
-		}
-
+	//Diatonic Scales / Modes
+	Scale.storeScales(majorOrIonionScale(key));
+	Scale.storeScales(dorianScale(key));
+	Scale.storeScales(phrygianScale(key));
+	Scale.storeScales(lydianScale(key));
+	Scale.storeScales(mixolydianScale(key));
+	Scale.storeScales(minorOrAeolianScale(key));
+    Scale.storeScales(locrianScale(key));
+     ///////////////
+	
+	Scale.storeScales(majorPentatonicScale(key));
+	Scale.storeScales(ascendingChromaticScale(key));
+	Scale.storeScales(descendingChromaticScale(key));
+	Scale.storeScales(augmentedScale(key));
+	Scale.storeScales(wholeToneScale(key));
+    
+    Scale.storeScales(harmonicMinorScale(key)); //Up to  here it works
+    Scale.storeScales(ascendingMelodicMinorScale(key)); //This affects it  (This kind of works here)
+    Scale.storeScales(alteredScale(key));
+    
+    Scale.storeScales(halfDiminishedScale(key));
+    Scale.storeScales(dominantDiminishedScale(key));//This affects it too
+    Scale.storeScales(fullyDiminishedScale(key));
+}
+	
+	public void displayedScaleNotes(Scale currentScale){
+		currentDisplayedScaleColor = currentScale;
+	}
+	
+	public Scale getDisplayedScaleNotes(){
+		return currentDisplayedScaleColor;
 	}
 
+	public void getMajorModes(ListOfChords instance, Scale foundScale) throws InvalidMidiDataException{
+		instance.setMajorChords(foundScale);
+		instance.findSpecificChordType(instance.getMajorChords());
+	}
+	
+	public void getMinorModes(ListOfChords instance, Scale foundScale) throws InvalidMidiDataException{
+		instance.setMajorChords(foundScale);
+		instance.findSpecificChordType(instance.getMinorChords());
+	}
+		
 	// If user chooses to find chords in diatonic scale using a given rootkey
-	public void createDiatonicScale(String userNoteKey, String chosenScale) throws InvalidMidiDataException {
-		// String regix = "[A-G]{3}|^[^\\d].*|([\\w&&[^b]])*";
-		// Pattern p1 = Pattern.compile("[A-G],\\d");
-		// Matcher m1 = p1.matcher(userNoteKey);
-		/*
-		 * int modelNumber = 0; if (chosenScale.equals("major")){ modelNumber
-		 * =1; } if (chosenScale.equals("minor")){ modelNumber =2; }
-		 */
+	public void findMode(String userNoteKey, String chosenScale) throws InvalidMidiDataException {
+		ListOfChords listChordsinstance = ListOfChords.getInstance();
 
-		// If user types in on octave number ignore, but if note, apply
-		// a default one to assign the octave to start from
+		// If user types in on octave number ignore, but if not apply
+		// default 3 near middle C on 61 key piano
 		Pattern p2 = Pattern.compile("\\d");
 		Matcher m2 = p2.matcher(userNoteKey);
 		if (!m2.find()) {
@@ -93,171 +95,200 @@ public class ListOfScales {
 		}
 
 		Note foundNote = mapOfNotes.get(userNoteKey);
+		Scale findScale = null;
+		switch (chosenScale){
+		
+		case "maj": findScale = majorOrIonionScale(foundNote);
+		            getMajorModes(listChordsinstance,findScale);
+					break;
 
-		switch (chosenScale) {
-		case "Diantonic Ionion":
-			Scale ionionScale = majorOrIonionScale(foundNote);
-			ListOfChords.getInstance().setIonianChords(ionionScale);
-			ArrayList<Chord> loadedScaleChords = ListOfChords.getInstance().getIonianChords();
-
-			// Specify a new key?
-			// Option 1
-
-			//// Find a specific chord for manipulation?
-			// Chord.majorChordNames [] majorChordNames =
-			//// Chord.majorChordNames.values();
-			ListOfChords.getInstance().findSpecificChordType(loadedScaleChords);
-			break;
-		case "Diantonic Dorian":
-
-			heptatonicModelsScales.add(dorianScale(foundNote));
-			break;
-		case "Diatonic Lydian":
-			heptatonicModelsScales.add(lydianScale(foundNote));
-			break;
-		case "Diatonic Mixolydian":
-			heptatonicModelsScales.add(mixolydianScale(foundNote));
-			break;
-		case "Diatonic Aeolian":
-			heptatonicModelsScales.add(minorOrAeolianScale(foundNote));
-			break;
-		case "Diatonic Phrygian":
-			heptatonicModelsScales.add(phrygianScale(foundNote));
-			break;
-		case "Diatonic Locrian":
-			heptatonicModelsScales.add(locrianScale(foundNote));
-			break;
+		case "min": findScale = minorOrAeolianScale(foundNote);
+		           getMinorModes(listChordsinstance,findScale);
+					break;
+		
+		case "lydian": findScale = lydianScale(foundNote);
+		getMajorModes(listChordsinstance,findScale);
+		break; //variant of major
+		
+		case "mixolydian": 	findScale = mixolydianScale(foundNote);
+		getMajorModes(listChordsinstance,findScale);
+		break; //variant of major
+		
+		case "phrygian": findScale = phrygianScale(foundNote);
+		 getMinorModes(listChordsinstance,findScale);
+		 break; //variant of minor
+		 
+		case "dorian": findScale = dorianScale(foundNote);
+		 getMinorModes(listChordsinstance,findScale);
+		 break; //variant of minor
+		 
+		case "locrian": findScale = locrianScale(foundNote);
+		 getMinorModes(listChordsinstance,findScale);
+		 break; //can be a variant of major or minor
 		}
 	}
 
+	public void currentScalePitchValues(Collection <Integer> intervals){
+		currentScaleIntervals = intervals;
+	}
+	
+	public Collection <Integer> getScalePitchValues(){
+		return currentScaleIntervals;
+	}
+	
+	
+	
 	// Find next interval / step based on previous note in scale
 	public Note getKey(Note passedNote, int step) {
+		
 		for (Entry<String, Note> entry : mapOfNotes.entrySet()) {
 
 			// For some reason, the minus arithmetic increases the compared
-			// value.
-			// e.g: step = 2, To find 48 compared to 46, this makes 48 rather
-			// than 44.
+			// value. e.g: step = 2, To find 48 compared to 46, this makes 48
+			// rather than 44.
 			if (passedNote.getPitch() == entry.getValue().getPitch() - step)
-
 			{
 				String key = entry.getKey();
 				Note stepNote = mapOfNotes.get(key);
 				return stepNote;
 			}
 		}
+		//Cant remember why this is here
+		//ListOfChords.getInstance().getKeyScaleChords();g
 		return null;
 	}
 
+	// The 5 note pentatonic scale is the relative minor of a major scale -
+	// similar to  the normal minor or Aeolian scale. It's root is the 
+	// major's scales submediant note. There is no supertonic in this scale
+	public Scale majorPentatonicScale(Note rootKey) {
+		String scaleName = "Pentatonic Major";
+		Note tonic = rootKey; //do
+		Note subtonic = getKey(tonic, 2); //re
+		Note mediant = getKey(subtonic, 2); //mi
+		Note dominant = getKey(mediant, 2); //so
+		Note submediant = getKey(dominant, 2); //so
+		Note endOctaveNote = getKey(submediant, 3);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, dominant, submediant, endOctaveNote);
+		return aScale;
+	}
+	
+	
+	//HEXATONIC SCALES
+    //////////////////////////////////////
+		// This allows 6 and is made up of two augmented chords. Due to the 
+		// existing symmetry in this scale, 3 from its 6 notes from a
+		// given key can be considered the tonic.
+		public Scale augmentedScale(Note rootKey) {
+			String scaleName = "Augmented";
+			Note tonic = rootKey;
+			Note subtonic = getKey(tonic, 3);
+			Note mediant = getKey(subtonic, 1);
+			Note subdominant = getKey(mediant, 3);
+			Note dominant = getKey(subdominant, 1);
+			Note submediant = getKey(dominant, 3);
+			Note endOctaveNote = getKey(submediant, 1); 			
+			Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+					endOctaveNote);
+			return aScale;
+		}
+
+		// Another hexatonic scale, its 6 notes have a whole step interval between
+		// each note. There is no supertonic in this scale
+		public Scale wholeToneScale(Note rootKey) {
+			String scaleName = "Whole Tone";
+			Note tonic = rootKey;
+			Note subtonic = getKey(tonic, 2);
+			Note mediant = getKey(subtonic, 2);
+			Note subdominant = getKey(mediant, 2);
+			Note dominant = getKey(subdominant, 2);
+			Note submediant = getKey(dominant, 2);
+			Note endOctaveNote = getKey(submediant, 2);
+			Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+					endOctaveNote);
+			return aScale;
+		}
+	
+		////////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////////
+		
 	// A diatonic scale is an heptatonic scale that is broken into 5 whole
 	// notes and 2 semi-tones. There are 7 modes of the Diatonic Major Scale,
-	// each one
-	// being based off one of the notes in a typical octave.
-
+	// each one being based off one of the notes in a 7 note octave.
 	public Scale majorOrIonionScale(Note rootKey) {
-		// Note[] tempArray;
 		String scaleName = "Diantonic Ionion";
-		tonic = rootKey; // 1
-		supertonic = getKey(tonic, 2); // 2
-		mediant = getKey(supertonic, 2); // 3
-		subdominant = getKey(mediant, 1); // 4
-		dominant = getKey(subdominant, 2); // 5
-		submediant = getKey(dominant, 2); // 6
-		subTonic = getKey(submediant, 2); // 7
-		endOctaveNote = getKey(subTonic, 1); // 8
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
-				subTonic, endOctaveNote);
+		
+		
+		Note tonic = rootKey;     
+		Note subtonic = getKey(tonic, 2);     
+		Note mediant = getKey(subtonic, 2);     
+		Note subdominant = getKey(mediant, 1);    
+		Note dominant = getKey(subdominant, 2);     
+		Note submediant = getKey(dominant, 2);    
+		Note supertonic = getKey(submediant, 2);    
+		Note endOctaveNote = getKey(supertonic, 1);     
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
 		return aScale;
-
-		// supertonic = notesmMap.
-		/*
-		 * supertonic.setPitch(tonic.getPitch()+2); // 2212221
-		 * mediant.setPitch(supertonic.getPitch()+2);
-		 * subdominant.setPitch(supertonic.getPitch()+1);
-		 * dominant.setPitch(subdominant.getPitch()+2);
-		 * submediant.setPitch(dominant.getPitch()+2);
-		 * subTonic.setPitch(dominant.getPitch()+2);
-		 * endOctaveNote.setPitch(dominant.getPitch()+1); //the tonic of the new
-		 * octave would be +1
-		 */
-
-		// mediant = supertonic +1;
-		// subdominant = mediant +2;
-		// dominant = subdominant +2;
-		// submediant = subdominant + 2;
-		// subTonic = submediant+1;
-		// tempArray = new Note[] { tonic, supertonic, mediant, subdominant,
-		// dominant, submediant, subTonic,
-		// endOctaveNote };
-		// return tempArray;
 	}
 
 	public Scale dorianScale(Note rootKey) {
-		// Note[] tempArray;
 		String scaleName = "Diantonic Dorian";
-		tonic = rootKey;
-		supertonic = getKey(tonic, 2);
-		mediant = getKey(supertonic, 1);
-		subdominant = getKey(mediant, 2);
-		dominant = getKey(subdominant, 2);
-		submediant = getKey(dominant, 2);
-		subTonic = getKey(submediant, 1);
-		endOctaveNote = getKey(subTonic, 2);
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
-				subTonic, endOctaveNote);
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 2);
+		Note mediant = getKey(subtonic, 1);
+		Note subdominant = getKey(mediant, 2);
+		Note dominant = getKey(subdominant, 2);
+		Note submediant = getKey(dominant, 2);
+		Note supertonic = getKey(submediant, 1);
+		Note endOctaveNote = getKey(supertonic, 2);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
 		return aScale;
 	}
 
 	public Scale phrygianScale(Note rootKey) {
-		// Note[] tempArray;
 		String scaleName = "Diatonic Phrygian";
-		tonic = rootKey; // Is a semi note
-		supertonic = getKey(tonic, 1);
-		mediant = getKey(supertonic, 2);
-		subdominant = getKey(mediant, 2);
-		dominant = getKey(subdominant, 2);
-		submediant = getKey(dominant, 1);
-		subTonic = getKey(submediant, 2);
-		endOctaveNote = getKey(subTonic, 2);
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
-				subTonic, endOctaveNote);
+		Note tonic = rootKey; // Is a semi note
+		Note subtonic = getKey(tonic, 1);
+		Note mediant = getKey(subtonic, 2);
+		Note subdominant = getKey(mediant, 2);
+		Note dominant = getKey(subdominant, 2);
+		Note submediant = getKey(dominant, 1);
+		Note supertonic = getKey(submediant, 2);
+		Note endOctaveNote = getKey(supertonic, 2);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
 		return aScale;
 	}
 
 	public Scale lydianScale(Note rootKey) {
 		String scaleName = "Diatonic Lydian";
-
-		// Note[] tempArray;
-		tonic = rootKey;
-		supertonic = getKey(tonic, 2);
-		mediant = getKey(supertonic, 2);
-		subdominant = getKey(mediant, 2);
-		dominant = getKey(subdominant, 1);
-		submediant = getKey(dominant, 2);
-		subTonic = getKey(submediant, 2);
-		endOctaveNote = getKey(subTonic, 1);
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
-				subTonic, endOctaveNote);
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 2);
+		Note mediant = getKey(subtonic, 2);
+		Note subdominant = getKey(mediant, 2);
+		Note dominant = getKey(subdominant, 1);
+		Note submediant = getKey(dominant, 2);
+		Note supertonic = getKey(submediant, 2);
+		Note endOctaveNote = getKey(supertonic, 1);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
 		return aScale;
 	}
 
 	public Scale mixolydianScale(Note rootKey) {
 		String scaleName = "Diatonic Mixolydian";
-		tonic = rootKey;
-		supertonic = getKey(tonic, 2);
-		mediant = getKey(supertonic, 2);
-		subdominant = getKey(mediant, 1);
-		dominant = getKey(subdominant, 2);
-		submediant = getKey(dominant, 2);
-		subTonic = getKey(submediant, 1);
-		endOctaveNote = getKey(subTonic, 2);
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
-				subTonic, endOctaveNote);
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 2);
+		Note mediant = getKey(subtonic, 2);
+		Note subdominant = getKey(mediant, 1);
+		Note dominant = getKey(subdominant, 2);
+		Note submediant = getKey(dominant, 2);
+		Note supertonic = getKey(submediant, 1);
+		Note endOctaveNote = getKey(supertonic, 2);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
 		return aScale;
 	}
 
@@ -265,37 +296,36 @@ public class ListOfScales {
 	// major scale that is also the same as the Ionian scale
 	public Scale minorOrAeolianScale(Note rootKey) {
 		String scaleName = "Diatonic Aeolian";
-		tonic = rootKey;
-		supertonic = getKey(tonic, 2);
-		mediant = getKey(supertonic, 1);
-		subdominant = getKey(mediant, 2);
-		dominant = getKey(subdominant, 2);
-		submediant = getKey(dominant, 1);
-		subTonic = getKey(submediant, 2);
-		endOctaveNote = getKey(subTonic, 2);
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
-				subTonic, endOctaveNote);
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 2);
+		Note mediant = getKey(subtonic, 1);
+		Note subdominant = getKey(mediant, 2);
+		Note dominant = getKey(subdominant, 2);
+		Note submediant = getKey(dominant, 1);
+		Note supertonic = getKey(submediant, 2);
+		Note endOctaveNote = getKey(supertonic, 2);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
 		return aScale;
 	}
 
 	public Scale locrianScale(Note rootKey) {
 		String scaleName = "Diatonic Locrian";
-		tonic = rootKey;
-		supertonic = getKey(tonic, 1);
-		mediant = getKey(supertonic, 2);
-		subdominant = getKey(mediant, 2);
-		dominant = getKey(subdominant, 1);
-		submediant = getKey(dominant, 2);
-		subTonic = getKey(submediant, 2);
-		endOctaveNote = getKey(subTonic, 2);
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
-				subTonic, endOctaveNote);
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 1);
+		Note mediant = getKey(subtonic, 2);
+		Note subdominant = getKey(mediant, 2);
+		Note dominant = getKey(subdominant, 1);
+		Note submediant = getKey(dominant, 2);
+		Note supertonic = getKey(submediant, 2);
+		Note endOctaveNote = getKey(supertonic, 2);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
 		return aScale;
 	}
 
 	////////////////////////////////////////////////////////////////
-
+	
 	// This scale covers all pitches and is made up of only semi-tones.
 	// Because each pitch in the scale is equidistant, there is no tonic,
 	// so it is known as a non-diatonic scale.It uses 12-tone equal temperament
@@ -306,128 +336,163 @@ public class ListOfScales {
 	public static String[][] getChromaticScale() {
 		return createChromaticScale;
 	}
+	
+	public Scale ascendingChromaticScale(Note rootKey) {
+		String scaleName = "Ascending Chromatic";
+		Note Do = rootKey;   //note name is in capital as java does not allow do keyword as name
+		Note di = getKey(Do, 1);
+		Note re = getKey(di, 1);
+		Note ri = getKey(re, 1);
+		Note mi  = getKey(ri, 1);
+		Note fa = getKey(mi, 1);
+		Note fi = getKey(fa, 1);
+		Note sol = getKey(fi, 1);
+		Note si = getKey(sol, 1);
+		Note la = getKey(si, 1);
+		Note li = getKey(la, 1);
+		Note ti = getKey(li, 1);
+		Scale aScale = new Scale(scaleName, Do, di, re, ri, mi, fa, fi,sol, si,la,li,ti);
+		return aScale;
+
+	}
+	
+	
+	public Scale descendingChromaticScale(Note rootKey) {
+		String scaleName = "Descending Chromatic";
+		Note Do = rootKey;   //note name is in capital as java does not allow do keyword as name
+		Note ti = getKey(Do, -1);
+		Note te = getKey(ti, -1);
+		Note la = getKey(te, -1);
+		Note le  = getKey(la, -1);
+		Note sol = getKey(le, -1);
+		Note se = getKey(sol, -1);
+		Note fa = getKey(se, -1);
+		Note mi = getKey(fa, -1);
+		Note me = getKey(mi, -1);
+		Note re = getKey(me, -1);
+		Note ra = getKey(re, -1);
+		Scale aScale = new Scale(scaleName, Do, ti, te, la, le, sol, se,fa, mi,me,re,ra);
+		return aScale;
+	}
 
 	// A harmonic scale is just a natural minor scale (Aeolian), but with an 1
-	// and 1/2 step
-	// seventh and a half step from the seventh and eight note.
+	// and 1/2 step seventh and a half step from the seventh and eight note.
 	public Scale harmonicMinorScale(Note rootKey) {
 		String scaleName = "Harmonic Minor";
-		tonic = rootKey;
-		supertonic = getKey(tonic, 2);
-		mediant = getKey(supertonic, 1);
-		subdominant = getKey(mediant, 2);
-		dominant = getKey(subdominant, 2);
-		submediant = getKey(dominant, 1);
-		subTonic = getKey(submediant, 3);
-		endOctaveNote = getKey(subTonic, 1);
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
-				subTonic, endOctaveNote);
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 2);
+		Note mediant = getKey(subtonic, 1);
+		Note subdominant = getKey(mediant, 2);
+		Note dominant = getKey(subdominant, 2);
+		Note submediant = getKey(dominant, 1);
+		Note supertonic = getKey(submediant, 3);
+		Note endOctaveNote = getKey(supertonic, 1);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
 		return aScale;
 
 	}
 
 	public Scale ascendingMelodicMinorScale(Note rootKey) {
-
-		String scaleName = "Harmonic Minor";
-		tonic = rootKey;
-		supertonic = getKey(tonic, 2);
-		mediant = getKey(supertonic, 1);
-		subdominant = getKey(mediant, 2);
-		dominant = getKey(subdominant, 2);
-		submediant = getKey(dominant, 2);
-		subTonic = getKey(submediant, 2);
-		endOctaveNote = getKey(subTonic, 1);
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
-				subTonic, endOctaveNote);
+		String scaleName = "Melodic Minor";
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 2);
+		Note mediant = getKey(subtonic, 1);
+		Note subdominant = getKey(mediant, 2);
+		Note dominant = getKey(subdominant, 2);
+		Note submediant = getKey(dominant, 2);
+		Note supertonic = getKey(submediant, 2);
+		Note endOctaveNote = getKey(supertonic, 1);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
 		return aScale;
 	}
 
-	// This scale descends using he natural minor scale, but ascends using
-	/// the melodic scale - steps pattern is TSTTSTT or 2122122
+	// This scale ascends using melodic scale but descends using the natural minor scale
 	public void descendingMelodicMinorScale(Note rootKey) {
+		minorOrAeolianScale(rootKey);
 	}
 
-	// While diatonics scale is based of the heptatonic scale, the Augmented
-	// scale
-	// is based on the hexatonic scale. This allows 6 and is made up of two
-	// augmented chords.
-	// Due to the existing symmetry in this scale, 3 from its 6 notes from a
-	// given key
-	// can be considered the tonic.
-	public Scale augmentedScale(Note rootKey) {
-
-		String scaleName = "Augmented Scale";
-		tonic = rootKey;
-		supertonic = getKey(tonic, 3);
-		mediant = getKey(supertonic, 1);
-		subdominant = getKey(mediant, 3);
-		dominant = getKey(subdominant, 1);
-		submediant = getKey(dominant, 3);
-		// subTonic = getKey(submediant, 1);
-		endOctaveNote = getKey(subTonic, 1); // either 3 or 1
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
+	//Also known as the half-diminished scale, it has  7 notes not 8. 
+	public Scale halfDiminishedScale(Note rootKey) {
+		String scaleName = "Half-Dimished";
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 2); // 2nd note is major, not minor
+		Note mediant = getKey(subtonic, 1);  
+		Note subdominant = getKey(mediant, 2);
+		Note dominant = getKey(subdominant, 1);
+		Note submediant = getKey(dominant, 2);
+		Note supertonic = getKey(submediant, 2);
+		Note endOctaveNote = getKey(supertonic, 2);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
+				supertonic, endOctaveNote);
+		return aScale;
+	}
+	
+	//Altered scale - This is also known as the super locrian or the diminished whole tone
+	public Scale alteredScale(Note rootKey) {
+		String scaleName = "Altered";
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 1);
+		Note mediant = getKey(subtonic, 2);
+		Note subdominant = getKey(mediant, 1);
+		Note dominant = getKey(subdominant, 2);
+		Note submediant = getKey(dominant, 2);
+		Note supertonic = getKey(submediant, 2);
+		Note endOctaveNote = getKey(supertonic, 2);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant, supertonic,
 				endOctaveNote);
 		return aScale;
 	}
-
-	// Another hexatonic scale, its 6 notes have a whole step interval between
-	// each note.
-	public Scale wholeToneScale(Note rootKey) {
-		String scaleName = "Whole Tone Scale";
-		tonic = rootKey;
-		supertonic = getKey(tonic, 2);
-		mediant = getKey(supertonic, 2);
-		subdominant = getKey(mediant, 2);
-		dominant = getKey(subdominant, 2);
-		submediant = getKey(dominant, 2);
-		// subTonic = getKey(submediant, 1); There is no subtonic in this scale
-		endOctaveNote = getKey(submediant, 2);
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, subdominant, subdominant, dominant, submediant,
+	
+	// OCTATONIC SCALES HAVE 8 NOTES
+	//Dominant diminished (also called half-whole). Its step intervals alternate half/whole
+	public Scale dominantDiminishedScale(Note rootKey) {
+		String scaleName = "Dominant Diminished";
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 1);
+		Note mediant = getKey(subtonic, 2);
+		Note subdominant = getKey(mediant, 1);
+		Note dominant = getKey(subdominant, 2);
+		Note submediant = getKey(dominant, 1);
+		Note supertonic = getKey(submediant, 2);
+		Note eigthNote = getKey(supertonic, 1);
+		Note endOctaveNote = getKey(eigthNote, 2);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant,subdominant, dominant, submediant, supertonic, eigthNote,
 				endOctaveNote);
 		return aScale;
 	}
-
-	// The 5 note pentatonic scale is the relative minor of a major scale -
-	// similar to
-	// the normal minor or Aeolian scale. It's root is the major's scales
-	// submediant
-	// note,
-	public Scale majorPentatonicScale(Note rootKey) {
-		String scaleName = "Pentatonic Major";
-		submediant = rootKey;
-		tonic = getKey(submediant, 2);
-		supertonic = getKey(tonic, 2);
-		mediant = getKey(supertonic, 3);
-		dominant = getKey(mediant, 2);
-
-		// subTonic = getKey(submediant, 1); There is no subtonic in this scale
-		endOctaveNote = getKey(dominant, 2);
-
-		Scale aScale = new Scale(scaleName, submediant, tonic, supertonic, mediant, dominant, endOctaveNote);
-		return aScale;
-	}
-
-	// This is an 8 note scale use for diminished chords. Its step intervals
-	// are the opposite of the augmented scale
-	public Scale halfWholeDiminishedScale(Note rootKey) {
-		String scaleName = "Half-Whole Diminished";
-		tonic = rootKey;
-		supertonic = getKey(tonic, 1);
-		mediant = getKey(supertonic, 3);
-		subdominant = getKey(mediant, 1);
-		dominant = getKey(subdominant, 3);
-		submediant = getKey(dominant, 1);
-		subTonic = getKey(submediant, 3);
-		eigthNote = getKey(subTonic, 1);
-		// endOctaveNote = getKey(submediant, 1);
-		endOctaveNote = getKey(eigthNote, 3);
-
-		Scale aScale = new Scale(scaleName, tonic, supertonic, mediant, dominant, submediant, subTonic, eigthNote,
+	
+	// This octatonic scale is also called the Whole-half, diminished or
+	// diminished 7th scale.Its step intervals alternate whole/half
+	public Scale fullyDiminishedScale(Note rootKey) {
+		String scaleName = "Fully Diminished";
+		Note tonic = rootKey;
+		Note subtonic = getKey(tonic, 2);
+		Note mediant = getKey(subtonic, 1);
+		Note subdominant = getKey(mediant, 2);
+		Note dominant = getKey(subdominant, 1);
+		Note submediant = getKey(dominant, 2);
+		Note supertonic = getKey(submediant, 1);
+		Note eigthNote = getKey(supertonic, 2);
+		Note endOctaveNote = getKey(eigthNote, 1);
+		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant,dominant, submediant, supertonic, eigthNote,
 				endOctaveNote);
 		return aScale;
 	}
+}
 
+
+class GivenKeyScales {
+	private String scaleName = "";
+	private ArrayList<GivenKeyChords> ScaleKeys;
+
+	public GivenKeyScales(String scaleName, ArrayList<GivenKeyChords> aKeyChords) {
+		this.scaleName = scaleName;
+		this.ScaleKeys = aKeyChords;
+	}
+
+	public ArrayList<GivenKeyChords> getScaleKeys() {
+		return ScaleKeys;
+	}
 }

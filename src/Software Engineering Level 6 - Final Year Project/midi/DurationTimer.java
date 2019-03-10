@@ -1,11 +1,13 @@
 package midi;
 
+import java.awt.AWTException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.JButton;
 
 import midiDevices.MidiReceiver;
+import tools.ProgramMainGUI;
 
 public class DurationTimer {
 
@@ -14,9 +16,7 @@ public class DurationTimer {
 	private volatile boolean exit = false;
 	private long lastNoteOffEpochTime;
 	private long allDeltas = 0;
-	
-	//A singleton pattern so that only one instance of this class 
-	//can be accessed and instantiated
+	private MidiMessageTypes messages = MidiMessageTypes.getInstance();
 	private static volatile DurationTimer instance = null;
 
     private DurationTimer() {}
@@ -29,10 +29,10 @@ public class DurationTimer {
                 }
             }
         }
-
         return instance;
     }
 	
+    
 	// Stored previous note cumulative value for next note's delta
 	public void storeCumulativeTime(long carriedDeltaTicks) {
 		allDeltas = carriedDeltaTicks;
@@ -63,10 +63,30 @@ public class DurationTimer {
 	}
 
 	public void setDurationTimer(JButton passedButton, boolean endCycleBool) {
-         //MIGHT NEED TO REMOVE PASSED BUTTI IF NOT USED
+         
+		
+//		//Debug mode used when a new recording is started again while in current feature
+//		  if (messages.getResetStatus()){
+//			  messages.setRestStatus(false);
+//		    	//Debug mode used when a new recording has ended
+//			  messages.turnOnDebug(true);
+//			  try {
+//				ProgramMainGUI.getInstance().clearConsoleDisplay();
+//			} catch (AWTException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+			  
+		    	
+		 //   }
+		//MIGHT NEED TO REMOVE PASSED BUTTI IF NOT USED
 		if (endCycleBool == true) {
 			timerDuration.cancel();
-			System.out.println("Timer for recording duration has ended");
+			if(messages.getDebugStatus()){
+				messages.sequenceTimingMessages("Timer for recording duration has ended");
+				//Console debug
+			    //System.out.println("Timer for recording duration has ended");
+				}
 		}
 
 		else {
@@ -91,8 +111,17 @@ public class DurationTimer {
 							//MIGHT NEED TO GET RID OF THIS CODE INCASE THE SUSTAIN AFFECT OF SOME
 							//NOTES GET RUINED OR THE TIMING AFTER NO SOUND GETS AFFECTED
 							if(getCycledDuration() == MidiReceiver.getInstance().getCurrentSequenceResolution() * 4){
-								System.out.println("Current duration value: "+getCycledDuration());
-								System.out.println("Is this a whole note value: "+MidiReceiver.getInstance().getCurrentSequenceResolution() * 4);
+								if(messages.getDebugStatus()){
+									String durationValue = Integer.toString(getCycledDuration());
+									String wholeNoteValue =  Integer.toString(MidiReceiver.getInstance().getCurrentSequenceResolution() * 4);
+								
+									messages.sequenceTimingMessages("Current duration value"+durationValue);
+									messages.sequenceTimingMessages("Is this a whole note value"+wholeNoteValue);
+									
+									//Console debug
+								//System.out.println("Current duration value: "+getCycledDuration());
+								//System.out.println("Is this a whole note value: "+MidiReceiver.getInstance().getCurrentSequenceResolution() * 4);
+								}
 								timerDuration.cancel();
 								stop();
 								

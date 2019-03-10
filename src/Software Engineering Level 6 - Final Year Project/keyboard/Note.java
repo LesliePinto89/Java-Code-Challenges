@@ -1,13 +1,8 @@
 package keyboard;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import midi.ListOfScales;
-import midi.Scale;
-
-//import java.util.EnumSet;
 
 public class Note {
 	
@@ -20,10 +15,6 @@ public class Note {
 	protected static Map <String,Note> mapOfNotes = new LinkedHashMap <String,Note>();
 	public Note (){;}
 	
-	public String getType() {
-		return accidental;
-	}
-	
 	public Note (String name, int pitch,int newOctave, int newVelocity, String noteType){
 		this.name = name; //includes any accidental and octave number
 		this.pitch = pitch; 
@@ -32,13 +23,9 @@ public class Note {
 		this.accidental = noteType;
 	}
 	
-	public Note (String name){
-		this.name = name; //includes any accidental and octave number
-	}
-	
 	//Add each note created during button creation with string + octave, and other note
 	//values stored in note object 
-	public  static Map <String,Note> getNotesMap (){
+	public static Map <String,Note> getNotesMap (){
 	  return mapOfNotes;
 	}
 	
@@ -46,12 +33,21 @@ public class Note {
 		mapOfNotes.put(noteName, aNote);
 	}
 	
-	protected static Note getNotes (String key){
+	public static Note getNotes (String key){
 		return mapOfNotes.get(key);
 	}
 	
-	protected static Collection<Note> getNotesValues (){
-		return mapOfNotes.values();
+	//Could not get the reference value to stop being overwritten, so left using this method as part of it
+//	public void setScaleDegree (String position){
+//		this.scaleDegree = position;
+//	}
+
+//	public String getScaleDegree (){
+//		return scaleDegree;
+//	}
+	
+	public String getType() {
+		return accidental;
 	}
 	
 	public int getPitch (){
@@ -76,6 +72,29 @@ public class Note {
 	
 	////////////////////////////////////////////////////
 	
+	public enum allNotesType {
+		C("C"),
+		CSHARP("C#"),
+		D("D"),
+		DSHARP("D#"),
+		E("E"),
+		F("F"),
+		FSHARP("F#"),
+		G("G"),
+		GSHARP("G#"),
+		A("A"),
+		ASHARP("A#"),
+		B("B");
+		
+		public final String note;
+		allNotesType(String note) {
+	        this.note = note;
+	    }
+	    public String getNote() {
+	        return note;
+	    }	    
+	}
+	
 	public enum NoteType {
      C, D, E, F, G,  A, B,
 	}
@@ -96,31 +115,6 @@ public class Note {
 	    }	    
 	}
 	
-	//Experiment to make an enum / String array of notes names
-	public enum allNotesNoteType {
-		 C(new String [] {"C"}),
-		 CSHARPORDFLAT(new String []{"Db,C#"}),
-		 DSHARPOREFLAT(new String [] {"Eb","D#"}),
-		  D(new String []{"D"}),
-		 E(new String [] {"E"}),
-		 F(new String []{"F"}), 
-		 
-		 FSHARP(new String [] {"Gb","F#"}),
-		 G(new String []{"G"}),
-		 GSHARP(new String []{"Ab","G#"}),
-		 A(new String []{"A"}), 
-		 ASHARP(new String [] {"Bb","A#"}),
-		 B(new String []{"B"});
-		
-		public final String [] note;
-		allNotesNoteType(String []note) {
-	        this.note = note;
-	    }
-	    public String [] getSharp() {
-	        return note;
-	    }	    
-	}
-	
 	public static int convertToPitch(String note) {
    	String symbol = "";
    	int octave = 0;;
@@ -138,14 +132,6 @@ public class Note {
    		octave = splitNote[2];
    	  }
 
-   	  // Find the corresponding note in the array.
-   	 /// for (int i = 0; i < notes.length; i++)
-   	  //for (int j = 0; j < notes[i].length; j++) {
-   	  //  if (notes[i][j].equals(symbol)) {
-   	    ///    return Character.getNumericValue(octave+1) * 12 + i;
-   	    //}
-   	  //}
-   	  
    	 for (int i = 0; i < ListOfScales.getChromaticScale().length; i++)
       	  for (int j = 0; j < ListOfScales.getChromaticScale()[i].length; j++) {
       	    if (ListOfScales.getChromaticScale()[i][j].equals(symbol)) {
@@ -156,5 +142,4 @@ public class Note {
    	  // If nothing was found, we return -1.
    	  return -1;
    	}
-	
 }

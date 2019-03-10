@@ -17,13 +17,7 @@ import javax.sound.midi.Transmitter;
 import tools.MIDIRecord;
 
 public class MidiReceiver implements Receiver {
-	//static Timer timer;
-	//static Timer timerSustain;
-	//private double ticksPerSecond;
-	//private double tickSize;
-	//private int restResolution = 0;
-	//private boolean endSustainCycle = false;
-	
+
 	private MidiDevice device;
 	private Sequencer sequencer;
 	private Transmitter seqTrans;
@@ -80,14 +74,10 @@ public class MidiReceiver implements Receiver {
 		device = MidiSystem.getMidiDevice(synthInfos.get(0));
 		loadUp();
 	}
-
-	
-	
 	
 	public int getCurrentSequenceResolution() {
 		return resolution; 
 	}
-	
 	
 	// To keep instance of record class object (Could use singleton pattern
 	// alternative)
@@ -120,14 +110,6 @@ public class MidiReceiver implements Receiver {
 		return track;
 	}
 
-	public void setSequenceCounter(int seqCounter) {
-		sequenceCounter = seqCounter;
-	}
-
-	public int getSequenceCounter() {
-		return sequenceCounter;
-	}
-
 	public void storeSeq(Sequence sequence) {
 		this.sequence = sequence;	
 		resolution = sequence.getResolution(); // stored resolution as its base
@@ -136,10 +118,6 @@ public class MidiReceiver implements Receiver {
 	public Sequence getSequence() {
 		return sequence;
 	}
-
-	//public void createNewSequence(int newDivision) throws InvalidMidiDataException {
-		//sequence = new Sequence(Sequence.PPQ, newDivision);
-	//}
 
 	public MidiDevice returnDevice() {
 		return device;
@@ -151,14 +129,6 @@ public class MidiReceiver implements Receiver {
 
 	public Sequencer returnSequencer() {
 		return sequencer;
-	}
-
-	public Receiver returnSequencerReceiver() {
-		return seqRcvr;
-	}
-
-	public Transmitter returnSeqTransmitter() {
-		return seqTrans;
 	}
 
 	@Override
