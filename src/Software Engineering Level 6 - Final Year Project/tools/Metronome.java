@@ -15,13 +15,9 @@ import javax.sound.midi.Track;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JSplitPane;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import keyboard.FeatureTabs;
-import keyboard.KeyboardInteractions;
 import midi.MidiMessageTypes;
 import midiDevices.MidiReceiver;
 
@@ -102,7 +98,6 @@ public  class Metronome implements MetaEventListener {
 	
        public void stopLoop (){
 		sequencer.stop();
-		//MidiMessageTypes.getInstance().setPlayTempoCounter(0);
 	    }
 
    	public JPanel tempoSlider() {
@@ -133,9 +128,7 @@ public  class Metronome implements MetaEventListener {
    		   		currentTempo.setText("BPM: "+tempoSlider.getValue());
    		    	MidiMessageTypes.getInstance().tempoSliderChanged(true);
    		    } });
-	
-       // 
-        
+
         currentTempo = new JLabel();
         currentTempo.setText(tempoSlider.getValue()+" BPM");
         currentTempo.setForeground(Color.BLACK);
@@ -143,18 +136,10 @@ public  class Metronome implements MetaEventListener {
         //DOES NOT NEED MINIMUM SIZE - RUINS SCALING
         currentTempo.setPreferredSize(new Dimension (100, 40));
         
-        
         instancePanel.add(currentTempo);
         instancePanel.add(tempoSlider);
-        instancePanel.setPreferredSize(new Dimension(featureWidth/4 - 20, featureWidth/8));
-        //instancePanel.setBounds(0, 100, featureWidth/4 - 20, featureWidth/8);
-        
-		//KeyboardInteractions volumeSliderListener = new KeyboardInteractions(tempoSlider);
-		//tempoSlider.addChangeListener(volumeSliderListener);
-        
-        
+        instancePanel.setPreferredSize(new Dimension(featureWidth/4 - 20, featureWidth/8)); 
 		return instancePanel;
-		//keyboardLayered.add(slider);
 	}
    
   

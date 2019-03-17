@@ -144,9 +144,9 @@ public class FeatureTabs {
 		
 		JPanel rightTempoPane = new JPanel();
 		//As last null is mouse listener, might need to modify as below seperate listener will replace null
-		JButton playTempoButton = SwingComponents.getInstance().customJButton(0,0,100,20,null,null);
+		JButton playTempoButton = SwingComponents.getInstance().customJButton(100,20,null,null);
 		playTempoButton.setText("Play Tempo");
-		JButton stopTempoButton = SwingComponents.getInstance().customJButton(playTempoButton.getWidth() + 10,0,100,20,null,null);
+		JButton stopTempoButton = SwingComponents.getInstance().customJButton(100,20,null,null);
 		stopTempoButton.setText("Stop Tempo");
 		
 		

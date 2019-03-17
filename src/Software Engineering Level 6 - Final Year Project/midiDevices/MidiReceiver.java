@@ -1,5 +1,6 @@
 package midiDevices;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiDevice;
@@ -14,7 +15,9 @@ import javax.sound.midi.Synthesizer;
 import javax.sound.midi.Track;
 import javax.sound.midi.Transmitter;
 
+import keyboard.Note;
 import tools.MIDIRecord;
+import tools.PlaybackFunctions;
 
 public class MidiReceiver implements Receiver {
 
@@ -144,6 +147,22 @@ public class MidiReceiver implements Receiver {
 	public void freeNotePlay(int pitch) throws InvalidMidiDataException {
 		ShortMessage noteOnMessage = new ShortMessage(ShortMessage.NOTE_ON, 0, pitch, 100);
 		send(noteOnMessage, -1);
+		
+//		if(PlaybackFunctions.getStoredPreNotes().size()>0){
+//			PlaybackFunctions.resetChordsColor();
+//			PlaybackFunctions.emptyNotes();
+//		}
+//		
+//		//Might need to remove this bottom part
+//		Note playNote = null;
+//		for(Note aNote : Note.getNotesMap().values()){
+//			if(aNote.getPitch() == pitch){
+//				playNote = aNote;
+//				break;
+//			}
+//		}	
+//		PlaybackFunctions.storedPreColorNotes(playNote);
+//		PlaybackFunctions.colorChordsAndScales(playNote,Color.BLUE);
 
 	}
 

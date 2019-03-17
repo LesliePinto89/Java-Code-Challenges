@@ -1,18 +1,24 @@
 package midi;
 
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.io.PrintStream;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Set;
+
+import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.Synthesizer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
+import keyboard.Note;
 import midiDevices.MidiReceiver;
 import tools.DebugConsole;
+import tools.PlaybackFunctions;
 import tools.SwingComponents;
 
 public class MidiMessageTypes {
@@ -88,6 +94,35 @@ public class MidiMessageTypes {
 	public MidiChannel getMidiChannel() {
 		return channel;
 	}
+	
+	//This is a function that processes the argument Meta function
+	public void metaEventColors(MetaMessage meta){
+		if (meta.getType() ==1) {
+			if(PlaybackFunctions.getStoredPreNotes().size()>0){
+				PlaybackFunctions.resetChordsColor();
+				//PlaybackFunctions.emptyNotes();
+			}
+			byte bytePitch = meta.getMessage()[4];
+			Note playNote = null;
+			for(Note aNote : Note.getNotesMap().values()){
+				if(aNote.getPitch() == bytePitch){
+					playNote = aNote;
+					break;
+					
+				}
+			}	
+			PlaybackFunctions.storedPreColorNotes(playNote);
+			PlaybackFunctions.colorChordsAndScales(playNote,Color.BLUE);
+			
+		}
+		
+//		else if (meta.getType() ==2) {
+//			System.out.println("Note off");
+//			PlaybackFunctions.resetChordsColor();
+//			PlaybackFunctions.emptyNotes();
+//		}
+	}
+	
 	
 		public void storedTemposMap (){
 			tempoEnums = EnumSet.allOf(tempoNames.class);

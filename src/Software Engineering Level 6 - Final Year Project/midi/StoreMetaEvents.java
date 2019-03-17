@@ -17,53 +17,78 @@ public class StoreMetaEvents {
 	public StoreMetaEvents() {
 	}
 
-	// Will use to show visualisation with complete recorded sequence
-	public static void createFullSequenceMetaData() throws InvalidMidiDataException {
-		int i = 1;
-		
-		Track[] tracks = MidiReceiver.getInstance().getSequence().getTracks();
-		//metaBytesEventMessages = new MetaMessage [reciever.getSequence().getTracks()[0].size()];
-		
-		for (Track track : tracks) {
-			 if (i == track.size()-1) {
-				 break;}
-			generateMetaData(track);
-			i++;
-		}
-	}
+//	// Will use to show visualisation with complete recorded sequence
+//	public static void createFullSequenceMetaData() throws InvalidMidiDataException {
+//		int i = 1;
+//		
+//		Track[] tracks = MidiReceiver.getInstance().getSequence().getTracks();
+//		//metaBytesEventMessages = new MetaMessage [reciever.getSequence().getTracks()[0].size()];
+//		
+//		for (Track track : tracks) {
+//			 if (i == track.size()-1) {
+//				 break;}
+//			generateMetaData(track);
+//			i++;
+//		}
+//	}
 
 	// Used the completion sequence track rather than a per meta event message
 	//This method had a final modifier not static originally
-	public static void generateMetaData(Track track) throws InvalidMidiDataException {
+	//public static void generateMetaData(Track track) throws InvalidMidiDataException {
 		
-		trk = MidiReceiver.getInstance().getSequence().createTrack();
-		for (int ii = 0; ii < track.size(); ii++) {
-			MidiEvent me = track.get(ii);
-			MidiMessage mm = me.getMessage();
-			if (mm instanceof ShortMessage) {
-				ShortMessage sm = (ShortMessage) mm;
-				int command = sm.getCommand();
-				int type = -1;
-				if (command == ShortMessage.NOTE_ON) {
-					type = 1;
-				} else if (command == ShortMessage.NOTE_OFF) {
-					type = 2;
-				}
-				if (type > 0) {
-					
-					byte[] messageByteArray = sm.getMessage();
-					int l = (messageByteArray == null ? 0 : messageByteArray.length);
-					
-					MetaMessage metaMessage = new MetaMessage(type, messageByteArray, l);
-					
-					//metaBytesEventMessages[ii] = metaMessage; //Add metaMessage to metaMessage array
-					//metaTickEventMessages.add(me.getTick()); //Add to list
-					
-					MidiEvent me2 = new MidiEvent(metaMessage, me.getTick());
-					trk.add(me2);
-				}
-			}
-		}
+//		trk = MidiReceiver.getInstance().getSequence().createTrack();
+//		for (int ii = 0; ii < track.size(); ii++) {
+//			MidiEvent me = track.get(ii);
+//			MidiMessage mm = me.getMessage();
+//			if (mm instanceof ShortMessage) {
+//				ShortMessage sm = (ShortMessage) mm;
+//				int command = sm.getCommand();
+//				int type = -1;
+//				if (command == ShortMessage.NOTE_ON) {
+//					type = 1;
+//				} else if (command == ShortMessage.NOTE_OFF) {
+//					type = 2;
+//				}
+//				if (type > 0) {
+//					
+//					byte[] messageByteArray = sm.getMessage();
+//					int l = (messageByteArray == null ? 0 : messageByteArray.length);
+//					
+//					MetaMessage metaMessage = new MetaMessage(type, messageByteArray, l);
+//					
+//					//metaBytesEventMessages[ii] = metaMessage; //Add metaMessage to metaMessage array
+//					//metaTickEventMessages.add(me.getTick()); //Add to list
+//					
+//					MidiEvent me2 = new MidiEvent(metaMessage, me.getTick());
+//					trk.add(me2);
+//				}
+//			}
+//		}
+		
+	public static final void generateMetaData(Track track, Track trk) throws InvalidMidiDataException {
+		        for (int ii = 0; ii < track.size(); ii++) {
+		            MidiEvent me = track.get(ii);
+		            MidiMessage mm = me.getMessage();
+		            if (mm instanceof ShortMessage) {
+		                ShortMessage sm = (ShortMessage) mm;
+		                int command = sm.getCommand();
+		                int com = -1;
+		                if (command == ShortMessage.NOTE_ON) {
+		                    com = 1;
+		                } else if (command == ShortMessage.NOTE_OFF) {
+		                    com = 2;
+		                }
+		                if (com > 0) {
+		                    byte[] b = sm.getMessage();
+		                    int l = (b == null ? 0 : b.length);
+		                    MetaMessage metaMessage = new MetaMessage(com, b, l);
+		                    MidiEvent me2 = new MidiEvent(metaMessage, me.getTick());
+		                    trk.add(me2);
+		                }
+		            }
+		        }
+		
+		
 	}
 	
 	

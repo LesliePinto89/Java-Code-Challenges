@@ -40,7 +40,7 @@ public class ListOfScales {
 		Note key = mapOfNotes.get(modelNote);
 
 	//Diatonic Scales / Modes
-	Scale.storeScales(majorOrIonionScale(key));
+	Scale.storeScales(majorOrIonianScale(key));
 	Scale.storeScales(dorianScale(key));
 	Scale.storeScales(phrygianScale(key));
 	Scale.storeScales(lydianScale(key));
@@ -50,6 +50,8 @@ public class ListOfScales {
      ///////////////
 	
 	Scale.storeScales(majorPentatonicScale(key));
+	Scale.storeScales(minorPentatonicScale(key));
+	Scale.storeScales(bluesScale(key));
 	Scale.storeScales(ascendingChromaticScale(key));
 	Scale.storeScales(descendingChromaticScale(key));
 	Scale.storeScales(augmentedScale(key));
@@ -98,13 +100,13 @@ public class ListOfScales {
 		Scale findScale = null;
 		switch (chosenScale){
 		
-		case "maj": findScale = majorOrIonionScale(foundNote);
-		            getMajorModes(listChordsinstance,findScale);
-					break;
-
-		case "min": findScale = minorOrAeolianScale(foundNote);
-		           getMinorModes(listChordsinstance,findScale);
-					break;
+//		case "maj": findScale = majorOrIonionScale(foundNote);
+//		            getMajorModes(listChordsinstance,findScale);
+//					break;
+//
+//		case "min": findScale = minorOrAeolianScale(foundNote);
+//		           getMinorModes(listChordsinstance,findScale);
+//					break;
 		
 		case "lydian": findScale = lydianScale(foundNote);
 		getMajorModes(listChordsinstance,findScale);
@@ -147,11 +149,13 @@ public class ListOfScales {
 			// value. e.g: step = 2, To find 48 compared to 46, this makes 48
 			// rather than 44.
 			if (passedNote.getPitch() == entry.getValue().getPitch() - step)
+			//if (passedNote.getPitch() == entry.getValue().getPitch() - step)
 			{
 				String key = entry.getKey();
 				Note stepNote = mapOfNotes.get(key);
 				return stepNote;
 			}
+			
 		}
 		//Cant remember why this is here
 		//ListOfChords.getInstance().getKeyScaleChords();g
@@ -164,12 +168,24 @@ public class ListOfScales {
 	public Scale majorPentatonicScale(Note rootKey) {
 		String scaleName = "Pentatonic Major";
 		Note tonic = rootKey; //do
-		Note subtonic = getKey(tonic, 2); //re
-		Note mediant = getKey(subtonic, 2); //mi
-		Note dominant = getKey(mediant, 2); //so
-		Note submediant = getKey(dominant, 2); //so
-		Note endOctaveNote = getKey(submediant, 3);
-		Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, dominant, submediant, endOctaveNote);
+		Note mediant = getKey(tonic, 2); //re
+		Note subDominant = getKey(mediant, 2); //mi
+		Note dominant = getKey(subDominant, 3); //so
+		Note superTonic = getKey(dominant, 2); //so
+		Note endOctaveNote = getKey(superTonic, 3);
+		Scale aScale = new Scale(scaleName, tonic, mediant, subDominant, dominant, superTonic, endOctaveNote);
+		return aScale;
+	}
+	
+	public Scale minorPentatonicScale(Note rootKey) {
+		String scaleName = "Pentatonic Minor";
+		Note tonic = rootKey; //do
+		Note mediant = getKey(tonic, 3); //re
+		Note subDominant = getKey(mediant, 2); //mi
+		Note dominant = getKey(subDominant, 2); //so
+		Note superTonic = getKey(dominant, 3); //so
+		Note endOctaveNote = getKey(superTonic, 2);
+		Scale aScale = new Scale(scaleName, tonic, mediant, subDominant, dominant, superTonic, endOctaveNote);
 		return aScale;
 	}
 	
@@ -190,6 +206,19 @@ public class ListOfScales {
 			Note endOctaveNote = getKey(submediant, 1); 			
 			Scale aScale = new Scale(scaleName, tonic, subtonic, mediant, subdominant, dominant, submediant,
 					endOctaveNote);
+			return aScale;
+		}
+		
+		public Scale bluesScale(Note rootKey) {
+			String scaleName = "Blues";
+			Note tonic = rootKey; //do
+			Note subTonic = getKey(tonic, 3); //re
+			Note mediant = getKey(subTonic, 2); //re
+			Note subDominant = getKey(mediant, 1); //mi
+			Note dominant = getKey(subDominant, 1); //so
+			Note superTonic = getKey(dominant, 3); //so
+			Note endOctaveNote = getKey(superTonic, 2);
+			Scale aScale = new Scale(scaleName, tonic, subTonic, mediant, subDominant, dominant, superTonic, endOctaveNote);
 			return aScale;
 		}
 
@@ -215,8 +244,8 @@ public class ListOfScales {
 	// A diatonic scale is an heptatonic scale that is broken into 5 whole
 	// notes and 2 semi-tones. There are 7 modes of the Diatonic Major Scale,
 	// each one being based off one of the notes in a 7 note octave.
-	public Scale majorOrIonionScale(Note rootKey) {
-		String scaleName = "Diantonic Ionion";
+	public Scale majorOrIonianScale(Note rootKey) {
+		String scaleName = "Diantonic Ionian";
 		
 		
 		Note tonic = rootKey;     

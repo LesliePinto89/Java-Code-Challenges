@@ -163,8 +163,8 @@ public class MIDIRecord {
 		
 		//Add complete sequence's meta data - This is really only useful for multi-track sequences
 		//As the meta data is stored in a track when written to a .mid file
-		StoreMetaEvents newStore = new StoreMetaEvents();
-		newStore.createFullSequenceMetaData();
+		//StoreMetaEvents newStore = new StoreMetaEvents();
+		//StoreMetaEvents.createFullSequenceMetaData();
 		
 		//Debugging purpose which shows new meta track made here but not above track array
 		//Track [] tracksEdited = MidiReceiver.getInstance().getSequence().getTracks();

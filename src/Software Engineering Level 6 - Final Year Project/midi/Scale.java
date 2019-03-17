@@ -1,17 +1,17 @@
 package midi;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import javax.swing.DefaultListModel;
-
 import keyboard.Note;
-import midi.Chord.fullyDimishedChords;
+import midi.Chord.pureMajorBasedChords;
+
 
 public class Scale extends Note {
 
 	private String scaleName = "";
+	private static String currentScaleKey = "";
+	private static String currentScaleName = "";
+	private static ArrayList <String> scaleList = new ArrayList<String>();	
 
 	public enum ascendingSolfege {
 		 Do,Di, Re,	Ri, Mi, Fa, Fi, Sol, Si, La, Li, Ti;
@@ -36,26 +36,63 @@ public class Scale extends Note {
 	public enum octaTonicDegree {
 		tonic,subtonic,mediant,subdominant, dominant, submediant, supertonic, eigthNote, newTonic;
 	}
+	
 
+	public enum pureMajorBasedScales {
+		diatonicMajor("Diantonic Ionion"), 
+		pentatonicMajor("Pentatonic Major");
+	
+		public final String scale;
+		pureMajorBasedScales(String scale) {
+			this.scale = scale;
+		}
+		public String getScaleName() {
+			return scale;
+		}		
+	}
+	
+	public static ArrayList<String> getPureMajorScales  (){
+		scaleList = new ArrayList<String>();
+		pureMajorBasedScales[] pureMajorScalesArray = pureMajorBasedScales.values();
+	for (pureMajorBasedScales aValue : pureMajorScalesArray){
+		scaleList.add(aValue.getScaleName());
+	}
+	return scaleList;
+	}
+	
 
-
-
-	//private String lastScale = "";
- 
 	//Used to construct and edit list of notes to make a scale adjacent to scale name
     private  ArrayList<Note> scaleNotes = new ArrayList<Note>();
-    
-    //private static Map<String,Scale> scaleNames = new LinkedHashMap<String,Scale>();
-  private static ArrayList<Scale> tempScaleStorage = new ArrayList<Scale>();
-  private static ArrayList<Scale> allScaleNames = new ArrayList<Scale>();
-  
-  
-  
+    private static ArrayList<Scale> tempScaleStorage = new ArrayList<Scale>();
+    private static ArrayList<Scale> allScaleNames = new ArrayList<Scale>();
     private static DefaultListModel<String> listScaleNames = new DefaultListModel<String>();
     
     
-    public  ArrayList <Note> getScaleNotesList (){
+    public static void storeScaleKey (String scaleKey){
+    	currentScaleKey = scaleKey;
+	}
+		
+	public static String getScaleKey (){
+		return currentScaleKey;
+	}
+	
+	public static void storeCurrentScaleName (String scaleName){
+		currentScaleName = scaleName;
+	}
+		
+	//Gets current scale name, not instantiated scale name as at bottom of this class
+	public static String getCurrentScaleName (){
+		return currentScaleName;
+	}
+	
+    
+    
+    public ArrayList <Note> getScaleNotesList (){
 		  return scaleNotes;
+	}
+    
+    public Note getScaleNote (int index){
+		  return scaleNotes.get(index);
 	}
     
 	public static DefaultListModel <String> getScales (){
@@ -76,7 +113,7 @@ public class Scale extends Note {
 		
 
 		
-		//Use for either acutal tonic or solfige Do
+		//Use for either actual tonic or solfiege Do
 			 keyName = aScale.getTonic().getName();
 			keyName = keyName.substring(0,keyName.length() - 1);
 		
@@ -126,8 +163,6 @@ public class Scale extends Note {
 	public Scale(String scaleName, Note note1, Note note2, Note note3, Note note4, Note note5, Note note6,
 			Note newTonic) {
 		
-
-		
 		this.scaleName = scaleName;
 		this.scaleNotes.add(note1);
 		this.scaleNotes.add(note2);
@@ -141,7 +176,6 @@ public class Scale extends Note {
 	// Heptatonic
 	public Scale(String scaleName, Note note1, Note note2, Note note3, Note note4, Note note5, Note note6, Note note7,
 			Note newTonic) {
-
 		
 		this.scaleName = scaleName;
 		this.scaleNotes.add(note1);
@@ -158,10 +192,7 @@ public class Scale extends Note {
 	public Scale(String scaleName, Note note1, Note note2, Note note3, Note note4, Note note5, Note note6, Note note7,
 			Note note8, Note note9, Note note10, Note note11, Note note12) {
 		
-
 		if (scaleName.equals("Ascending Chromatic")){
-			
-			
 		this.scaleName = scaleName;
 		this.scaleNotes.add(note1);
 		this.scaleNotes.add(note2);
@@ -195,16 +226,12 @@ public class Scale extends Note {
 			this.scaleNotes.add(note11);
 			this.scaleNotes.add(note12);
 			}
-		
-		
 	}
 	
 	//Fully Diminished or Dominant diminished scale
 	public Scale(String scaleName, Note note1, Note note2, Note note3, Note note4, Note note5, Note note6, Note note7,
 			Note note8, Note newTonic) {
 		scaleNotes = new ArrayList<Note>();
-
-		
 		this.scaleName = scaleName;
 		this.scaleNotes.add(note1);
 		this.scaleNotes.add(note2);	
@@ -224,7 +251,6 @@ public class Scale extends Note {
 
 	public Note getTonic() {
 		return scaleNotes.get(0);
-		//return tonic;
 	}
 
 	public Note getSubTonic() {

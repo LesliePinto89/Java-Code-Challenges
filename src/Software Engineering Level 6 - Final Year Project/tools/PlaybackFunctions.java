@@ -28,6 +28,7 @@ public class PlaybackFunctions {
 	private static Note currentRandomInterval;
 	private static Note currentMelodicInterval;
 	private static int direction;
+	private static boolean displayOrPlayScale;
 	
 	public static void colorChordsAndScales(Note aNote,Color aColor){
 		JButton foundButton;
@@ -73,6 +74,12 @@ public class PlaybackFunctions {
 		else if(MidiMessageTypes.getInstance().getMelodyInterval()){ 
 		 lastNote = storedPreColorChords.get(medoldicIndexCounter-1);
 		}
+		
+		//Feature set 3 only
+		else {
+			lastNote = storedPreColorChords.get(medoldicIndexCounter-1);
+		}
+		
 		
 		if(lastNote.getType().equals("Sharp")){
 		colorChordsAndScales(lastNote,Color.BLACK);	
@@ -180,16 +187,26 @@ public class PlaybackFunctions {
     }
 	
 	
+	public static void timeDelay (int fixedTime){
+		Instant instantOnTime = Instant.now();
+		long startTime = instantOnTime.toEpochMilli();
+
+		Instant newInstantOnTime = Instant.now();
+		long endTime = newInstantOnTime.toEpochMilli();
+		while (!(endTime - startTime > fixedTime)) {
+
+			newInstantOnTime = Instant.now();
+			endTime = newInstantOnTime.toEpochMilli();
+	}
+	}
+    
 	///////////////////////////////////
 	
 	public static void playIntervalNote(Note intervalNote) throws InvalidMidiDataException {	
 		 SwingComponents swingComponents = SwingComponents.getInstance();
 		 MidiMessageTypes messages = MidiMessageTypes.getInstance();
-		//ArrayList<Note> notesInChord = foundChord.getChordNotes();
 			
 		 //Only during color mode on and press random note button
-		
-		 
 		 if (swingComponents.getColorToggleStatus() && messages.getRandomState() && randomIntervalCounter>=1){
 		 resetLastNoteColor();                     
 		 }
@@ -205,6 +222,11 @@ public class PlaybackFunctions {
 			 resetNextNoteColor();
 		 }
 		 
+		 //Use for feature set 3 only
+		 else if(swingComponents.getColorToggleStatus() && medoldicIndexCounter>=1){
+			 resetLastNoteColor();
+		 }
+		 
 		 
 
 		 if (!swingComponents.getColorToggleStatus()){
@@ -215,9 +237,6 @@ public class PlaybackFunctions {
 				storedPreColorNotes(intervalNote);
 				colorChordsAndScales(intervalNote,Color.BLUE);
 			}
-		 
-		 
-		 
 			ShortMessage noteOne = new ShortMessage(ShortMessage.NOTE_ON, 0, intervalNote.getPitch(), 50);
 			MidiReceiver.getInstance().send(noteOne, -1);	
 		
@@ -228,7 +247,6 @@ public class PlaybackFunctions {
 				
 			}
 				 randomIntervalCounter++; 
-				 //messages.storeRandomState(false);
 		}
 		else if(messages.getIntervalStateID()==2){
 			medoldicIndexCounter++;
@@ -236,17 +254,14 @@ public class PlaybackFunctions {
 		}
 		
 		else if(messages.getIntervalStateID()==1){
-			
 			PlaybackFunctions.setIndexCounter(PlaybackFunctions.getIndexCounter()-1);
 			intervalPrevCounter++;
-			//PlaybackFunctions.getPrevIntervalCounter()
-			//intervalCounter--;
-			
 		}
-			
-			
-		
-		
+		/*Used for playing scales as opposes to traversal of a scale using relative pitch feature
+		 *Might need to remove if causes problems*/
+		else {
+			medoldicIndexCounter++;
+		}
 	}
 	
 	public static void playAnyChordLength(Chord foundChord) throws InvalidMidiDataException, InterruptedException {	
@@ -263,46 +278,33 @@ public class PlaybackFunctions {
 		}
 	}
 	
-	
-	
-	
-	    //ADJUST THIS TO ONLY DISPLAY NOTES IN WHOLE, NOT PLAY THEM
-	    //For displaying scale only as hint mode
+       //This function display scale's notes and plays the indidivuasl notes only, when the
+	   //first condition is true
 		public static void displayOrPlayScale(Scale foundScale) throws InvalidMidiDataException, InterruptedException {
 			
 			SwingComponents swingComponents = SwingComponents.getInstance();
 			ArrayList<Note> notesInChord = foundScale.getScaleNotesList();
 			for (Note aNote : notesInChord) {
 				
-//				Instant instantOnTime = Instant.now();
-//				long startTime = instantOnTime.toEpochMilli();
-				
+				if (isPlayOrDisplay()){
+					ShortMessage noteOne = new ShortMessage(ShortMessage.NOTE_ON, 0, aNote.getPitch(), 50);
+					MidiReceiver.getInstance().send(noteOne, -1);
+					timeDelay(1000);
+				}
 				//Add second condition to other methods if needed
-				if(swingComponents.getColorToggleStatus() || swingComponents.getRangeColorToggleStatus()){
+				else if(swingComponents.getColorToggleStatus() || swingComponents.getRangeColorToggleStatus()){
 					storedPreColorNotes(aNote);
 					colorChordsAndScales(aNote,Color.BLUE);
 					
 				}
-				
-				//CURRENT PLAYBACK FUNCTION IF SCALES
-//				if(SwingComponents.getInstance().getDisplayScaleState()==false){
-//				
-//					ShortMessage noteOne = new ShortMessage(ShortMessage.NOTE_ON, 0, aNote.getPitch(), 50);
-//				MidiReceiver.getInstance().send(noteOne, -1);
-//				Thread.sleep(1000);
-//				}
-				//intervalCounter++;
-				
-				
-				
-//				Instant newInstantOnTime = Instant.now();
-//				long endTime = newInstantOnTime.toEpochMilli();
-//				while (!(endTime - startTime > 1000)){
-//					
-//					 newInstantOnTime = Instant.now();
-//				     endTime = newInstantOnTime.toEpochMilli();
-//				}
 			}
 		}
 		
+		public static void playOrDisplay(boolean change){
+			displayOrPlayScale = change;
+		}
+		
+		public static boolean isPlayOrDisplay(){
+			return displayOrPlayScale;
+		}
 }

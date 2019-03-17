@@ -1,15 +1,22 @@
 package keyboard;
 
 import java.awt.AWTException;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.time.Instant;
 import java.util.Timer;
+
+import javax.sound.midi.ControllerEventListener;
 import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MetaEventListener;
+import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
+import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
+import javax.sound.midi.Track;
 import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JSlider;
@@ -19,13 +26,16 @@ import javax.swing.event.ChangeListener;
 import midiDevices.MidiReceiver;
 import midi.DurationTimer;
 import midi.MidiMessageTypes;
+import midi.StoreMetaEvents;
 import tools.MIDIFileManager;
 import tools.MIDIRecord;
 import tools.Metronome;
+import tools.PlaybackFunctions;
 import tools.SwingComponents;
 import midiDevices.GetInstruments;
 
-public class KeyboardInteractions implements ActionListener, ChangeListener, MouseListener {
+public class KeyboardInteractions implements ActionListener, ChangeListener, MouseListener,MetaEventListener
+{
 
 	// Swing components
 	private JSlider slider;
@@ -34,8 +44,11 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	private JToggleButton debugButton;
 	private JToggleButton playMIDI;
 	private JToggleButton saveMIDI;
+	private JButton homeButton;
 	private JList<String> allInstruments;
 	private JList<String> tempoList;
+	
+	private byte bytePitch;
 	
 	// MIDI Timing and message variables
 	private int durationValue;
@@ -73,12 +86,14 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	 }
 	}
 
-	
+	public KeyboardInteractions(JButton aButton) {
+		this.homeButton = aButton;
+	}
 	
 	
 	public KeyboardInteractions(JToggleButton optionButton) {
 		switch (optionButton.getName()) {
-		case "debugButton" : 
+		case "Debug" : 
 			this.debugButton = optionButton; 
 			break;
 		case "playButton":
@@ -291,7 +306,12 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	public void actionPerformed(ActionEvent e) {
 		Object obj = e.getSource();
 		try {
-		if (obj.equals(saveMIDI)) {
+		
+		if (obj.equals(homeButton)){
+				//VirtualKeyboard.getInstance().home();
+		}
+			
+		else if (obj.equals(saveMIDI)) {
 			// Go to another class to make a midi file
 			MIDIFileManager.getInstance().saveNewMIDIFile(saveMIDI);
 		}
@@ -359,6 +379,10 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 		else if (obj.equals(recordMIDI)) {
 				record.recordAction(recordMIDI);
 		}
+		
+		else if (obj.equals(homeButton)){
+		//Placeholder for now	
+		}
 		else if (obj.equals(playMIDI)) {
 			// When sequence tracks are not empty, play sequence.
 
@@ -366,8 +390,28 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 				int empty = midiReceiveInstance.getSequence().getTracks()[0].size();
 				if (midiReceiveInstance.isRecEnded() == true
 						|| empty >= 2 && midiReceiveInstance.isRecEnded() == true) {
+					
+//					int[] types = new int[128];
+//			        for (int ii = 0; ii < 128; ii++) {
+//			            types[ii] = ii;
+//			        }
+//					midiReceiveInstance.returnSequencer().addControllerEventListener(this, types);
+					
+					//Create meta event data
+					Track [] tracks = midiReceiveInstance.returnSequencer().getSequence().getTracks();
+		            Track trk = midiReceiveInstance.returnSequencer().getSequence().createTrack();
+		            for (Track track : tracks) {
+		            	StoreMetaEvents.generateMetaData(track, trk);
+		            }
+					midiReceiveInstance.returnSequencer().addMetaEventListener(this);
+					
+					//Have to set the new sequence with a track of meta events onto the sequence
+					Sequence editSequence = midiReceiveInstance.returnSequencer().getSequence();
+					
+					midiReceiveInstance.returnSequencer().setSequence(editSequence);
 					midiReceiveInstance.returnSequencer().setTickPosition(0);
 					midiReceiveInstance.returnSequencer().start();
+
 					if (midiReceiveInstance.returnSequencer().isRunning() == true) {
 						playMIDI.setSelected(false);
 						playMIDI.setEnabled(true);
@@ -389,4 +433,23 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	public void mouseExited(MouseEvent e) {
 
 	}
+
+	@Override
+    public void meta(MetaMessage metaRec) {
+		
+	 messages.metaEventColors(metaRec);
+    }
+	
+
+//	 @Override
+//     public void controlChange(ShortMessage event) {
+//         int command = event.getCommand();
+//         if (command == ShortMessage.NOTE_ON) {
+//             System.out.println("CEL - note on!");
+//         } else if (command == ShortMessage.NOTE_OFF) {
+//             System.out.println("CEL - note off!");
+//         } else {
+//             System.out.println("CEL - unknown: " + command);
+//         }
+//     }
 }

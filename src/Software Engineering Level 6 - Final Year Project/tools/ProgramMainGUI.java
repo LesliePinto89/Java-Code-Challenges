@@ -31,6 +31,7 @@ import javax.swing.JTextArea;
 
 import midiDevices.GetInstruments;
 import keyboard.VirtualKeyboard;
+import midi.ChordProgression;
 import midi.DurationTimer;
 import midi.ListOfChords;
 import midi.MidiMessageTypes;
@@ -57,7 +58,8 @@ public class ProgramMainGUI implements MouseListener {
 	private JPanel bottomBlockPane = new JPanel();
 	private JPanel leftBlockPane = new JPanel();
 	private JPanel rightBlockPane = new JPanel();
-	private boolean startup = true;
+	private boolean startup = false;
+	private boolean returned = false;
 	private GridBagConstraints outerFrameGUIConstraints = new GridBagConstraints();
 	private SwingComponents components = SwingComponents.getInstance();
 
@@ -98,7 +100,7 @@ public class ProgramMainGUI implements MouseListener {
 		loadProgramWindowFrameGUI();
 		loadProgramOptions();
 		
-		if (startup == true) {
+		if (startup ==false) {
 
 			// Each of these classes use the Singleton pattern as the
 			// application only needs one instance of them for reference.
@@ -111,6 +113,7 @@ public class ProgramMainGUI implements MouseListener {
 			GetInstruments.getInstance();
 			Metronome.getInstance();
 			ScreenPrompt.getInstance();
+			ChordProgression.getInstance();
 
 			// Load all notes for set piano (e.g. 61, 88) on system startup
 			VirtualKeyboard.getInstance().createWholeKeys();
@@ -125,7 +128,7 @@ public class ProgramMainGUI implements MouseListener {
 			listInstance.loadHalfDimishedChords(listInstance.getAllKeyNotes());
 			listInstance.loadFullyDiminishedScaleChords(listInstance.getAllKeyNotes());
 			
-			startup = false;
+			startup = true;
 			// ListOfChords.getInstance().setAllKeyNotes(); //Load all chords
 			// for all keys major/minor scales
 		}
@@ -148,14 +151,6 @@ public class ProgramMainGUI implements MouseListener {
 
 
 	public void createGUIBorder() throws IOException {
-//		topBlockPane = components.generateEventPanel(screenWidth, screenHeight / 6, null, Color.decode("#181818"),
-//				Color.decode("#008080"), 0, 0, 2, 0);
-//		leftBlockPane = components.generateEventPanel(screenWidth / 12, screenHeight / 2, null, Color.decode("#181818"),
-//				Color.decode("#008000"), 0, 0, 2, 0);
-//		rightBlockPane = components.generateEventPanel(screenWidth / 12, screenHeight / 2, null,
-//				Color.decode("#181818"), Color.decode("#008000"), 0, 0, 2, 0);
-//		bottomBlockPane = components.generateEventPanel(screenWidth, screenHeight / 6, null, Color.decode("#181818"),
-//				Color.decode("#008080"), 0, 0, 2, 0); 
 		BufferedImage topBarImage = ImageIO.read(new File("src/Images/TopBar.png"));
 		BufferedImage bottomBarImage = ImageIO.read(new File("src/Images/BottomBar.png"));
 		
@@ -173,90 +168,57 @@ public class ProgramMainGUI implements MouseListener {
 		centerPane.setPreferredSize(
 				new Dimension(screenWidth / 2 + screenWidth / 4, screenHeight / 2 + screenHeight / 3));
 		centerPane
-				.setMinimumSize(new Dimension(screenWidth / 2 + screenWidth / 4, screenHeight / 2 + screenHeight / 3));
+				.setMinimumSize(new Dimension(screenWidth / 2 + screenWidth / 3, screenHeight / 3));
 		centerPane.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 		centerPane.setBackground(Color.decode("#696969"));
 		centerPane.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 2, Color.decode("#404040")));
 
-		//Color c=new Color(1f,0f,0f,.5f );
-		//contentPane.setBackground(Color.decode("#181818"));
-		//centerPane.setBackground(Color.decode("#181818"));
-		
-		outerFrameGUIConstraints = components.conditionalConstraints(1, 0, 0, 0, GridBagConstraints.PAGE_START,
-				GridBagConstraints.HORIZONTAL);
+		outerFrameGUIConstraints = components.conditionalConstraints(1, 0, 0, 0,GridBagConstraints.HORIZONTAL);
+		outerFrameGUIConstraints.anchor =GridBagConstraints.PAGE_START;
 		contentPane.add(topBlockPane, outerFrameGUIConstraints);
 
-		outerFrameGUIConstraints = components.conditionalConstraints(0, 0, 0, 1, GridBagConstraints.LINE_START,
-				GridBagConstraints.VERTICAL);
+		outerFrameGUIConstraints = components.conditionalConstraints(0, 0, 0, 1,GridBagConstraints.VERTICAL);
+		
+		outerFrameGUIConstraints.anchor =GridBagConstraints.LINE_START;
 		//The negative value is used as the panels use images, which removes original aligned  panel
 		outerFrameGUIConstraints.insets = new Insets(0, 0, -5, 0);
 		contentPane.add(leftBlockPane, outerFrameGUIConstraints);
 
 		// Create feature GUI
-		outerFrameGUIConstraints = components.conditionalConstraints(1, 1, 0, 1, GridBagConstraints.CENTER,
-				GridBagConstraints.NONE);
+		outerFrameGUIConstraints = components.conditionalConstraints(1, 1, 0, 1,GridBagConstraints.NONE);
 		outerFrameGUIConstraints.insets = new Insets(10, 0, 10, 0);
+		outerFrameGUIConstraints.anchor =GridBagConstraints.CENTER;
 		contentPane.add(centerPane, outerFrameGUIConstraints);
 
-		outerFrameGUIConstraints = components.conditionalConstraints(0, 0, 0, 1, GridBagConstraints.LINE_END,
-				GridBagConstraints.VERTICAL);
+		outerFrameGUIConstraints = components.conditionalConstraints(0, 0, 0, 1,GridBagConstraints.VERTICAL);
+		outerFrameGUIConstraints.anchor =GridBagConstraints.LINE_END;
 		outerFrameGUIConstraints.insets = new Insets(0, 0, -5, 0);
 		contentPane.add(rightBlockPane, outerFrameGUIConstraints);
 
-		outerFrameGUIConstraints = components.conditionalConstraints(1, 0, 0, 2, GridBagConstraints.PAGE_END,
-				GridBagConstraints.HORIZONTAL);
+		outerFrameGUIConstraints = components.conditionalConstraints(1, 0, 0, 2,	GridBagConstraints.HORIZONTAL);
+		outerFrameGUIConstraints.anchor =GridBagConstraints.PAGE_END;
 		outerFrameGUIConstraints.insets = new Insets(0, 0, 0, 0);
 		contentPane.add(bottomBlockPane, outerFrameGUIConstraints);
 	}
 
 	public void createFeatureImages() throws IOException {
 		BufferedImage bufFreePlayPianoImage = ImageIO.read(new File("src/Images/piano-image.jpg"));
-		freePlayPanel = components.customizeFeaturePanel(screenWidth / 4, screenHeight / 2, this,
+		freePlayPanel = components.customizeFeaturePanel(screenWidth / 4, screenHeight / 3, this,
 				bufFreePlayPianoImage);
 		freePlayPanel.setBackground(Color.decode("#181818"));
 		
 		BufferedImage bufLearnImage = ImageIO.read(new File("src/Images/Music score.jpg"));
-		learnMode = components.customizeFeaturePanel(screenWidth / 4, screenHeight / 2, this, bufLearnImage);
+		learnMode = components.customizeFeaturePanel(screenWidth / 4, screenHeight / 3, this, bufLearnImage);
 		learnMode.setBackground(Color.decode("#181818"));
 		
-		BufferedImage bufMidiPlayerImage = ImageIO.read(new File("src/Images/MusicStation.jpg"));
-		midiPlayer = components.customizeFeaturePanel(screenWidth / 4, screenHeight / 2, this, bufMidiPlayerImage);
-		midiPlayer.setBackground(Color.decode("#181818"));
-		
-		GridBagConstraints styleGUI = new GridBagConstraints();
-
-		styleGUI.weightx = 1;
-		styleGUI.weighty = 1;
-		styleGUI.gridx = 0;
-		styleGUI.gridy = 0;
+		SwingComponents components = SwingComponents.getInstance();
+		GridBagConstraints styleGUI = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);
 		centerPane.add(freePlayPanel, styleGUI);
 
-		styleGUI.gridx = 1;
+		styleGUI.gridx =1;
 		centerPane.add(learnMode, styleGUI);
-
-		styleGUI.gridx = 0;
-		styleGUI.gridy = 1;
-		centerPane.add(midiPlayer, styleGUI);
 	}
 
-	public void designCenterGUI() {
-		GridBagConstraints styleGUI = new GridBagConstraints();
-
-		styleGUI.weightx = 1;
-		styleGUI.weighty = 1;
-		styleGUI.gridx = 0;
-		styleGUI.gridy = 0;
-		centerPane.add(freePlayPanel, styleGUI);
-
-		styleGUI.gridx = 1;
-
-		centerPane.add(learnMode, styleGUI);
-
-		styleGUI.gridx = 0;
-		styleGUI.gridy = 1;
-
-		centerPane.add(midiPlayer, styleGUI);
-	}
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -273,31 +235,30 @@ public class ProgramMainGUI implements MouseListener {
 		if (obj.equals(freePlayPanel)) {
 			try {
 				frame.setVisible(false);
+//				if(startup){
+//					VirtualKeyboard.getInstance().deleteFreeFrame();
+//				}
+				
 				VirtualKeyboard.getInstance().createVirtualKeyboard(false);
 			} catch (InvalidMidiDataException | MidiUnavailableException | IOException e1) {
 				e1.printStackTrace();
 			}
 		}
-
+		
 		else if (obj.equals(learnMode)) {
 			try {
 				frame.setVisible(false);
+				
+//				if(startup){
+//					VirtualKeyboard.getInstance().deleteLearnFrame();
+//				}
+				
 				VirtualKeyboard.getInstance().createVirtualKeyboard(true);
+				
 			} catch (InvalidMidiDataException | MidiUnavailableException | IOException e1) {
 				e1.printStackTrace();
 			}
 		}
-
-		else if (obj.equals(midiPlayer)) {
-			try {
-				frame.setVisible(false);
-				MIDIFilePlayer.getInstance().drawMusicPlayerGUI();
-
-			} catch (InvalidMidiDataException | MidiUnavailableException | IOException e1) {
-				e1.printStackTrace();
-			}
-		}
-
 	}
 
 	@Override
@@ -320,5 +281,10 @@ public class ProgramMainGUI implements MouseListener {
 	public void mouseReleased(MouseEvent e) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	public void enableFrame(){
+		frame.setVisible(true);
+		//returned= true;
 	}
 }

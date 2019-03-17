@@ -40,6 +40,14 @@ public class Chord {
 		this.chordNotes = editedChordNotes;
 	}
 
+	
+	//Used in Blues scale, which can add variation to
+	public Chord (String chordName, Note note1, Note note2){
+		this.aChordName = chordName;
+		this.chordNotes.add(note1);
+		this.chordNotes.add(note2);
+	}
+	
 	// 3 notes chord
 	// The arraylist segments the notes from the chord name for
 	// easy manipulation of the notes, and to get its size of notes
@@ -123,6 +131,16 @@ public class Chord {
 	}
 	return chordList;
 	}
+	
+	
+	public static ArrayList<String> getPureMajorEnums  (){
+		chordList = new ArrayList<String>();
+		pureMajorBasedChords[] pureMajorChordsArray = pureMajorBasedChords.values();
+	for (pureMajorBasedChords aValue : pureMajorChordsArray){
+		chordList.add(aValue.getChord());
+	}
+	return chordList;
+	}
 	//////////////////
 	
 	public static ArrayList<String> getMinorEnums  (){
@@ -172,12 +190,11 @@ public class Chord {
 
 	
 	public enum allChords {
-		majTetra("majTetra"), maj("maj"), sus4("sus4"), sus2("sus2"), seven("7"), 
-		maj6("maj6"), nine("9"), add9("add9"),add2("add2"), maj9("maj9"),eleven("11"),
-		thirteen("13"),maj13("maj13"),aug("aug"),
+		majTetra("majTetra"), maj("maj"), maj7 ("maj7"),maj9("maj9"),maj13("maj13"), maj6("maj6"),
+		sus4("sus4"), sus2("sus2"), seven("7"), nine("9"), add9("add9"),add2("add2"),eleven("11"),
+		thirteen("13"),aug("aug"),
 		
-		minMajSeven("minMaj7"),minTetra("minTetra"), min("min"), min7("min7"), min9("min9"), min11("min11"), 
-		min13("min13"),
+		minTetra("minTetra"), min("min"), min7("min7"), min9("min9"), min13("min13"), min11("min11"), minMajSeven("minMaj7"),
 
 //		sevenFlatFive("7b5"), 
 //		sevenSharpFive("maj7#5"), 
@@ -200,9 +217,9 @@ public class Chord {
 	}
 	
 	public enum majorBasedChords {
-		majTetra("majTetra"), maj("maj"),maj9("maj9"), sus4("sus4"), sus2("sus2"), seven("7"), 
-		maj6("maj6"), nine("9"), add9("add9"), add2("add2"),eleven("11"),
-		thirteen("13"),maj13("maj13"),aug("aug");
+		majTetra("majTetra"), maj("maj"),maj7 ("maj7"), maj9("maj9"), maj13("maj13"), 
+		sus4("sus4"), sus2("sus2"), seven("7"), maj6("maj6"), nine("9"), add9("add9"), 
+		add2("add2"),eleven("11"), thirteen("13"),aug("aug");
 	
 		public final String chord;
 		majorBasedChords(String chord) {
@@ -214,10 +231,51 @@ public class Chord {
 		
 	}
 	
-	public enum minorBasedChords {	
-		minMajSeven("minMaj7"), minTetra("minTetra"), min("min"), min7("min7"), min9("min9"), min11("min11"), 
-		min13("min13");
+	public enum pureMajorBasedChords {
+		majTetra("majTetra"), maj("maj"),maj7 ("maj7"),maj9("maj9"), maj13("maj13");
 	
+		public final String chord;
+		pureMajorBasedChords(String chord) {
+			this.chord = chord;
+		}
+		public String getChord() {
+			return chord;
+		}	
+		
+	}
+	
+	public enum chordNoteNames{
+		majTetra(new String[] {"First Note: root","Second Note: major second","Third Note: major third","Fourth Note: perfect fourth"}),
+		maj(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect fifth"}),
+		maj7(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect fifth","Fourth Note: major seventh"}),
+		maj9(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect fifth","Fourth Note: major seventh","Fifth Note: major ninth"}),
+		maj13(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect fifth","Fourth Note: major seventh","Fifth Note: major ninth", "Sixth Note: major eleventh", "Seventh Note: major thirteen"}),
+		min11(new String[] {"First Note: root,","Second Note: minor third","Third Note: perfect fifth","Fourth Note: minor seventh","Fifth Note: major ninth","Sixth Note: minor eleventh"}),
+		
+		//maj13("maj13"), 
+		sus4(new String[] {"First Note: root,","Second Note: perfect fourth","Third Note: perfect fifth"}),
+		sus2(new String[] {"First Note: root,","Second Note: major second","Third Note: perfect fifth"}),
+		seven(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect fifth","Fourth Note: dimished seventh"}),
+		maj6(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect fifth","Fourth Note: major sixth"}),
+		nine(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect fifth","Fourth Note: minor seventh","Fifth Note: major ninth"}), 
+		add9(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect","Fourth Note: major ninth"}),
+		add2(new String[] {"First Note: root,","Second Note: major second","Third Note: perfect fifth"}),
+		eleven(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect fifth","Fourth Note: minor seventh","Fifth Note: major ninth","Sixth Note: minor eleventh"}),
+		thirteen(new String[] {"First Note: root,","Second Note: major third","Third Note: perfect fifth","Fourth Note: minor seventh","Fifth Note: major ninth","Sixth Note: minor eleventh","Seventh Note: major thirteenth"}),
+		aug(new String[] {"First Note: root,","Second Note: major third","Third Note: augmented fifth"});
+		
+		public final String []chord;
+		chordNoteNames(String []chord) {
+			this.chord = chord;
+		}
+		public String []getChord() {
+			return chord;
+		}	
+	}
+	
+	public enum minorBasedChords {	
+		minTetra("minTetra"), min("min"), min7("min7"), min9("min9"), min13("min13"), min11("min11"), minMajSeven("minMaj7");
+		
 		public final String chord;
 		minorBasedChords(String chord) {
 			this.chord = chord;

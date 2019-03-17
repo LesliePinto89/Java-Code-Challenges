@@ -98,6 +98,7 @@ public class Note {
 	public enum NoteType {
      C, D, E, F, G,  A, B,
 	}
+
 	
 	public enum SharpNoteType {
 		CSHARP("C#"),

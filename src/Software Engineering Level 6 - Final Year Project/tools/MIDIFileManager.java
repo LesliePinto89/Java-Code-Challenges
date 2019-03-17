@@ -13,16 +13,11 @@ import midiDevices.MidiReceiver;
 
 public class MIDIFileManager {
 
-	
-	
 	private File createdMIDIFile;
 	private ArrayList<File> storedMIDISavedFiles = new ArrayList<File>();
 	private static JFileChooser fileChooser;
 	private static File defaultDirectory;
 	
-
-	//A singleton pattern so that only one instance of this class 
-	//can be accessed and instantiated
 	private static volatile MIDIFileManager instance = null;
 
     private MIDIFileManager() {}
@@ -33,7 +28,8 @@ public class MIDIFileManager {
                 if (instance == null) {
                     instance = new MIDIFileManager();
                     fileChooser = new JFileChooser();
-           		 defaultDirectory = new File (System.getProperty("user.home") + System.getProperty("file.separator")+ "/Desktop/save folder".toString());
+           		 defaultDirectory = new File("src/Tracks");
+          
            		 
            		 //Will vary based on default directory
            		fileChooser.setCurrentDirectory(defaultDirectory);
@@ -44,16 +40,8 @@ public class MIDIFileManager {
         return instance;
     }
 	
-	/*public MIDIFileManager(){
-		//this.reciever = carriedReciever;
-         fileChooser = new JFileChooser();
-		 defaultDirectory = new File (System.getProperty("user.home") + System.getProperty("file.separator")+ "/Desktop/save folder".toString());
-		 
-		 //Will vary based on default directory
-		fileChooser.setCurrentDirectory(defaultDirectory);
-	}*/
-	
-	public DefaultListModel<String> getSongList (DefaultListModel<String> carriedListModel){
+	public DefaultListModel<String> buildSongList (){
+		DefaultListModel<String> carriedListModel = new DefaultListModel<String> ();
 		for (File fileEntry : defaultDirectory.listFiles()){
 			if(fileEntry.isDirectory()){
 				//matchingFile(addedButton,fileEntry);
@@ -74,8 +62,6 @@ public class MIDIFileManager {
 	
 	
 	public File selectMIDIFile() {
-		//JFileChooser selectFile = new JFileChooser();
-		
 		int sf = fileChooser.showOpenDialog(fileChooser);
 		// Store so can get later in memory
 		File newFile = fileChooser.getSelectedFile();
