@@ -12,10 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import keyboard.FeatureTabs;
-import midi.Genre;
-import tools.MIDIFileManager;
 import tools.MIDIFilePlayer;
-import tools.ProgramMainGUI;
 import tools.ScreenPrompt;
 import tools.SwingComponents;
 
@@ -26,11 +23,7 @@ import tools.SwingComponents;
  */
 public class VirtualKeyboard {
 
-	private JSlider slider;
-	private JButton homeButton;
-	private ArrayList<JButton> naturalKeys = new ArrayList<JButton>();
 	private static volatile VirtualKeyboard instance = null;
-
 	private VirtualKeyboard() {
 	}
 
@@ -45,38 +38,34 @@ public class VirtualKeyboard {
 		return instance;
 	}
 
-	
-	private int PITCH_OCTAVE = 2;
+	private ArrayList<JButton> naturalKeys = new ArrayList<JButton>();
 	private int screenWidth = (int) SwingComponents.getInstance().getScreenWidth();
 	private int screenHeight = (int) SwingComponents.getInstance().getScreenHeight();
-
+	private int PITCH_OCTAVE = 2;
 	private int START_WHOTE_NOTE_POSITION = screenWidth / 125;
 	private int START_SHARP_NOTE_POSITION = screenWidth / 45;
-
-	// This panel will later be updated, utilised with the validate and repaint
-	// functions
+	private boolean userChoice;
+	
+	//Java Swing Components
 	private JPanel originalScreenPrompt = null;
 	private JPanel contentPane = new JPanel();
-
-	// needs to be a layered pane to keep sizing
 	private JLayeredPane allPianoKeysLayeredPanel = new JLayeredPane();
-	private JPanel panelHoldPianoKeys = new JPanel();
 	private JPanel pianoBackingPanel = new JPanel();
 	private JFrame freeGuiFrame;
 	private JFrame learnGuiFrame;
 	private JPanel controlPanel = new JPanel();
 	private JPanel redPanelkeysHolder = new JPanel();
 	private JPanel buttonHolder = new JPanel(new GridBagLayout());
-	private SwingComponents components = SwingComponents.getInstance();
-
 	private JPanel innerButtonHolder = new JPanel(new GridBagLayout());
-
+	private JSlider slider;
+	private JButton homeButton;
 	private GridBagConstraints aConstraint;
-	private boolean userChoice;
+	
+	private SwingComponents components = SwingComponents.getInstance();
+	
+	
 
-	// TEST
-	//private JPanel pane = new JPanel(new GridBagLayout());
-	private GridBagConstraints c = new GridBagConstraints();
+	
 
 	////////////////////////
 	public void storeButtons(JButton noteButton) {
@@ -119,28 +108,20 @@ public class VirtualKeyboard {
 				}
 				JButton button = new JButton(getNote.getSharp() + Integer.toString(PITCH_OCTAVE));
 				if (button.getText().startsWith("C") && PITCH_OCTAVE >= 3) {
-					//START_SHARP_NOTE_POSITION += 25;
 					START_SHARP_NOTE_POSITION += screenWidth / 55;
 				}
 
-				else if (button.getText().startsWith("F")) {
-					//START_SHARP_NOTE_POSITION += 30;
+				else if (button.getText().startsWith("F")) {	
 					START_SHARP_NOTE_POSITION += screenWidth / 42;
-					
-					
-					//+= screenWidth / 38;
 				}
-				// button.setBounds(START_SHARP_NOTE_POSITION, 145, 20, 126);
+				
 				button.setBounds(START_SHARP_NOTE_POSITION, 145, screenWidth / 55, 126);
-
 				button.setFont(new Font("Arial", Font.PLAIN, 6));
 				button.setVerticalAlignment(SwingConstants.BOTTOM);
 				button.setMargin(new Insets(1, 1, 1, 1));
 
 				styleKeys(button);
 				storeButtons(button);
-
-				// START_SHARP_NOTE_POSITION += 37;
 				START_SHARP_NOTE_POSITION += screenWidth / 35.5;
 			}
 		}
@@ -198,7 +179,6 @@ public class VirtualKeyboard {
 	}
 	
 	public void createSongButton() throws IOException {
-		
 		BufferedImage home = ImageIO.read(new File("src/Images/Create Song.png"));
 		homeButton = components.customJButtonTwo(70, 50, "Home",home,
 				Color.decode("#404040"),Color.decode("#303030"),false );
@@ -332,7 +312,7 @@ public class VirtualKeyboard {
 
 		else if (mode == true) {
 			learnGuiFrame = components.customJFrame("", screenWidth, screenHeight, contentPane, null);
-			contentPane.setBackground(Color.decode("#340D00"));
+			contentPane.setBackground(Color.decode("#4169E1"));
 			learnGuiFrame.setName("6100COMP: Computer Music Education Application -Learn Mode");
 		}
 	}
@@ -500,6 +480,7 @@ public class VirtualKeyboard {
 		aConstraint = components.conditionalConstraints(1, 1, 0, 0,	GridBagConstraints.NONE);
 		aConstraint.anchor = GridBagConstraints.FIRST_LINE_START;
 		aConstraint.gridwidth =1;
+		aConstraint.insets = new Insets (0,15,0,0);
 		contentPane.add(getFeatures, aConstraint);
 	}
 
@@ -509,6 +490,7 @@ public class VirtualKeyboard {
 		aConstraint.anchor = GridBagConstraints.FIRST_LINE_END;
 		aConstraint.gridwidth =1;
 		
+		aConstraint.insets = new Insets (0,0,0,18);
 		
 		originalScreenPrompt = ScreenPrompt.getInstance().createCurrentPromptState();
 		contentPane.add(originalScreenPrompt, aConstraint);
@@ -519,6 +501,8 @@ public class VirtualKeyboard {
 		aConstraint.anchor = GridBagConstraints.FIRST_LINE_END;
 		aConstraint.gridwidth =1;
 
+		aConstraint.insets = new Insets (0,0,0,18);
+		
 		contentPane.remove(originalScreenPrompt);
 		originalScreenPrompt = ScreenPrompt.getInstance().createCurrentPromptState();
 		contentPane.add(originalScreenPrompt, aConstraint);

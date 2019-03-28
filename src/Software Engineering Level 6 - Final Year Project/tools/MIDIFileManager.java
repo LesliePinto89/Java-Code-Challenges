@@ -44,10 +44,11 @@ public class MIDIFileManager {
 		DefaultListModel<String> carriedListModel = new DefaultListModel<String> ();
 		for (File fileEntry : defaultDirectory.listFiles()){
 			if(fileEntry.isDirectory()){
-				//matchingFile(addedButton,fileEntry);
 			}
 			else {
-				carriedListModel.addElement(fileEntry.toString());
+				String removeDirectoryName = fileEntry.toString();
+				removeDirectoryName = removeDirectoryName.substring(11,removeDirectoryName.length());
+				carriedListModel.addElement(removeDirectoryName);
 			}
 		}
 		return carriedListModel;
@@ -62,13 +63,13 @@ public class MIDIFileManager {
 	
 	
 	public File selectMIDIFile() {
-		int sf = fileChooser.showOpenDialog(fileChooser);
+		fileChooser.showOpenDialog(fileChooser);
 		// Store so can get later in memory
 		File newFile = fileChooser.getSelectedFile();
 		
-		if (sf == JFileChooser.CANCEL_OPTION) {
-			JOptionPane.showMessageDialog(null, "File save has been canceled");
-		}
+//		if (sf == JFileChooser.CANCEL_OPTION) {
+//			JOptionPane.showMessageDialog(null, "File save has been canceled");
+//		}
 		return newFile;
 		
 	     }
@@ -76,7 +77,6 @@ public class MIDIFileManager {
 	public void saveNewMIDIFile(JToggleButton saveMIDI) {
 		// Valid when user has made a sequence
 		if (MidiReceiver.getInstance().getSequence() != null) {
-			//JFileChooser saveFile = new JFileChooser();
 
 			int sf = fileChooser.showSaveDialog(fileChooser);
 			// Store so can get later in memory

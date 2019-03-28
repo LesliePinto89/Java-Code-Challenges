@@ -1,5 +1,6 @@
 package keyboard;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import midi.ListOfScales;
@@ -36,15 +37,6 @@ public class Note {
 	public static Note getNotes (String key){
 		return mapOfNotes.get(key);
 	}
-	
-	//Could not get the reference value to stop being overwritten, so left using this method as part of it
-//	public void setScaleDegree (String position){
-//		this.scaleDegree = position;
-//	}
-
-//	public String getScaleDegree (){
-//		return scaleDegree;
-//	}
 	
 	public String getType() {
 		return accidental;
@@ -93,6 +85,15 @@ public class Note {
 	    public String getNote() {
 	        return note;
 	    }	    
+	}
+	
+	public static ArrayList<String> randomNotesForScaleKeys  (){
+		ArrayList <String> keyList = new ArrayList<String>();
+		allNotesType[] noteKeysArray = allNotesType.values();
+	for (allNotesType aValue : noteKeysArray){
+		keyList.add(aValue.getNote());
+	}
+	return keyList;
 	}
 	
 	public enum NoteType {

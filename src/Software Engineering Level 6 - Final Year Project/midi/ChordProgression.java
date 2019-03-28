@@ -1,50 +1,24 @@
 package midi;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import javax.swing.DefaultListModel;
-
 public class ChordProgression {
 
-	private Chord aChord;
-	private int rootNote;
+	private String progressionName ="";
+	private ArrayList<Chord> progressionChords = new ArrayList<Chord>();
 	
+	public ChordProgression (String currentProgressionName, ArrayList<Chord> progressionChords){
+		this.progressionName = currentProgressionName;
+		this.progressionChords = progressionChords;
+	} 
 	
-	//Display and user interaction
-	private DefaultListModel <String> storeAllChordProgressions = new DefaultListModel <String>();
-	private DefaultListModel <String> storeMajorChordProgressions = new DefaultListModel <String>();
-	private DefaultListModel <String> storeMinorChordProgressions = new DefaultListModel <String>();
-	
-	//Used to get actual chords to be used
-	private ArrayList<String> minorAsString = new ArrayList<String>();
-	private ArrayList<String> majorAsString = new ArrayList<String>();
-	private ArrayList<String> allAsString = new ArrayList<String>();
-	
-	private ArrayList <String> numbers = new ArrayList <String>();
-	private chordSymbol[] symbols = chordSymbol.values();
-	
-	private static volatile ChordProgression instance = null;
-	
-	private ChordProgression() {
-	}
-
-	public static ChordProgression getInstance() {
-		if (instance == null) {
-			synchronized (ChordProgression.class) {
-				if (instance == null) {
-					instance = new ChordProgression();
-					instance.storeMajorProgressionInList();
-					instance.storeMinorProgressionInList();
-					instance.symbolsToNumbers();
-				}
-			}
-		}
-
-		return instance;
+	public String getProgressionName(){
+		return progressionName;
 	}
 	
-	
+	public ArrayList<Chord> getProgressionChords(){
+		return progressionChords;
+	}
+
 	public enum chordSymbol{
 		i(1),ii(2),iii(3),iv(4),v(5),vi(6),vii(7),
 		I(1),II(2),III(3),IV(4),V(5),VI(6),VII(7);
@@ -57,47 +31,71 @@ public class ChordProgression {
 		        return prog;
 		    }		    
 	}
-
-	public void symbolsToNumbers(){
-		 numbers = new ArrayList <String>();
-		for (chordSymbol sym : symbols)
-		{   numbers.add(sym.toString());
+	
+	public static ArrayList <Integer> getNumeralNumbers(){
+		ArrayList <Integer> storage = new ArrayList <Integer> ();
+		chordSymbol [] numbers = chordSymbol.values();
+		for (chordSymbol sym : numbers){
+			storage.add(sym.getProg());
 		}
+		return storage;
 	}
 	
-	public int getScaleDegree(String selectedProgChord){
-		for (chordSymbol sym : symbols){
-			if(selectedProgChord.equals(sym.toString())){
-				return sym.getProg();
-			}
-	}
-		return 0;
+	public static ArrayList <String> getNamedOnlyNumberOfNumeral(){
+		ArrayList <String> storage = new ArrayList <String> ();
+		chordNumerals [] numbers = chordNumerals.values();
+		for (chordNumerals sym : numbers){
+			storage.add(sym.toString());
+		}
+		return storage;
 	}
 	
-	public String minorOrMajor (String selectedProgChord){
-		 char[] charArray = selectedProgChord.toCharArray();
-				 if(Character.isLowerCase( charArray[0] )){
-					 return "min";
-				 }			
-				else if(Character.isUpperCase( charArray[0] )){
-					return "maj";
-				}
-			
-		
-		return null;
+	
+	public static ArrayList <String> getNamedNumberOfNumeral(){
+		ArrayList <String> storage = new ArrayList <String> ();
+		chordNumerals [] numbers = chordNumerals.values();
+		for (chordNumerals sym : numbers){
+			storage.add(sym.getProg());
+		}
+		return storage;
 	}
+	
+	
+	
+	
+	public enum chordNumerals{
+		i("one minor"),ii("two minor"),iii("three minor"),iv("four minor"),v("five"),vi("six minor"),vii("seven minor"),
+		I("one major"),II("two major"),III("three major"),IV("four major"),V("five major"),VI("six major"),VII("seven major"); 
+	
+		public final String prog;
+		chordNumerals(String prog) {
+		        this.prog = prog;
+		    }
+		    public String getProg() {
+		        return prog;
+		    }		
+	}
+	
 	
 	public enum majorChordProgressions {
-				I_IV_V("I IV V"), //ONE FOUR FIVE
-				   I_vi_IV_V("I vi IV V"),	 //ONE_six_FOUR_FIVE
-				   ii_V_I("ii IV V"),	//two_FIVE_ONE
-				   I_vi_ii_V("I vi ii V"),  //ONE_six_two_FIVE
-				   I_V_vi_IV("I V vi IV"), //ONE_FIVE_six_FOUR
-				   I_IV_vi_V("I IV vi V"), // ONE_FOUR_six_FIVE
-				   I_iii_IV_V("I iii IV V"), // ONE_three_FOUR_FIVE
-				   I_IV_I_V("I IV I V"), //ONE_FOUR_ONE_FIVE
-				   I_IV_ii_V("I IV ii V"); //ONE_FOUR_two_FIVE
-				   public final String chord;
+		I_IV_V("I IV V"), //ONE FOUR FIVE
+		II_V_I("II IV V"),	//TWO_FIVE_ONE 
+		 I_vi_IV_V("I vi IV V"),	 //ONE_six_FOUR_FIVE
+		I_vi_ii_V("I vi ii V"),  //ONE_six_two_FIVE
+		I_V_vi_IV("I V vi IV"), //ONE_FIVE_six_FOUR
+		I_IV_vi_V("I IV vi V"), // ONE_FOUR_six_FIVE
+		 I_iii_IV_V("I iii IV V"), // ONE_three_FOUR_FIVE
+		I_IV_I_V("I IV I V"), //ONE_FOUR_ONE_FIVE
+		I_IV_ii_V("I IV ii V"), //ONE_FOUR_two_FIVE
+		 I_vi_vii("I vi vii"), //ONE_six_seven
+		 I_IV_vii("I IV vii"),//ONE_FOUR_seven
+		 I_iv_iii_vii("I iv iii vii"), // ONE_four_three_seven
+		 I_IV_V_I("I IV V I"), //ONE_FOUR_FIVE_ONE
+		 vi_vii_I("vi vii I"), //six_seven_ONE
+		 I_vii_vi_vii("I vii vi vii"), //ONE_seven_six_seven
+		 I_IV_I("I IV I");//ONE_FOUR_ONE
+		
+		  public final String chord;
 		majorChordProgressions(String chord) {
 	        this.chord = chord;
 	    }
@@ -105,28 +103,20 @@ public class ChordProgression {
 	        return chord;
 	    }	
 	}
-	
-	public void storeMajorProgressionInList(){
-	
-		majorChordProgressions[] majorProgressions = majorChordProgressions.values();
-		for (majorChordProgressions prog : majorProgressions)
-		{   
-			String progresion = prog.chord;
-			majorAsString.add(progresion);
-			storeMajorChordProgressions.addElement(progresion);
-		}
-	}
-	
-	public DefaultListModel <String> getMajorChordProgressions() {
-		return storeMajorChordProgressions;
-	}
-	
+		
 	public enum minorChordProgressions {
+		 i_iv_v("i iv v"), // one_four_five
+		 ii_v_i("ii v i"), // two_five_one
+		 i_VI_iv_v("i VI iv v"),	 //one_SIX_four_five
+		 i_VI_II_v("i VI II v"),  //one_SIX_TWO_five
+		 i_v_VI_iv("i v VI iv"), //one_five_SIX_four
+		 i_iv_VI_v("i iv VI v"),  //one_four_SIX_five
+		 i_III_iv_v("i III iv v"), // one_THREE_four_five
+		 i_iv_i_v("i iv i v"), //one_four_one_five
+		 i_iv_II_v("i iv II v"), //one_four_TWO_five
 		 i_VI_VII("i VI VII"),// one_SIX_SEVEN
 		  i_iv_VII("i iv VII"),// one_four_SEVEN
-		 i_iv_v("i iv v"), // one_four_five
 		 i_IV_III_VII("i IV III VII"), // one_FOUR_THREE_SEVEN
-		 ii_v_i("ii v i"), // two_five_one
 		 i_iv_v_i("i iv v i"), //one_four_five_one
 		 VI_VII_i("VI VII i"), //SIX_SEVEN_one
 		 i_VII_VI_VII("i VII VI VII"), //one_SEVEN_SIX_SEVEN
@@ -139,30 +129,4 @@ public class ChordProgression {
 	        return chord;
 	    }	
 	}
-	
-	public void storeMinorProgressionInList(){
-		minorChordProgressions[] minorProgressions = minorChordProgressions.values();
-		for (minorChordProgressions prog : minorProgressions)
-		{   
-			String progresion = prog.chord;
-			minorAsString.add(progresion);
-			storeMinorChordProgressions.addElement(progresion);
-		}
-	}
-	
-	public DefaultListModel <String> getMinorChordProgressions() {
-		return storeMinorChordProgressions;
-	}
-	
-	
-	public void storeAllProgressionInList(){
-		storeMajorProgressionInList();
-		storeMinorProgressionInList();
-		allAsString.addAll(majorAsString);
-		allAsString.addAll(minorAsString);
-	}
-		
- public DefaultListModel <String> getAllChordProgressions() {
-	return storeAllChordProgressions;
-}
 }

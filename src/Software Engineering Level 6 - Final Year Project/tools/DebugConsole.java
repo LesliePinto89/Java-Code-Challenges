@@ -1,5 +1,6 @@
 package tools;
 
+import java.awt.Font;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -15,6 +16,8 @@ public class DebugConsole extends OutputStream  {
 	      this.textArea = textArea;
 	      this.title = title;
 	      sb.append(title + "> ");
+	      textArea.setFont(new Font("Serif", Font.BOLD, 26));
+	      
 	   }
 
 	   @Override

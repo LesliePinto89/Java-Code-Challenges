@@ -8,6 +8,7 @@ import javax.swing.text.BadLocationException;
 
 import keyboard.Note;
 import tools.PlaybackFunctions;
+import tools.ScreenPrompt;
 import tools.SwingComponents;
 
 public class Genre {
@@ -18,7 +19,7 @@ public class Genre {
 	private ArrayList<Chord> diffChord = new ArrayList<Chord>();
 	
 	private ArrayList<Note> licks = new ArrayList<Note>();
-	private ChordProgression prog = ChordProgression.getInstance();
+	private ChordProgressionActions prog = ChordProgressionActions.getInstance();
 	private static volatile boolean playback = false;
 
 	
@@ -105,15 +106,25 @@ public class Genre {
 
 
 	public void  playClassical(){
-		for (Chord aChord : chordProgression){
-			try {
-				PlaybackFunctions.playAnyChordLength(aChord);
-				PlaybackFunctions.timeDelay(1000);
-			} catch (InvalidMidiDataException  | InterruptedException e) {
-				e.printStackTrace();
-			} 
-		}
-		chordProgression.clear();
+		
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+		                for (Chord aChord : chordProgression){
+		                	if(!ScreenPrompt.getInstance().getShared()) {
+				         PlaybackFunctions.playAnyChordLength(aChord);
+				         PlaybackFunctions.timeDelay(1000);
+				         PlaybackFunctions.resetChordsColor();
+		                 }
+		                	else {break;}
+		                }
+		            	chordProgression.clear();
+				}	catch (InvalidMidiDataException  | InterruptedException e) {
+						e.printStackTrace();
+					} 
+			}
+		}).start();
 	}
 	
 	public void bluesOneFourFive (String key){
@@ -147,96 +158,97 @@ public class Genre {
 	}
 	
 	
-	public void lick (Note root){
-		
-		Note lickOne = ListOfScales.getInstance().getKey(root, 6);
-		licks.add(lickOne);
-		
-		Note lickSecond = ListOfScales.getInstance().getKey(lickOne, 1);
-		licks.add(lickSecond);
-		
-		Note lickThirdFlat = ListOfScales.getInstance().getKey(lickSecond, 3);
-		licks.add(lickThirdFlat);
-		
-		Note lickFourthNat = ListOfScales.getInstance().getKey(lickOne, 5);
-		licks.add(lickFourthNat);
-		
-		Note lickFifth = ListOfScales.getInstance().getKey(lickFourthNat, 4);
-		licks.add(lickFifth);
-		
-		licks.add(root);
-		
-		Note lickNewOne = ListOfScales.getInstance().getKey(root, 3);
-		licks.add(lickNewOne);
-		
-		Note lickNewSecond = ListOfScales.getInstance().getKey(lickNewOne, 1);
-		licks.add(lickNewSecond);
-		
-		Note lickNewThird = ListOfScales.getInstance().getKey(lickNewSecond, 3);
-		licks.add(lickNewThird);
-		
-		Note lickNewFourth = ListOfScales.getInstance().getKey(lickNewSecond, 1);
-		licks.add(lickNewFourth);
-		
-		Note lickNewFifth = ListOfScales.getInstance().getKey(lickNewThird, 2);
-		licks.add(lickNewFifth);
-		
+//	public void lick (Note root){
+//		
+//		Note lickOne = ListOfScales.getInstance().getKey(root, 6);
+//		licks.add(lickOne);
+//		
+//		Note lickSecond = ListOfScales.getInstance().getKey(lickOne, 1);
+//		licks.add(lickSecond);
+//		
+//		Note lickThirdFlat = ListOfScales.getInstance().getKey(lickSecond, 3);
+//		licks.add(lickThirdFlat);
+//		
+//		Note lickFourthNat = ListOfScales.getInstance().getKey(lickOne, 5);
+//		licks.add(lickFourthNat);
+//		
+//		Note lickFifth = ListOfScales.getInstance().getKey(lickFourthNat, 4);
+//		licks.add(lickFifth);
+//		
+//		licks.add(root);
+//		
+//		Note lickNewOne = ListOfScales.getInstance().getKey(root, 3);
+//		licks.add(lickNewOne);
+//		
+//		Note lickNewSecond = ListOfScales.getInstance().getKey(lickNewOne, 1);
+//		licks.add(lickNewSecond);
+//		
+//		Note lickNewThird = ListOfScales.getInstance().getKey(lickNewSecond, 3);
+//		licks.add(lickNewThird);
+//		
+//		Note lickNewFourth = ListOfScales.getInstance().getKey(lickNewSecond, 1);
+//		licks.add(lickNewFourth);
+//		
+//		Note lickNewFifth = ListOfScales.getInstance().getKey(lickNewThird, 2);
+//		licks.add(lickNewFifth);
+//		
+//	
+//	}
 	
-	}
-	
-	public void playLick() throws InvalidMidiDataException{
-	
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					//int i = 0;
-						// End thread if user leaves progressions page
-						if (!playback) {
-							PlaybackFunctions.timeDelay(300);
-							PlaybackFunctions.playIntervalNote(licks.get(0));
-							PlaybackFunctions.timeDelay(0);
-							
-							PlaybackFunctions.playIntervalNote(licks.get(1));
-							PlaybackFunctions.playIntervalNote(licks.get(2));
-							PlaybackFunctions.timeDelay(200);
-							
-							PlaybackFunctions.playIntervalNote(licks.get(3));
-							PlaybackFunctions.playIntervalNote(licks.get(4));
-							PlaybackFunctions.timeDelay(300);
-							
-							PlaybackFunctions.playIntervalNote(licks.get(5));
-							PlaybackFunctions.timeDelay(400);
-							
-							//PlaybackFunctions.timeDelay(322);
-							PlaybackFunctions.playIntervalNote(licks.get(6));
-							PlaybackFunctions.timeDelay(100);
-							
-							PlaybackFunctions.playIntervalNote(licks.get(7));
-							PlaybackFunctions.playIntervalNote(licks.get(8));
-							PlaybackFunctions.timeDelay(400);
-							
-							PlaybackFunctions.playIntervalNote(licks.get(9));
-							PlaybackFunctions.playIntervalNote(licks.get(10));
-							PlaybackFunctions.timeDelay(200);
-							} 
-						else {
-							playback = false;
-						}	
-					} catch ( InvalidMidiDataException e) {
-			
-					e.printStackTrace();
-				}
-
-			}
-
-		}).start();
-		
-	}
+//	public void playLick() throws InvalidMidiDataException{
+//	
+//		new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					//int i = 0;
+//						// End thread if user leaves progressions page
+//						if (!playback) {
+//							PlaybackFunctions.timeDelay(300);
+//							PlaybackFunctions.playIntervalNote(licks.get(0));
+//							PlaybackFunctions.timeDelay(0);
+//							
+//							PlaybackFunctions.playIntervalNote(licks.get(1));
+//							PlaybackFunctions.playIntervalNote(licks.get(2));
+//							PlaybackFunctions.timeDelay(200);
+//							
+//							PlaybackFunctions.playIntervalNote(licks.get(3));
+//							PlaybackFunctions.playIntervalNote(licks.get(4));
+//							PlaybackFunctions.timeDelay(300);
+//							
+//							PlaybackFunctions.playIntervalNote(licks.get(5));
+//							PlaybackFunctions.timeDelay(400);
+//							
+//							//PlaybackFunctions.timeDelay(322);
+//							PlaybackFunctions.playIntervalNote(licks.get(6));
+//							PlaybackFunctions.timeDelay(100);
+//							
+//							PlaybackFunctions.playIntervalNote(licks.get(7));
+//							PlaybackFunctions.playIntervalNote(licks.get(8));
+//							PlaybackFunctions.timeDelay(400);
+//							
+//							PlaybackFunctions.playIntervalNote(licks.get(9));
+//							PlaybackFunctions.playIntervalNote(licks.get(10));
+//							PlaybackFunctions.timeDelay(200);
+//							} 
+//						else {
+//							playback = false;
+//						}	
+//					} catch ( InvalidMidiDataException e) {
+//			
+//					e.printStackTrace();
+//				}
+//
+//			}
+//
+//		}).start();
+//		
+//	}
 	
 	public void playBar(int pos,boolean endBar,int limit, int index) throws InvalidMidiDataException, InterruptedException{
 		if(!endBar){
 	     for (int i =1; i<=limit;i++){
+	    	 
 			PlaybackFunctions.playAnyChordLength(chordProgression.get(index));
 			PlaybackFunctions.timeDelay(400);
 			
@@ -268,16 +280,22 @@ public class Genre {
 			PlaybackFunctions.playAnyChordLength(breakProgression.get(2));
 			PlaybackFunctions.timeDelay(500);
 		}
+		
+		
+		
+		
 	}
 	public void twelveBarProgression() throws InvalidMidiDataException, InterruptedException{
-		
+				
 		playBar(1,false,8,0);//4 bars
 		playBar(5, false,4,2);//2 bars
 		playBar(1,false,4,0);//2 bars
 		playBar(5,false,2,2);//1 bar
 		playBar(4,false,2,1);//1 bar
 		playBar(1,false,2,0);//1 bar
-		playBar(0,true,0,0);//1 bar
+		playBar(0,true,0,0);//1 bar	
+		
+		
 	}
 	
 public ArrayList<Chord> getBluesChords(){

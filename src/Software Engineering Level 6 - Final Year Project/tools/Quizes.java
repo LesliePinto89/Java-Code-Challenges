@@ -1,21 +1,17 @@
 package tools;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-
 import javax.sound.midi.InvalidMidiDataException;
-import javax.swing.DefaultListModel;
+import javax.speech.EngineStateError;
 import javax.swing.JButton;
-import javax.swing.JList;
 import javax.swing.JTextArea;
-
-import keyboard.VirtualKeyboard;
+import keyboard.Note;
 import midi.Chord;
+import midi.ChordProgression;
+import midi.ChordProgressionActions;
 import midi.ListOfChords;
 import midi.ListOfScales;
 import midi.Scale;
@@ -24,51 +20,47 @@ public class Quizes implements MouseListener {
 
 	private ArrayList<Chord> allMajorChords = ListOfChords.getInstance().getKeptMajors();
 	private ArrayList<Chord> allMinorChords = ListOfChords.getInstance().getKeptMinors();
-
-	private Scale quizMajorScale;
-	private Scale quizMinorScale;
-
-	private SwingComponents components = SwingComponents.getInstance();
-	private ScreenPrompt prompt = ScreenPrompt.getInstance();
-	private boolean result;
-	private JTextArea text;
-	private String handlefeature = "";
-	// private String targetFromRandom;
-	private String alternativeFromRandom;
 	private ArrayList<String> tempStoreScore = new ArrayList<String>();
 
-	private static volatile Quizes instance = null;
+	// Text and text based conditional variables
+	private JTextArea text;
+	private String handlefeature = "";
+	private JButton userChoice = null;
 
-	private Chord majorChord = null;
-	private Chord minorChord = null;
-
-	// private Scale ionianScale = null;
-	// private Chord aoelianScale = null;
-
-	private String guessChordType = "";
-	private String guessScaleType = "";
-
-	private String shorted;
-
-	private JButton choiceOne = null;
-	private JButton choiceTwo = null;
-
-	// private JButton submit;
-	private int randomizeIndex = 0;
-
-	// private boolean choiceOneChosen =false;
-	// private boolean choiceTwoChosen =false;
-
-	private String stringFromButton = "";
+	// Numerical and conditional variables
 	private int successCounter = 0;
-	private int failureCounter = 0;
+
+	// Chord Quiz components
+	private Chord majorChordChoice = null;
+	private Chord minorChordChoice = null;
+	private Chord randomChordChoice = null;
+
+	//Progression quiz components
+	private Scale majorProgressionScale;
+	private Scale minorProgressionScale;
+	private String randomMajorProgressionString = "";
+	private String relativeMinorProgression = "";
+	private ChordProgression minorProgression;
+	private ChordProgression majorProgression;
+	private ChordProgression randomProgressionName;
+
+	//Scale quiz components
+	private Scale quizMajorScale;
+	private Scale quizMinorScale;
+	private Scale randomScaleName;
+
+	// Singleton Instances
+	private ChordProgressionActions prog = ChordProgressionActions.getInstance();
+	private SwingComponents components = SwingComponents.getInstance();
+	private ListOfScales scales = ListOfScales.getInstance();
+
+	private static volatile Quizes instance = null;
 
 	public static Quizes getInstance() {
 		if (instance == null) {
 			synchronized (Quizes.class) {
 				if (instance == null) {
 					instance = new Quizes();
-
 				}
 			}
 		}
@@ -82,468 +74,237 @@ public class Quizes implements MouseListener {
 		handlefeature = name;
 	}
 
-	public JButton addChordOne() {
+	public JButton addPlayQuiz() {
 		if (handlefeature.equals("Chords")) {
-			return choiceOne = components.customJButton(70, 40, "Chord One", this);
+			userChoice = components.customJButton(270, 40, "Play chord", this);
 		}
-
 		else if (handlefeature.equals("Scales")) {
-			return choiceOne = components.customJButton(70, 40, "Scale One", this);
+			userChoice = components.customJButton(270, 40, "Play scale", this);
 		}
-
-		return choiceOne;
-	}
-
-	public JButton addChordTwo() {
-		if (handlefeature.equals("Chords")) {
-			return choiceTwo = components.customJButton(70, 40, "Chord Two", this);
-		} else if (handlefeature.equals("Scales")) {
-			return choiceTwo = components.customJButton(70, 40, "Scale Two", this);
+		else if (handlefeature.equals("Progressions")) {
+			userChoice = components.customJButton(270, 40, "Play progression", this);
 		}
-
-		return choiceTwo;
-	}
-
-	// public JButton addSubmitButton() {
-	// return submit = components.customJButton(70, 40, "Submit", this);
-	// }
-
-	public <T> void storeAlternative(String alt) {
-		alternativeFromRandom = alt;
-	}
-
-	public <T> T ternaryRandom(Collection<T> coll) {
-		int num = (int) (Math.random() * coll.size());
-		int i = 0;
-		for (T t : coll) {
-			if (--num < 0) {
-				if (i == 0) {
-					// T [] stringArray;
-					Object[] stringArray = coll.toArray();
-					String aString = stringArray[++i].toString();
-					storeAlternative(aString);
-				}
-				return t;
-			}
-
-			else {
-				Object[] stringArray = coll.toArray();
-				String aString = stringArray[i].toString();
-				storeAlternative(aString);
-			}
-			i++;
-		}
-		throw new AssertionError();
-	}
-
-	public String randomScalesQuestionAnswer() {
-		ArrayList<String> type = new ArrayList<String>();
-		type.add("Ionian");
-		type.add("Aeolian");
-		String targetFromRandom = ternaryRandom(type);
-		return targetFromRandom;
-	}
-
-	public String randomQuestionAnswer() {
-		ArrayList<String> type = new ArrayList<String>();
-		type.add("Major");
-		type.add("Minor");
-		String targetFromRandom = ternaryRandom(type);
-		return targetFromRandom;
+		userChoice.setBackground(Color.decode("#E0FFFF"));
+		return userChoice;
 	}
 
 	public void selectQuiz(String choice, String feature, JTextArea contentTextArea) {
 		text = contentTextArea;
 		handlefeature = feature;
 		switch (feature) {
+		
 		case "Chords":
-			if (choice.equals("1")) {
-				minOrMajChordQuiz(false);
-				break;
-			}
-
-			else if (choice.equals("2")) {
-				minOrMajChordQuiz(true);
+			if (choice.equals("2")) {
+				minOrMajChordQuiz();
 				break;
 			}
 
 		case "Scales":
-			if (choice.equals("1")) {
-				minOrMajScaleQuiz(false);
+			if (choice.equals("2")) {
+				minOrMajScaleQuiz();
 				break;
 			}
-
-			else if (choice.equals("2")) {
-				minOrMajScaleQuiz(true);
+		case "Progressions":
+			if (choice.equals("2")) {
+				minOrMajProgressionsQuiz();
 				break;
 			}
 		}
 	}
 
-	public void minOrMajScaleQuiz(boolean hard) {
-		quizMajorScale = Scale.getScaleFromList(0);
-		quizMinorScale = Scale.getScaleFromList(5);
-
-		ArrayList<String> allMajorScalesNames = Scale.getPureMajorScales();
-
-		String baseScaleName = "";
-		String randomScaleName = "";
-
-		guessScaleType = randomScalesQuestionAnswer();
-		String baseKey = Scale.getScaleKey();
-
-		// ListOfScales.getInstance().displayedScaleNotes(foundScale);
-
-		if (!hard) {
-			baseScaleName = Scale.getCurrentScaleName();
-			text.append("The purpose of this quiz is to find out which of the two scales" + " is the " + guessScaleType
-					+ " scale?\n\n");
-			text.append("Try to remember the diffence in sound and find which scale is the " + guessScaleType
-					+ " scale?\n");
+	public void adjustProgression(String[] bits) {
+		relativeMinorProgression ="";
+		for (String aString : bits) {
+			char[] charArray = aString.toCharArray();
+			if (Character.isLowerCase(charArray[0])) {
+				relativeMinorProgression += aString.toUpperCase() + " ";
+			} else if (Character.isUpperCase(charArray[0])) {
+				relativeMinorProgression += aString.toLowerCase() + " ";
+			}
 		}
-
-		else {
-			randomScaleName = ScreenPrompt.random(allMajorScalesNames);
-			// randomChordName = ScreenPrompt.random(allMajorChordNames);
-			text.append("The purpose of this quiz is to find out which of the two scales" + " is the " + guessScaleType
-					+ " scale?\n\n");
-			text.append("Each scale matching was generated randomly from any of the supported scales.\n");
-
-		}
-
-		// for (Scale aScale : major) {
-		//
-		// // Compares Major against minor version of initial chord/root
-		// if (!hard) {
-		// if (aChord.getChordName().equals(baseChordName)) {
-		// if (aChord.getChordNotes().get(0).getName().equals(baseRoot + "3")) {
-		// majorChord = aChord;
-		// break;
-		// }
-		// }
-		// i++;
-		// }
-		// // Compares random Major against its minor version
-		// else if (hard) {
-		// if (aChord.getChordName().equals(randomChordName)) {
-		//
-		// if (aChord.getChordNotes().get(0).getName().equals(baseRoot + "3")) {
-		// majorChord = aChord;
-		// break;
-		// }
-		// }
-		// i++;
-		// }
-		// }
-		// minorChord = minors.get(i);
-		// aoelianScale
-		//
-
 	}
+	
+	public <T> ArrayList<T> mixedValues(T one, T two) {
+		ArrayList<T> temp = new ArrayList<T>();
+		temp.add(one);
+		temp.add(two);
+		return temp;
+	}
+	
+	public void minOrMajProgressionsQuiz() {
+		String[] getBits = null;
+		ArrayList<String> coll = Note.randomNotesForScaleKeys();
+		String baseKey = ScreenPrompt.random(coll);
+		text.append("Progression Quiz \n\nThe purpose of this quiz is to find out if this "
+				+ "progression\nis a major or minor progression\n\n");
 
-	///////////////////////////////
+		randomMajorProgressionString = ScreenPrompt.random(prog.getMajorProgsNames());
+		getBits = randomMajorProgressionString.split("\\s+");
 
-	public void minOrMajChordQuiz(boolean hard) {
-		ArrayList<String> allMajorChordNames = Chord.getPureMajorEnums();
-		String baseChordName = "";
-		String randomChordName = "";
-		guessChordType = randomQuestionAnswer();
-		shorted = guessChordType.substring(0, 3);
-		shorted = shorted.toLowerCase();
 		int i = 0;
-
-		String baseRoot = Chord.getStoredRoot();
-		if (!hard) {
-			baseChordName = Chord.getStoredChordName();
-			text.append("The purpose of this quiz is to find out which of the two chords" + " is the " + guessChordType
-					+ " chord?\n\n");
-			text.append("Try to remember the diffence in sound and find which chord is the " + guessChordType
-					+ " chord?\n");
+		for (Scale aScale : scales.getDiatonicMajorScales()) {
+			if (aScale.getTonic().getName().equals(baseKey + "3")) {
+				majorProgressionScale = aScale;
+				minorProgressionScale = scales.getDiatonicMinorScales().get(i);
+				break;
+			}
+			i++;
 		}
+		adjustProgression(getBits);
 
-		else {
-			randomChordName = ScreenPrompt.random(allMajorChordNames);
-			text.append("The purpose of this quiz is to find out which of the two chords" + " is the " + guessChordType
-					+ " chord?\n\n");
-			text.append("Each chord matching was generated randomly from any of the supported chords.\n");
+		// Created both progressions
+		majorProgression = prog.makeChordProgression(randomMajorProgressionString, majorProgressionScale, getBits);
+		String[] relativeBits = relativeMinorProgression.split("\\s+");
+		minorProgression = prog.makeChordProgression(relativeMinorProgression, minorProgressionScale, relativeBits);
 
+		// Randomise progression played
+		ArrayList<ChordProgression> mixProgressions = mixedValues(majorProgression, minorProgression);
+		randomProgressionName = ScreenPrompt.random(mixProgressions);
+	}
+
+	public void minOrMajScaleQuiz() {
+		ArrayList<String> coll = Note.randomNotesForScaleKeys();
+		String baseKey = ScreenPrompt.random(coll);
+		int i = 0;
+		for (Scale aScale : scales.getDiatonicMajorScales()) {
+			if (aScale.getTonic().getName().equals(baseKey + "3")) {
+				quizMajorScale = aScale;
+				quizMinorScale = scales.getDiatonicMinorScales().get(i);
+				break;
+			}
+			i++;
 		}
+		ArrayList<Scale> mixScales = mixedValues(quizMajorScale, quizMinorScale);
+		randomScaleName = ScreenPrompt.random(mixScales);
+		text.append("Scale Quiz \n\nThe purpose of this quiz is to find out if this scale is a major or minor\n\n");
+	}
 
+	public void minOrMajChordQuiz() {
+		ArrayList<String> allMajorChordNames = Chord.getPureMajorEnums();
+		String randomChordName = "";
+		ArrayList<String> temp = Note.randomNotesForScaleKeys();
+		String baseRoot = ScreenPrompt.random(temp);
+		randomChordName = ScreenPrompt.random(allMajorChordNames);
+		text.append("Chords Quiz \n\nThe purpose of this quiz is to find out if this chord is a major or minor\n\n");
+		
+		int i = 0;
 		for (Chord aChord : allMajorChords) {
-
-			// Compares Major against minor version of initial chord/root
-			if (!hard) {
-				if (aChord.getChordName().equals(baseChordName)) {
-					if (aChord.getChordNotes().get(0).getName().equals(baseRoot + "3")) {
-						majorChord = aChord;
-						break;
-					}
+			if (aChord.getChordName().equals(randomChordName)) {
+				if (aChord.getChordNotes().get(0).getName().equals(baseRoot + "3")) {
+					majorChordChoice = aChord;
+					minorChordChoice = allMinorChords.get(i);
+					break;
 				}
-				i++;
 			}
-			// Compares random Major against its minor version
-			else if (hard) {
-				if (aChord.getChordName().equals(randomChordName)) {
-
-					if (aChord.getChordNotes().get(0).getName().equals(baseRoot + "3")) {
-						majorChord = aChord;
-						break;
-					}
-				}
-				i++;
-			}
+			i++;
 		}
-		minorChord = allMinorChords.get(i);
+		ArrayList<Chord> mixChords = mixedValues(majorChordChoice, minorChordChoice);
+		randomChordChoice = ScreenPrompt.random(mixChords);
 	}
 
 	public void printAnswer(boolean check) {
-		// try {
 		String quizFeature = handlefeature;
 		String quizTargetName = handlefeature.substring(0, handlefeature.length() - 1);
 		if (check) {
-
-			// if(successCounter >=1){
-			// int updateSuccessCounter = successCounter=1;
-			// String updatedPrevious = quizFeature+"Quiz: Easy Mode | No of
-			// success: "+ successCounter;
-			// tempStoreScore.set(updateSuccessCounter,updatedPrevious);
-			// }
-
-			// else {
 			successCounter++;
-			if (handlefeature.equals("Chords")) {
-				text.append("You are correct - That was the " + guessChordType + " " + quizTargetName);
-			} else if (handlefeature.equals("Scales")) {
-				text.append("You are correct - That was the " + guessScaleType + " " + quizTargetName);
-			}
-
+			text.setText("");
+			text.append("You are correct - The answer was the " + userChoice.getName() + " " + quizTargetName);
 			String correct = quizFeature + "Quiz: Easy Mode | No of success: " + successCounter;
 			tempStoreScore.add(correct);
-			// }
-			// Progress.getInstance().writeScoresToFile(tempStoreScore);
 		}
-
 		else {
-			if (handlefeature.equals("Chords")) {
-				text.append("You are wrong. That was not the " + guessChordType + " " + quizTargetName);
-			} else if (handlefeature.equals("Scales")) {
-				text.append("You are wrong. That was not the " + guessScaleType + " " + quizTargetName);
-			}
-
+			text.setText("");
+			text.append("You are wrong. The answer was the " + userChoice.getName() + " " + quizTargetName);
 		}
-
-		// prompt.decrementPageState();
-		// increaseRandomIndex();
-		// prompt.resetQuiz();
-		// PlaybackFunctions.timeDelay(5000);
-		// VirtualKeyboard.getInstance().updateScreenPrompt();
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
 	}
 
 	public void doesAnswerMatch(String choice) {
 		boolean resultOne = false;
-		if (choiceOne.getName().equals("Chord One") || choiceTwo.getName().equals("Chord Two")) {
-			text.append("Please listen to both chords before deciding");
+		String quizTargetName = handlefeature.substring(0, handlefeature.length() - 1);
+		if (!userChoice.getName().equals("Major") && !userChoice.getName().equals("Minor")) {
+			text.append("Please listen to the " + quizTargetName + " chord before deciding");
 		}
-
-		else if (choiceOne.getName().equals("Scale One") || choiceTwo.getName().equals("Scale Two")) {
-			text.append("Please listen to both scales before deciding");
-		}
-
 		else {
-			if (choice.equals("Choice 1")) {
-
-				if (choiceOne.getName().equals(guessChordType)) {
-					stringFromButton = guessChordType;
-				}
-
-				else if (choiceOne.getName().equals(guessScaleType)) {
-					stringFromButton = guessScaleType;
-				}
-
-				else {
-					stringFromButton = alternativeFromRandom;
-
-				}
-			}
-
-			else if (choice.equals("Choice 2")) {
-				if (choiceTwo.getName().equals(guessChordType)) {
-					stringFromButton = guessChordType;
-				}
-
-				else if (choiceTwo.getName().equals(guessScaleType)) {
-					stringFromButton = guessScaleType;
-				}
-
-				else {
-					stringFromButton = alternativeFromRandom;
-
-				}
-			}
-
-			if (handlefeature.equals("Chords")) {
-				resultOne = stringFromButton.equals(guessChordType) ? true : false;
-			}
-
-			else if (handlefeature.equals("Scales")) {
-				resultOne = stringFromButton.equals(guessScaleType) ? true : false;
-			}
+			resultOne = userChoice.getName().equals(choice) ? true : false;
 			printAnswer(resultOne);
 		}
-
 	}
 
-	public void increaseRandomIndex() {
-		randomizeIndex++;
-	}
-
-	public void resetRandomIndex() {
-		randomizeIndex = 0;
-	}
-
-	public void handleChords(Object button, Chord chordOne, Chord chordTwo)
-			throws InvalidMidiDataException, InterruptedException {
-		if (randomizeIndex % 2 == 0) {
-			PlaybackFunctions.playAnyChordLength(chordOne);
-			if (chordOne.getChordName().contains(shorted)) {
-				if (button.equals(choiceOne)) {
-					choiceOne.setName(guessChordType);
-				} else {
-					choiceTwo.setName(guessChordType);
-				}
+	public void handleProgressions(Object button) {
+		try {
+			for (Chord aChordOne : randomProgressionName.getProgressionChords()) {
+				PlaybackFunctions.playAnyChordLength(aChordOne);
+				PlaybackFunctions.timeDelay(1000);
+			}
+			if (randomProgressionName.getProgressionName().contains(randomMajorProgressionString)) {
+				userChoice.setName("Major");
 			}
 
-			else {
-				if (button.equals(choiceOne)) {
-					choiceOne.setName(alternativeFromRandom);
-				} else {
-					choiceTwo.setName(alternativeFromRandom);
+			else if (randomProgressionName.getProgressionName().contains(relativeMinorProgression)) {
+				if (button.equals(userChoice)) {
+					userChoice.setName("Minor");
 				}
 			}
-		}
-
-		else {
-			PlaybackFunctions.playAnyChordLength(chordTwo);
-			if (chordTwo.getChordName().contains(shorted)) {
-
-				if (button.equals(choiceOne)) {
-					choiceOne.setName(guessChordType);
-				} else {
-					choiceTwo.setName(guessChordType);
-				}
-			} else {
-
-				if (button.equals(choiceOne)) {
-					choiceOne.setName(alternativeFromRandom);
-				} else {
-					choiceTwo.setName(alternativeFromRandom);
-				}
-			}
+		} catch (InvalidMidiDataException | InterruptedException | EngineStateError e) {
+			e.printStackTrace();
 		}
 	}
 
-	public void handleScales(Object button, Scale scaleOne, Scale scaleTwo)
-			throws InvalidMidiDataException, InterruptedException {
-		if (randomizeIndex % 2 == 0) {
+	public void handleChords(Object button) {
+		try {
+			PlaybackFunctions.playAnyChordLength(randomChordChoice);
+			if (randomChordChoice.getChordName().contains("maj")) {
+				userChoice.setName("Major");
+			} else if (randomChordChoice.getChordName().contains("min")) {
+				userChoice.setName("Minor");
+			}
+
+		} catch (InvalidMidiDataException | InterruptedException | EngineStateError e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void handleScales(Object button) {
+		try {
 			PlaybackFunctions.playOrDisplay(true);
-			PlaybackFunctions.displayOrPlayScale(scaleOne);
-			if (scaleOne.getScaleName().contains(guessScaleType)) {
-				if (button.equals(choiceOne)) {
-					choiceOne.setName(guessScaleType);
-				} else {
-					choiceTwo.setName(guessScaleType);
-				}
+			PlaybackFunctions.displayOrPlayScale(randomScaleName);
+			if (randomScaleName.getScaleName().contains("Ionian")) {
+				userChoice.setName("Major");
+			} else if (randomScaleName.getScaleName().contains("Aeolian")) {
+				userChoice.setName("Minor");
 			}
-
-			else {
-				if (button.equals(choiceOne)) {
-					choiceOne.setName(alternativeFromRandom);
-				}
-
-				else {
-					choiceTwo.setName(alternativeFromRandom);
-				}
-			}
-		}
-
-		///////////////////////////////////////////////////////
-		else {
-			PlaybackFunctions.playOrDisplay(true);
-			PlaybackFunctions.displayOrPlayScale(scaleTwo);
-			if (scaleTwo.getScaleName().contains(guessScaleType)) {
-
-				if (button.equals(choiceOne)) {
-					choiceOne.setName(guessScaleType);
-				} else {
-					choiceTwo.setName(guessScaleType);
-				}
-			} else {
-
-				if (button.equals(choiceOne)) {
-					choiceOne.setName(alternativeFromRandom);
-				} else {
-					choiceTwo.setName(alternativeFromRandom);
-				}
-			}
+		} catch (InvalidMidiDataException | InterruptedException | EngineStateError e) {
+			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent button) {
 		Object obj = button.getSource();
-		try {
-			if (obj.equals(choiceOne)) {
-				// choiceOneChosen =true;
-				if (handlefeature.equals("Chords")) {
-					handleChords(obj, majorChord, minorChord);
-				}
-
-				else if (handlefeature.equals("Scales")) {
-					handleScales(obj, quizMajorScale, quizMinorScale);
-
-				}
+		if (obj.equals(userChoice)) {
+			if (handlefeature.equals("Chords")) {
+				handleChords(obj);
+			} else if (handlefeature.equals("Scales")) {
+				handleScales(obj);
+			} else if (handlefeature.equals("Progressions")) {
+				handleProgressions(obj);
 			}
-
-			else if (obj.equals(choiceTwo)) {
-				// choiceTwoChosen =true;
-
-				if (handlefeature.equals("Chords")) {
-					handleChords(obj, minorChord, majorChord);
-				}
-
-				else if (handlefeature.equals("Scales")) {
-					handleScales(obj, quizMinorScale, quizMajorScale);
-				}
-			}
-		} catch (InvalidMidiDataException | InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void mousePressed(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
 	}
 }

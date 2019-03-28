@@ -8,6 +8,8 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MetaEventListener;
 import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.Sequencer;
 import javax.sound.midi.ShortMessage;
@@ -19,37 +21,38 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import midi.MidiMessageTypes;
-import midiDevices.MidiReceiver;
 
 public  class Metronome implements MetaEventListener {
-
 	
 	private JSlider tempoSlider;
 	private static volatile Metronome instance = null;
-
+	
     private Metronome() {}
-
     public static Metronome getInstance() {
         if (instance == null) {
             synchronized(Metronome.class) {
                 if (instance == null) {
                     instance = new Metronome();
-               
                 }
             }
         }
-
         return instance;
     }
 	
 	private Track metroTrack;
 	private float chosenBPM;
 	private float defaultScaleBPM = 100;
-	private Sequencer sequencer = MidiReceiver.getInstance().returnSequencer();
+	private Sequencer sequencer;
 	private MidiMessageTypes msgTypes = MidiMessageTypes.getInstance();
 	private JLabel currentTempo;
 	
 	public void chooseTempo() throws InvalidMidiDataException{
+		try {
+			sequencer = MidiSystem.getSequencer();
+			sequencer.open();
+		} catch (MidiUnavailableException e) {
+			e.printStackTrace();
+		}
 		if (MidiMessageTypes.getInstance().checkIfTempoSliderChanged() ==true){
 			 chosenBPM = tempoSlider.getValue();
 			 MidiMessageTypes.getInstance().tempoSliderChanged(false);
@@ -62,7 +65,7 @@ public  class Metronome implements MetaEventListener {
 		 
 	}
 	
-	public void setupMetronomeSequence () throws InvalidMidiDataException {
+	public void setupMetronomeSequence() throws InvalidMidiDataException {
 		Sequence metroSeq = new Sequence(Sequence.PPQ, 1);
 		 metroTrack = metroSeq.createTrack();
 		 sequencer.setSequence(metroSeq);	
@@ -96,7 +99,7 @@ public  class Metronome implements MetaEventListener {
         sequencer.setTempoInBPM(chosenBPM);
     }
 	
-       public void stopLoop (){
+       public void stopLoop() {
 		sequencer.stop();
 	    }
 
@@ -104,22 +107,18 @@ public  class Metronome implements MetaEventListener {
    		
    		JPanel instancePanel = new JPanel();
    		int featureWidth = SwingComponents.getInstance().getScreenWidth();
-  
+   		instancePanel.setBackground(Color.decode("#6495ED"));
    		tempoSlider = new JSlider(0, 218, (int)defaultScaleBPM);
-   	    //DOES NOT NEED MINIMUM SIZE - RUINS SCALING
+   	    //DOES NOT NEED MINIMUM SIZE - RUINS SCALING	#6495ED
    		tempoSlider.setPreferredSize(new Dimension (featureWidth/4 - 20, featureWidth/8));
-   		tempoSlider.setForeground(Color.RED);
-   		tempoSlider.setBackground(Color.ORANGE);
+   		tempoSlider.setForeground(Color.WHITE);
+   		tempoSlider.setBackground(Color.decode("#33CCFF"));
    		tempoSlider.setPaintTrack(true); 
    		tempoSlider.setPaintTicks(true); 
    		tempoSlider.setPaintLabels(true); 
-   		
    		tempoSlider.setMajorTickSpacing(50); 
    		tempoSlider.setMinorTickSpacing(5); 
-   	
-   		tempoSlider.setOrientation(SwingConstants.HORIZONTAL); 
-     
-     // set Font for the slider 
+   		tempoSlider.setOrientation(SwingConstants.HORIZONTAL);  
    		tempoSlider.setFont(new Font("Serif", Font.ITALIC, 20)); 
    		
    		tempoSlider.addChangeListener(new ChangeListener(){
@@ -131,7 +130,7 @@ public  class Metronome implements MetaEventListener {
 
         currentTempo = new JLabel();
         currentTempo.setText(tempoSlider.getValue()+" BPM");
-        currentTempo.setForeground(Color.BLACK);
+        currentTempo.setForeground(Color.WHITE);
         
         //DOES NOT NEED MINIMUM SIZE - RUINS SCALING
         currentTempo.setPreferredSize(new Dimension (100, 40));
@@ -141,16 +140,9 @@ public  class Metronome implements MetaEventListener {
         instancePanel.setPreferredSize(new Dimension(featureWidth/4 - 20, featureWidth/8)); 
 		return instancePanel;
 	}
-   
-  
 	 private void addNoteEvent(Track track, long tick) throws InvalidMidiDataException {
 	        ShortMessage message = new ShortMessage(ShortMessage.NOTE_ON, 9, 37, 100);
 	        MidiEvent event = new MidiEvent(message, tick);
 	        metroTrack.add(event);
 	    }
-	 
-	 
-	 
-	 
-	 
 }

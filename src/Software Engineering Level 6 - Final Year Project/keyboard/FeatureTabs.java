@@ -2,26 +2,20 @@ package keyboard;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
 import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.ListSelectionModel;
-
-
 import midiDevices.GetInstruments;
+import tools.MIDIFilePlayer;
 import tools.Metronome;
 import tools.SwingComponents;
 import keyboard.KeyboardInteractions;
@@ -29,14 +23,10 @@ import midi.MidiMessageTypes;
 
 public class FeatureTabs {
 
+	/**This class holds the application's set of instruments, the Metronome, and the MIDI file player.*/
+	
 	private JTabbedPane tabbedPane = SwingComponents.getInstance().getFeatureTab();
 	private int jListTableWidth;
-	
-	private int jListYPos =  SwingComponents.getJListYPos();
-	private int jListTableHeight =  SwingComponents.getJListTableHeight();
-	private int jYAndHeight =  SwingComponents.getJListYAndHeight();
-
-	private DefaultListModel <String> instrumentsInListModel = new DefaultListModel <String>();
 	private SwingComponents components = SwingComponents.getInstance();
 	private static volatile FeatureTabs instance = null;
 
@@ -48,7 +38,6 @@ public class FeatureTabs {
 			synchronized (FeatureTabs.class) {
 				if (instance == null) {
 					instance = new FeatureTabs();
-					//instance.storeInstrumentsList();
 				}
 			}
 		}
@@ -59,32 +48,22 @@ public class FeatureTabs {
 	public JPanel instrumentChoicesPanel() {
 		GetInstruments loadedInstruments = GetInstruments.getInstance();
        JPanel instancePanel = new JPanel();
-       //Fizes border color
-       instancePanel.setBackground(Color.decode("#D2691E"));
-    
-       //Color.decode(#F08080)
-       
-       //instancePanel.setBackground(Color.decode("#F0F8FF"));
+       instancePanel.setBackground(Color.decode("#3300FF"));
        jListTableWidth = SwingComponents.getJListWidth();
- 
        DefaultListModel<String> allInstruments = loadedInstruments.getAllInstruments();
-       
-     
 		JList<String> jListInstruments = new JList<String>(allInstruments);
-		SwingComponents.getInstance().colourFeatureTab(jListInstruments, Color.decode("#F4A460"));
+		SwingComponents.getInstance().colourFeatureTab(jListInstruments, Color.decode("#33CCFF"));
 		jListInstruments.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 		jListInstruments.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		jListInstruments.setVisibleRowCount(-1);
 		jListInstruments.setName("Instruments");
 		jListInstruments.setFixedCellHeight(50);
+		jListInstruments.setFixedCellWidth(197);
+		jListInstruments.setForeground(Color.WHITE);
 		
 		JScrollPane instrumentsScroll = new JScrollPane(jListInstruments);
-		//instrumentsScroll.setBackground(Color.decode("#F0F8FF"));
-		//Using tabbedpane width wont work because the code defines the preferred size for the layout manager to use
-		instrumentsScroll.setPreferredSize(new Dimension(jListTableWidth-70, jListTableHeight));
-		instrumentsScroll.setMinimumSize(new Dimension(jListTableWidth-70, jListTableHeight));
-		
-
+		instrumentsScroll.setPreferredSize(new Dimension(jListTableWidth-70, tabbedPane.getPreferredSize().height-50));
+		instrumentsScroll.setMinimumSize(new Dimension(jListTableWidth-70, tabbedPane.getPreferredSize().height-50));
 		MouseListener instrumentsListener = new KeyboardInteractions(jListInstruments);
 		jListInstruments.addMouseListener(instrumentsListener); 
 		instancePanel.add(instrumentsScroll);	
@@ -101,9 +80,12 @@ public class FeatureTabs {
 		jListTempos.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		jListTempos.setVisibleRowCount(-1);
 		jListTempos.setName("Tempos");
+   		jListTempos.setForeground(Color.WHITE);
+		SwingComponents.getInstance().colourFeatureTab(jListTempos, Color.decode("#33CCFF"));
+		
 		JScrollPane tempoScroll = new JScrollPane(jListTempos);
-		tempoScroll.setPreferredSize(new Dimension(jListTableWidth/2, jListTableHeight));
-		tempoScroll.setMinimumSize(new Dimension(jListTableWidth/2, jListTableHeight));
+		tempoScroll.setPreferredSize(new Dimension(jListTableWidth/2, tabbedPane.getPreferredSize().height-50));
+		tempoScroll.setMinimumSize(new Dimension(jListTableWidth/2, tabbedPane.getPreferredSize().height-50));
 	
 		jListTempos.addMouseListener(new MouseAdapter(){
 	         public void mouseClicked(MouseEvent tempoPressed) {
@@ -123,32 +105,25 @@ public class FeatureTabs {
 		return instancePanel;
 	}
 	
-	
-	
 	public JTabbedPane createTabbedBar() throws InvalidMidiDataException {
 		components.featureTabDimensions();
 		JPanel instrumentsPane = new JPanel();
-		
 		instrumentsPane.add(instrumentChoicesPanel());
-		
-		instrumentsPane.setBackground(Color.decode("#D2691E"));
-
+		instrumentsPane.setBackground(Color.decode("#3300FF"));
 		
 		tabbedPane.addTab("Instruments", instrumentsPane);
+		tabbedPane.setBackgroundAt(0, Color.decode("#33CCFF"));
 		
-		//tabbedPane.setPreferredSize(new Dimension(components.getScreenWidth()/2,components.getScreenHeight()/2));
-		//tabbedPane.setMinimumSize(new Dimension(components.getScreenWidth()/2,components.getScreenHeight()/2));
-		
+		//Metronome related content
 		JPanel leftTempoPane = new JPanel();
 		leftTempoPane.add(tempoPanel());
-		
+		leftTempoPane.setBackground(Color.decode("#3300FF"));
 		JPanel rightTempoPane = new JPanel();
-		//As last null is mouse listener, might need to modify as below seperate listener will replace null
+		rightTempoPane.setBackground(Color.decode("#3300FF"));
 		JButton playTempoButton = SwingComponents.getInstance().customJButton(100,20,null,null);
 		playTempoButton.setText("Play Tempo");
 		JButton stopTempoButton = SwingComponents.getInstance().customJButton(100,20,null,null);
 		stopTempoButton.setText("Stop Tempo");
-		
 		
 		playTempoButton.addMouseListener(new MouseAdapter(){
 	         public void mouseClicked(MouseEvent pressedTempo ) {	 
@@ -164,38 +139,27 @@ public class FeatureTabs {
 	        			 Metronome.getInstance().stopLoop();
 	         }                
 	      });
-		
 		rightTempoPane.add(playTempoButton);
 		rightTempoPane.add(stopTempoButton);
+		
+		
 		JPanel tempoSliderPanel = Metronome.getInstance().tempoSlider();
 		rightTempoPane.add(tempoSliderPanel);
-		
 		JSplitPane splitPaneTabThree = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		splitPaneTabThree.setContinuousLayout(true);
 		splitPaneTabThree.setLeftComponent(leftTempoPane);
 		splitPaneTabThree.setRightComponent(rightTempoPane);
 		splitPaneTabThree.setOneTouchExpandable(true);
-		
-		//int test = tabbedPane.getWidth() / 2;
 		splitPaneTabThree.setDividerLocation(SwingComponents.getJListWidth()/2);
 		tabbedPane.addTab("Metronome", splitPaneTabThree);
+		tabbedPane.setBackgroundAt(1, Color.decode("#33CCFF"));
 		
-		JComponent panel4 = makeTextPanel("Panel #4 (has a preferred size of 410 x 50).");
-		panel4.setPreferredSize(new Dimension(410, 50));
-		panel4.setMinimumSize(new Dimension(410, 50));
-		tabbedPane.addTab("Tab 4", panel4);
-
-		// Previous arrangement before moving to new class
-		// keyboardLayered.add(tabbedPane,new Integer(0), 0);
+		JPanel midiFilePlayer = MIDIFilePlayer.getInstance().drawMusicPlayerGUI();
+		midiFilePlayer.setBackground(Color.decode("#3300FF"));
+        midiFilePlayer.setPreferredSize(new Dimension(410, 50));
+		midiFilePlayer.setMinimumSize(new Dimension(410, 50));
+		tabbedPane.addTab("MIDI File Player", midiFilePlayer);
+		tabbedPane.setBackgroundAt(2, Color.decode("#33CCFF"));
 		return tabbedPane;
-	}
-
-	private JComponent makeTextPanel(String text) {
-		JPanel panel = new JPanel(false);
-		JLabel filler = new JLabel(text);
-		filler.setHorizontalAlignment(JLabel.CENTER);
-		panel.setLayout(new GridLayout(1, 1));
-		panel.add(filler);
-		return panel;
 	}
 }

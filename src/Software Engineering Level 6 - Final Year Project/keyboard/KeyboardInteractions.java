@@ -1,7 +1,5 @@
 package keyboard;
 
-import java.awt.AWTException;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -26,12 +24,9 @@ import javax.swing.event.ChangeListener;
 import midiDevices.MidiReceiver;
 import midi.DurationTimer;
 import midi.MidiMessageTypes;
-import midi.StoreMetaEvents;
 import tools.MIDIFileManager;
 import tools.MIDIRecord;
 import tools.Metronome;
-import tools.PlaybackFunctions;
-import tools.SwingComponents;
 import midiDevices.GetInstruments;
 
 public class KeyboardInteractions implements ActionListener, ChangeListener, MouseListener,MetaEventListener
@@ -401,7 +396,7 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 					Track [] tracks = midiReceiveInstance.returnSequencer().getSequence().getTracks();
 		            Track trk = midiReceiveInstance.returnSequencer().getSequence().createTrack();
 		            for (Track track : tracks) {
-		            	StoreMetaEvents.generateMetaData(track, trk);
+		            	MidiMessageTypes.generateMetaData(track, trk);
 		            }
 					midiReceiveInstance.returnSequencer().addMetaEventListener(this);
 					

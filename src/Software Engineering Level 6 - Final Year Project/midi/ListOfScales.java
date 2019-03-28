@@ -33,6 +33,9 @@ public class ListOfScales {
 	private Map<String, Note> mapOfNotes = Note.getNotesMap();
 	private Collection <Integer> currentScaleIntervals;
 	private Scale currentDisplayedScaleColor;
+	
+	private ArrayList<Scale> diatonicMajorScales = new ArrayList<Scale>();
+	private ArrayList<Scale> diatonicMinorScales = new ArrayList<Scale>();
 
 	//Store all scales
 	public void generateScalesNames (String modelNote){
@@ -65,6 +68,32 @@ public class ListOfScales {
     Scale.storeScales(dominantDiminishedScale(key));//This affects it too
     Scale.storeScales(fullyDiminishedScale(key));
 }
+	
+	
+	
+	
+	
+	//Diatonic majors
+	///////////////////////////////////////////////////
+	public void keyDiatonicMajorScales(Scale current){
+		diatonicMajorScales.add(current);
+	}
+	
+	public ArrayList<Scale> getDiatonicMajorScales(){
+		return diatonicMajorScales;
+	}
+	
+	//Diatonic minor
+		///////////////////////////////////////////////////
+	public void keyDiatonicMinorScales(Scale current){
+		diatonicMinorScales.add(current);
+	}
+	
+	public ArrayList<Scale> getDiatonicMinorScales(){
+		return diatonicMinorScales;
+	}
+	
+	////////////////////////////////////////////////
 	
 	public void displayedScaleNotes(Scale currentScale){
 		currentDisplayedScaleColor = currentScale;

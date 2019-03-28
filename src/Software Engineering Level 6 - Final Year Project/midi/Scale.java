@@ -39,7 +39,7 @@ public class Scale extends Note {
 	
 
 	public enum pureMajorBasedScales {
-		diatonicMajor("Diantonic Ionion"), 
+		diatonicMajor("Diantonic Ionian"), 
 		pentatonicMajor("Pentatonic Major");
 	
 		public final String scale;

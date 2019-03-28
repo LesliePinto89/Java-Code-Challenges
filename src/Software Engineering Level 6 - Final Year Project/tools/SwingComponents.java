@@ -2,7 +2,6 @@ package tools;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -13,10 +12,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -28,7 +25,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
-import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
@@ -39,15 +35,39 @@ import javax.swing.text.Highlighter;
 import midi.TypesOfApreggios;
 
 public class SwingComponents implements MouseListener {
-
-	private static volatile SwingComponents instance = null;
-
+	
+	/**This class is used to create select the applications desired custom Swing components.*/
+	
 	private boolean colorToggleState = false;
 	private boolean colorRangeToggleState = false;
 	private boolean displayScaleNotesOnly = false;
 	private TypesOfApreggios apreggrioType = TypesOfApreggios.getInstance();
+	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	private int screenWidth = (int) screenSize.getWidth();
+	private int screenHeight = (int) screenSize.getHeight();
+	private JTabbedPane tabbedPane;
+	private static int jListTableWidth;
+	private static int jListYPos = 80;
+	private static int jListTableHeight = 100;
+	private static int jListYAndHeight = jListYPos + jListTableHeight + 50;
 	
-	//used to distinguish playback of scales to relative pitch's show scales only
+	private static volatile SwingComponents instance = null;
+	private SwingComponents() {
+	}
+	
+	public static SwingComponents getInstance() {
+		if (instance == null) {
+			synchronized (SwingComponents.class) {
+				if (instance == null) {
+					instance = new SwingComponents();
+					instance.featureTabDimensions();
+				}
+			}
+		}
+		return instance;
+	}
+	
+	//Used to distinguish playback of scales to relative pitch's show scales only
 	public void displayScalesOnlyState(boolean scaleState) {
 		displayScaleNotesOnly = scaleState;
 	}
@@ -73,10 +93,6 @@ public class SwingComponents implements MouseListener {
 		return colorRangeToggleState;
 	}
 
-	////////////////////////////////////////////
-	private SwingComponents() {
-	}
-
 	public void colourJText(JTextArea area, int i) throws BadLocationException{
 		int startIndex = area.getLineStartOffset(i);
 		int endIndex = area.getLineEndOffset(i);
@@ -85,29 +101,6 @@ public class SwingComponents implements MouseListener {
 		area.getHighlighter().addHighlight(startIndex, endIndex, painter);
 	}
 	
-
-	
-	public static SwingComponents getInstance() {
-		if (instance == null) {
-			synchronized (SwingComponents.class) {
-				if (instance == null) {
-					instance = new SwingComponents();
-					instance.featureTabDimensions();
-				}
-			}
-		}
-		return instance;
-	}
-
-	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-	private int screenWidth = (int) screenSize.getWidth();
-	private int screenHeight = (int) screenSize.getHeight();
-	private JTabbedPane tabbedPane;
-	private static int jListTableWidth;
-	private static int jListYPos = 80;
-	private static int jListTableHeight = 100;
-	private static int jListYAndHeight = jListYPos + jListTableHeight + 50;
-
 	public static int getJListWidth() {
 		return jListTableWidth;
 	}
@@ -134,11 +127,10 @@ public class SwingComponents implements MouseListener {
 
 	public void featureTabDimensions() {
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setPreferredSize(new Dimension(screenWidth / 2, screenHeight / 3));
+		tabbedPane.setPreferredSize(new Dimension(screenWidth / 2 - 40, screenHeight / 2));
 		// tabbedPane.setBackground(Color.decode("#F0F8FF"));
 		// This makes all display not change size - its kind of good and bad
-		// thing
-		// tabbedPane.setMinimumSize(new Dimension (screenWidth / 2,
+		// thing tabbedPane.setMinimumSize(new Dimension (screenWidth / 2,
 		// screenHeight / 3));
 		jListTableWidth = screenWidth / 2;
 		jListTableHeight = screenHeight / 3;
@@ -171,12 +163,6 @@ public class SwingComponents implements MouseListener {
 		return conditionalConstraints;
 	}
 
-//	public void debugFrame(JList<String> currentList, Color backPanel, Color innerPanel) {
-//		currentList.repaint();
-//		currentList.setCellRenderer(getRenderer(innerPanel));
-//		currentList.setBackground(backPanel);
-//	}
-
 	public void colourMenuPanels(JList<String> currentList, Color backPanel, Color innerPanel) {
 		currentList.setCellRenderer(getRenderer(innerPanel));
 		currentList.setBackground(backPanel);
@@ -196,33 +182,51 @@ public class SwingComponents implements MouseListener {
 				JLabel listCellRendererComponent = (JLabel) super.getListCellRendererComponent(list, value, index,
 						isSelected, cellHasFocus);
 				listCellRendererComponent.setBorder(BorderFactory.createMatteBorder(0, 1, 1, 0, Color.BLACK));
-
-				if (list.getName().equals("Instruments")) {
+				Font aFont =null;
+				
+				
+				if (list.getName().equals("Instruments") || list.getName().equals("Tempos") || list.getName().equals("allSongsList")) {
 					int width = (int) tabbedPane.getPreferredSize().getWidth();
 					int height = (int) tabbedPane.getPreferredSize().getHeight();
+					
+					if(list.getName().equals("Tempos") || list.getName().equals("allSongsList")){				
+						if(list.getName().equals("allSongsList")){
+							aFont = new Font("Serif", Font.BOLD, 20);
+						}
+						
+	                    //Tempos stuff
+						else{
+						aFont = new Font("Serif", Font.BOLD, 26);
+						listCellRendererComponent.setPreferredSize(new Dimension(width / 2, height / 5));
+						listCellRendererComponent.setMinimumSize(new Dimension(width / 2, getScreenHeight() / 5));
+						}
+					}
+					
+					//Instrument stuff
+					else {
 					listCellRendererComponent.setPreferredSize(new Dimension(width / 7, height / 20));
 					listCellRendererComponent.setMinimumSize(new Dimension(width / 7, getScreenHeight() / 20));
-
+					 aFont = new Font("Serif", Font.BOLD, 26);
+					}
 					listCellRendererComponent.setBackground(renderColor);
 
 					if (isSelected) {
 						listCellRendererComponent.setBackground(Color.decode("#F5DEB3"));
 						listCellRendererComponent.setForeground(Color.YELLOW);
 					}
-
+					
 				}
 
+				//Screenprompt stuff
 				else {
 					listCellRendererComponent
 							.setPreferredSize(new Dimension(getScreenWidth() / 8, getScreenHeight() / 20));
 					listCellRendererComponent
 							.setMinimumSize(new Dimension(getScreenWidth() / 8, getScreenHeight() / 20));
 					listCellRendererComponent.setBackground(renderColor);
+					 aFont = new Font("Serif", Font.BOLD, 36);
 				}
-				Font aFont = new Font("Serif", Font.BOLD, 16);
 				listCellRendererComponent.setFont(aFont);
-				// listCellRendererComponent
-
 				return listCellRendererComponent;
 			}
 		};
@@ -250,7 +254,6 @@ public class SwingComponents implements MouseListener {
 		JScrollPane aScrollPane = new JScrollPane(aJList);
 		aScrollPane.setPreferredSize(new Dimension(scrollW, scrollH));
 		aScrollPane.setMinimumSize(new Dimension(scrollW, scrollH));
-
 		return aScrollPane;
 	}
 	
@@ -261,7 +264,6 @@ public class SwingComponents implements MouseListener {
 		aBox.addActionListener(listen);
 		return aBox;
 	}
-	
 	
 	public JButton customJButton(int width, int height, String text, MouseListener listen) {
 		JButton aButton = new JButton();
@@ -283,7 +285,6 @@ public class SwingComponents implements MouseListener {
 		aButton.setBackground(c);
 		aButton.setBorder(new LineBorder(cTwo));
 		aButton.setFocusPainted(con);
-		
 		return aButton;
 	}
 
@@ -355,7 +356,6 @@ public class SwingComponents implements MouseListener {
 		return carriedJPanel;
 	}
 	
-	
 	public JPanel customPanelTwo(int width, int height, Color panelColor,LayoutManager l) {
 		JPanel carriedJPanel = new JPanel();
 		carriedJPanel.setBackground(panelColor);
@@ -391,18 +391,21 @@ public class SwingComponents implements MouseListener {
 	}
 
 	public JPanel customizeFeaturePanel(int width, int height, MouseListener listen,
-			BufferedImage carriedBufferedImage) {
+			BufferedImage carriedBufferedImage,String name) {
 		JPanel carriedJPanel = new JPanel();
 		carriedJPanel.setBackground(Color.decode("#696969"));
-		carriedJPanel.setPreferredSize(new Dimension(width, height));
+		carriedJPanel.setPreferredSize(new Dimension(width-5, height-5));
 		carriedJPanel.setMinimumSize(new Dimension(width, height));
+		if(name !=null){
+			carriedJPanel.setName(name);
+		}
 		carriedJPanel.addMouseListener(listen);
 		Image scaledOff = null;
 		scaledOff = carriedBufferedImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+		
 		JLabel picLabel = new JLabel(new ImageIcon(scaledOff));
 		carriedJPanel.add(picLabel);
 		return carriedJPanel;
-
 	}
 
 	public JLabel customJLabelEditing(String text,int width, int height) {
@@ -455,5 +458,4 @@ public class SwingComponents implements MouseListener {
 		// TODO Auto-generated method stub
 
 	}
-
 }

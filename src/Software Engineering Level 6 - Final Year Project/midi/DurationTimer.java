@@ -1,13 +1,9 @@
 package midi;
 
-import java.awt.AWTException;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import javax.swing.JButton;
-
 import midiDevices.MidiReceiver;
-import tools.ProgramMainGUI;
 
 public class DurationTimer {
 
@@ -32,7 +28,6 @@ public class DurationTimer {
         return instance;
     }
 	
-    
 	// Stored previous note cumulative value for next note's delta
 	public void storeCumulativeTime(long carriedDeltaTicks) {
 		allDeltas = carriedDeltaTicks;
@@ -63,22 +58,6 @@ public class DurationTimer {
 	}
 
 	public void setDurationTimer(JButton passedButton, boolean endCycleBool) {
-         
-		
-//		//Debug mode used when a new recording is started again while in current feature
-//		  if (messages.getResetStatus()){
-//			  messages.setRestStatus(false);
-//		    	//Debug mode used when a new recording has ended
-//			  messages.turnOnDebug(true);
-//			  try {
-//				ProgramMainGUI.getInstance().clearConsoleDisplay();
-//			} catch (AWTException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-			  
-		    	
-		 //   }
 		//MIGHT NEED TO REMOVE PASSED BUTTI IF NOT USED
 		if (endCycleBool == true) {
 			timerDuration.cancel();
@@ -147,84 +126,4 @@ public class DurationTimer {
 			
 		}
 	}
-	
-	
-	//Turned off now that using epoch difference per rest time
-	/*	public void setClockTimer(boolean noteIsOn) {
-			
-			 if(noteIsOn ==true){
-				 System.out.println("Timer stopped properly");
-				 timer.cancel();
-				// endTimer = true; //Added this messed with code a bit
-			 }
-	    	
-			 else {
-	    		
-		      TimerTask timerTask = new TimerTask() {
-
-		            @Override
-		            public void run() {
-		             if(endTimer == true){
-		            		 
-		            	 MidiReciever.getInstance().storeRestTickCycle(ppqAddedSpeed);
-		             }
-		               else if(endTimer == false){
-		            	 
-		            	  // System.out.println("This is the ppqPerQuarter: "+MidiReciever.getInstance().ticksPerQuarterUsingPPQ());
-		            	  // ppqAddedSpeed = MidiReciever.getInstance().ticksPerQuarterUsingPPQ();
-		            	   
-		            	   System.out.println("This is the Clock of ticksPerSixteenthsUsingPPQ: "+MidiReciever.getInstance().getRestTickCycle());
-		            	   ppqAddedSpeed = MidiReciever.getInstance().ticksPerSixteenthsUsingPPQ();
-		            	 }    
-		        }  
-		      };
-		        
-		        //create thread to print counter value
-		        Thread t = new Thread(new Runnable() {
-
-		            @Override
-		            public void run() {
-		                while (true) {
-		                    try {
-		                        //System.out.println("Thread reading counter is: " + ppqAddedPerSecond);
-		                       	                    	
-		                    	if (recordClick % 2 == 0) {
-
-		                    		endTimer = true;
-		                    		
-		                           // ppqAddedPerSecond = 0;
-		                            
-		                            timer.cancel();//end the timer
-		                           // ppqAddedPerSecond = reciever.ppqPerSecond();
-		                            MidiReciever.getInstance().storeRestTickCycle(0);
-		                            MidiReciever.getInstance().defaultSetStartTick(0);
-		                            
-		                            break;//end this loop
-		                        }
-		                    	
-		                    	
-		                        Thread.sleep(1000);
-		                    } catch (InterruptedException ex) {
-		                        ex.printStackTrace();
-		                    }
-		                }
-		            }
-		            
-		        });
-
-		        timer = new Timer("MyTimer");//create a new timer
-		        timer.scheduleAtFixedRate(timerTask, 0, 250);//start timer in 250ms for 1/16
-		        
-		        //Original code before above change
-		       //timer.scheduleAtFixedRate(timerTask, 0, 1000);//start timer in 30ms to increment  counter
-
-		        t.start();//start thread to display counter
-		        
-		     	if (noteIsOn == true) {
-		        timer.cancel();//end the timer
-		     	}
-			 }
-		    }
-		    */
-	
 }

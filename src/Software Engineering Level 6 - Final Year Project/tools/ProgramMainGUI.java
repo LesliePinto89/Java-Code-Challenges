@@ -32,6 +32,7 @@ import javax.swing.JTextArea;
 import midiDevices.GetInstruments;
 import keyboard.VirtualKeyboard;
 import midi.ChordProgression;
+import midi.ChordProgressionActions;
 import midi.DurationTimer;
 import midi.ListOfChords;
 import midi.MidiMessageTypes;
@@ -113,7 +114,7 @@ public class ProgramMainGUI implements MouseListener {
 			GetInstruments.getInstance();
 			Metronome.getInstance();
 			ScreenPrompt.getInstance();
-			ChordProgression.getInstance();
+			ChordProgressionActions.getInstance();
 
 			// Load all notes for set piano (e.g. 61, 88) on system startup
 			VirtualKeyboard.getInstance().createWholeKeys();
@@ -204,11 +205,11 @@ public class ProgramMainGUI implements MouseListener {
 	public void createFeatureImages() throws IOException {
 		BufferedImage bufFreePlayPianoImage = ImageIO.read(new File("src/Images/piano-image.jpg"));
 		freePlayPanel = components.customizeFeaturePanel(screenWidth / 4, screenHeight / 3, this,
-				bufFreePlayPianoImage);
+				bufFreePlayPianoImage,"Free");
 		freePlayPanel.setBackground(Color.decode("#181818"));
 		
 		BufferedImage bufLearnImage = ImageIO.read(new File("src/Images/Music score.jpg"));
-		learnMode = components.customizeFeaturePanel(screenWidth / 4, screenHeight / 3, this, bufLearnImage);
+		learnMode = components.customizeFeaturePanel(screenWidth / 4, screenHeight / 3, this, bufLearnImage,"Learn");
 		learnMode.setBackground(Color.decode("#181818"));
 		
 		SwingComponents components = SwingComponents.getInstance();

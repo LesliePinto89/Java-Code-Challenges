@@ -9,7 +9,6 @@ import javax.sound.midi.Track;
 import javax.swing.JToggleButton;
 
 import midi.MidiMessageTypes;
-import midi.StoreMetaEvents;
 import midiDevices.MidiReceiver;
 
 public class MIDIRecord {
