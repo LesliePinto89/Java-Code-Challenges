@@ -217,7 +217,17 @@ public class SwingComponents implements MouseListener {
 					
 				}
 
-				//Screenprompt stuff
+				//Input options
+				else if (list.getName().equals("Input")){
+					listCellRendererComponent
+					.setPreferredSize(new Dimension(getScreenWidth() / 6, getScreenHeight() /6));
+			listCellRendererComponent
+					.setMinimumSize(new Dimension(getScreenWidth() / 6, getScreenHeight() / 6));
+			listCellRendererComponent.setBackground(renderColor);
+			 aFont = new Font("Serif", Font.BOLD, 16);
+			
+				}
+				//Screenprompt stuff 
 				else {
 					listCellRendererComponent
 							.setPreferredSize(new Dimension(getScreenWidth() / 8, getScreenHeight() / 20));
@@ -225,6 +235,11 @@ public class SwingComponents implements MouseListener {
 							.setMinimumSize(new Dimension(getScreenWidth() / 8, getScreenHeight() / 20));
 					listCellRendererComponent.setBackground(renderColor);
 					 aFont = new Font("Serif", Font.BOLD, 36);
+					 
+					 if (isSelected) {
+							listCellRendererComponent.setBackground(Color.decode("#F5DEB3"));
+							listCellRendererComponent.setForeground(Color.YELLOW);
+						}
 				}
 				listCellRendererComponent.setFont(aFont);
 				return listCellRendererComponent;
@@ -389,6 +404,8 @@ public class SwingComponents implements MouseListener {
 		JLabel picLabel = new JLabel(new ImageIcon(scaledOff));
 		return picLabel;
 	}
+	
+
 
 	public JPanel customizeFeaturePanel(int width, int height, MouseListener listen,
 			BufferedImage carriedBufferedImage,String name) {

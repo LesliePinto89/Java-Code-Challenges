@@ -9,7 +9,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
-import midiDevices.MidiReceiver;
+import midiDevices.PlayBackDevices;
 
 public class MIDIFileManager {
 
@@ -24,7 +24,7 @@ public class MIDIFileManager {
 
     public static MIDIFileManager getInstance() {
         if (instance == null) {
-            synchronized(MidiReceiver.class) {
+            synchronized(PlayBackDevices.class) {
                 if (instance == null) {
                     instance = new MIDIFileManager();
                     fileChooser = new JFileChooser();
@@ -76,19 +76,19 @@ public class MIDIFileManager {
 		
 	public void saveNewMIDIFile(JToggleButton saveMIDI) {
 		// Valid when user has made a sequence
-		if (MidiReceiver.getInstance().getSequence() != null) {
+		if (PlayBackDevices.getInstance().getSequence() != null) {
 
 			int sf = fileChooser.showSaveDialog(fileChooser);
 			// Store so can get later in memory
 			File newFile = fileChooser.getSelectedFile();
 			storeMIDIFileArray(newFile);
 			if (sf == JFileChooser.APPROVE_OPTION) {
-				int[] allowedMidiTypes = MidiSystem.getMidiFileTypes(MidiReceiver.getInstance().getSequence());
+				int[] allowedMidiTypes = MidiSystem.getMidiFileTypes(PlayBackDevices.getInstance().getSequence());
 				if (allowedMidiTypes.length == 0) {
 					System.err.println("No supported MIDI file types.");
 				} else {
 					try {
-						MidiSystem.write(MidiReceiver.getInstance().getSequence(), allowedMidiTypes[0], getCurrentMIDIFile());
+						MidiSystem.write(PlayBackDevices.getInstance().getSequence(), allowedMidiTypes[0], getCurrentMIDIFile());
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
@@ -98,9 +98,11 @@ public class MIDIFileManager {
 						JOptionPane.INFORMATION_MESSAGE);
 
 				// true for rewrite, false for override
-			} else if (sf == JFileChooser.CANCEL_OPTION) {
-				JOptionPane.showMessageDialog(null, "File save has been canceled");
-			}
+			} 
+			
+			//else if (sf == JFileChooser.CANCEL_OPTION) {
+				//JOptionPane.showMessageDialog(null, "File save has been canceled");
+			//}
 			saveMIDI.setSelected(false);
 			saveMIDI.setEnabled(true);
 		}

@@ -36,7 +36,7 @@ import midi.ChordProgressionActions;
 import midi.DurationTimer;
 import midi.ListOfChords;
 import midi.MidiMessageTypes;
-import midiDevices.MidiReceiver;
+import midiDevices.PlayBackDevices;
 
 import java.awt.AWTException;
 import java.awt.Color;
@@ -105,8 +105,8 @@ public class ProgramMainGUI implements MouseListener {
 
 			// Each of these classes use the Singleton pattern as the
 			// application only needs one instance of them for reference.
-			MidiReceiver.getInstance();
-			MidiReceiver.getInstance().startConnection();
+			PlayBackDevices.getInstance();
+			PlayBackDevices.getInstance().startConnection();
 			DurationTimer.getInstance();
 			MIDIFileManager.getInstance();
 			MIDIFilePlayer.getInstance();

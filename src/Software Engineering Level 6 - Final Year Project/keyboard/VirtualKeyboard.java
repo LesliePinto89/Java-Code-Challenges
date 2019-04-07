@@ -9,9 +9,13 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import keyboard.FeatureTabs;
+import midi.MidiMessageTypes;
+import midiDevices.PlayBackDevices;
+import tools.DebugConsole;
 import tools.MIDIFilePlayer;
 import tools.ScreenPrompt;
 import tools.SwingComponents;
@@ -58,7 +62,7 @@ public class VirtualKeyboard {
 	private JPanel buttonHolder = new JPanel(new GridBagLayout());
 	private JPanel innerButtonHolder = new JPanel(new GridBagLayout());
 	private JSlider slider;
-	private JButton homeButton;
+	private JButton inputButton;
 	private GridBagConstraints aConstraint;
 	
 	private SwingComponents components = SwingComponents.getInstance();
@@ -178,21 +182,20 @@ public class VirtualKeyboard {
 		innerButtonHolder.add(slider, aConstraint);
 	}
 	
-	public void createSongButton() throws IOException {
-		BufferedImage home = ImageIO.read(new File("src/Images/Create Song.png"));
-		homeButton = components.customJButtonTwo(70, 50, "Home",home,
+	public void changeToMIDIKeyboardButton() throws IOException {
+		BufferedImage home = ImageIO.read(new File("src/Images/auxIcon.png"));
+		inputButton = components.customJButtonTwo(70, 50, "Home",home,
 				Color.decode("#404040"),Color.decode("#303030"),false );
 		
-		ActionListener genreButtonActionListener = new KeyboardInteractions(homeButton);
-		homeButton.addActionListener(genreButtonActionListener);
+		ActionListener genreButtonActionListener = new KeyboardInteractions(inputButton);
+		inputButton.addActionListener(genreButtonActionListener);
 		
 		aConstraint = components.conditionalConstraints(1, 1, 1, 0,	GridBagConstraints.NONE);
 		aConstraint.anchor =GridBagConstraints.LINE_START;
 		aConstraint.gridwidth =1;
-		innerButtonHolder.add(homeButton, aConstraint);
-		
+		innerButtonHolder.add(inputButton, aConstraint);
 	}
-
+	
 	public void debugModeButton() throws InvalidMidiDataException, IOException {
 		BufferedImage playOff = ImageIO.read(new File("src/Images/DebugImage.png"));
 	    JToggleButton debugMIDI =components.featureJToggleButton(false,50, 42, "Debug","Debug", Color.decode("#404040"),
@@ -292,6 +295,10 @@ public class VirtualKeyboard {
 	public void reDrawLearnFrame(){
 		learnGuiFrame.setVisible(true);
 	}
+	
+	public JFrame getLearnFrame(){
+		return learnGuiFrame;
+	}
 
 	/**
 	 * Draws the main GUI layout, used in each Application GUI feature.
@@ -341,6 +348,9 @@ public class VirtualKeyboard {
 	 */
 	public void createVirtualKeyboard(boolean mode)
 			throws InvalidMidiDataException, MidiUnavailableException, IOException {
+
+		
+		
 		userChoice = mode;
 
 		drawKeyboardGUI(mode);
@@ -360,7 +370,7 @@ public class VirtualKeyboard {
 		}
 		drawPiano();
 		volumeToggle();
-		createSongButton();
+		changeToMIDIKeyboardButton();
 		recordButton();
 		playButton();
 		saveMIDIButton();

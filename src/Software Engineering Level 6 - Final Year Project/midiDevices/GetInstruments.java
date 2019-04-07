@@ -5,7 +5,7 @@ import javax.sound.midi.MidiChannel;
 import javax.sound.midi.Patch;
 import javax.sound.midi.Synthesizer;
 import javax.swing.DefaultListModel;
-import midiDevices.MidiReceiver;
+import midiDevices.PlayBackDevices;
 
 public class GetInstruments {
 
@@ -16,7 +16,7 @@ public class GetInstruments {
 	private int programNumber = 0;
 	private boolean instrumentChanged = false;
 	private DefaultListModel<String> allInstruments = new DefaultListModel<String>();
-    private MidiReceiver midiReceiever = MidiReceiver.getInstance();	
+    private PlayBackDevices midiReceiever = PlayBackDevices.getInstance();	
 	private static volatile GetInstruments instance = null;
 	private GetInstruments() {
 	}
@@ -36,8 +36,8 @@ public class GetInstruments {
 	}
 
 	public void setupInstruments() {
-		instruments = ((Synthesizer) midiReceiever.returnDevice()).getDefaultSoundbank().getInstruments();
-		channel = ((Synthesizer) midiReceiever.returnDevice()).getChannels()[0];
+		instruments = midiReceiever.returnSynth().getDefaultSoundbank().getInstruments();
+		channel = midiReceiever.returnSynth().getChannels()[0];
 	}
 	
 	public Instrument[] getListOfInstruments() {

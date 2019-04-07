@@ -1,7 +1,6 @@
 package tools;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.io.File;
@@ -21,7 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import midi.MidiMessageTypes;
-import midiDevices.MidiReceiver;
+import midiDevices.PlayBackDevices;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import java.awt.event.MouseEvent;
@@ -29,76 +28,58 @@ import java.awt.event.MouseListener;
 
 public class MIDIFilePlayer implements MouseListener, MetaEventListener, ControllerEventListener {
 
-	
-	
 	//Dimensions
 	private int screenWidth = SwingComponents.getInstance().getScreenWidth();
 	private int screenHeight = SwingComponents.getInstance().getScreenHeight();
 	
+	//Variables
+	private ArrayList<File> storedMIDISavedFiles = new ArrayList<File>();
+	private int JlistIndex;
+	private int btn_h = 35;
+	private int _W = 330;
+	private int h_list = 100;
+	private File retrieveFile;
+	private int startTick = 0;
+	private int endTick = 0;
+	
+	//Components
 	private DefaultListModel<String> songList = new DefaultListModel<String>();
 	private JList<String> jSongList = new JList<String>(songList);
 	private JScrollPane listScroller;
-	private ArrayList<File> storedMIDISavedFiles = new ArrayList<File>();
-
-	private int JlistIndex;
 	private JButton btnPlay = new JButton();
 	private JButton btnNext = new JButton();
 	private JButton btnPrev = new JButton();
 	private JButton selectMidiFileButton;
 	private JLabel lblplaying = new JLabel();
-
-	private int btn_h = 35;
-	private int _W = 330;
-	private int line1 = 80;
-	private int h_list = 100;
-	private int line2 = line1 + h_list + 50;
-
 	private JPanel backgroundPanel;
 	private JPanel containsButtons = new JPanel();
 	private JPanel playerOptions;
 	private JPanel midiVisulizer = new JPanel();
 	private JPanel panelNP = new JPanel();
 
-	private File retrieveFile;
-	private int startTick = 0;
-	private int endTick = 0;
-	
-	
 	private SwingComponents components = SwingComponents.getInstance();
 	private MIDIFileManager manager = MIDIFileManager.getInstance();
 
 	private static volatile MIDIFilePlayer instance = null;
-
-    private MIDIFilePlayer() {}
-
+	private MIDIFilePlayer() {}
+    
     public static MIDIFilePlayer getInstance() {
         if (instance == null) {
             synchronized(MIDIFilePlayer.class) {
                 if (instance == null) {
-                    instance = new MIDIFilePlayer();
-                    
-               
+                    instance = new MIDIFilePlayer(); 
                 }
             }
         }
-
         return instance;
     }
     
     public void designPlayer(){
 		// Content Holder JPanels///////////////////////////////////////
     	backgroundPanel = components.generateEventPanel(screenWidth, screenHeight, null, Color.decode("#F0FFFF"), Color.decode("#F0FFFF"), 1,1,1,1);
-		backgroundPanel = new JPanel(new GridBagLayout());
-
-		// Player content                                                    
+		backgroundPanel = new JPanel(new GridBagLayout());                                                 
 		playerOptions = components.generateEventPanel(screenWidth/3, 324,null,Color.decode("#6495ED"),Color.decode("#6495ED"),1,1,1,1);
 		backgroundPanel.add(playerOptions);                                   
-																				
-																				
-//		// Visualiser content
-//		midiVisulizer = components.generateEventPanel(screenWidth/2, 324,null,Color.BLACK,Color.WHITE,1,1,1,1);
-//		backgroundPanel.add(midiVisulizer);
-	
     }
     
     public void designVisualiser(){
@@ -111,13 +92,10 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 		btnPrev.setForeground(Color.WHITE);
 		btnPrev.setBackground(Color.decode("#33CCFF"));
 		btnPrev.setFont(new Font("Cooper Black", Font.BOLD, 18));
-		
-		
 		btnPlay =components.customTrackJButton(60,40,">","playFile",this);
 		btnPlay.setForeground(Color.WHITE);
 		btnPlay.setBackground(Color.decode("#33CCFF"));
 		btnPlay.setFont(new Font("Cooper Black", Font.BOLD, 18));
-		
 		btnNext =components.customTrackJButton(60,40,">>","nextFile",this);	
 		btnNext.setForeground(Color.WHITE);
 		btnNext.setBackground(Color.decode("#33CCFF"));
@@ -136,14 +114,11 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 		drawActionsButtons();
 		
 		panelNP = components.generateEventPanel(_W - 15, 20, null, null,Color.gray,1, 0, 2, 0);
-		
 		panelNP.setLayout(new BoxLayout(panelNP, BoxLayout.PAGE_AXIS));
 		playerOptions.add(panelNP);
-
 		lblplaying = components.customJLabelEditing("Now Playing: ",100, 4);
 		lblplaying.setForeground(Color.WHITE);
 		lblplaying.setFont(new Font("Serif", Font.BOLD, 18));
-		
 		panelNP.add(lblplaying);
 		
 		// Add file button and action event
@@ -184,8 +159,8 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 	public void playMidiFile() throws InvalidMidiDataException, IOException {
 		Sequence sequence = MidiSystem.getSequence(MIDIFileManager.getInstance().selectMIDIFile());
 		// Load it into  sequencer start the play back
-		MidiReceiver.getInstance().returnSequencer().setSequence(sequence); 
-		MidiReceiver.getInstance().returnSequencer().start(); 
+		PlayBackDevices.getInstance().returnSequencer().setSequence(sequence); 
+		PlayBackDevices.getInstance().returnSequencer().start(); 
 	}
 
 	public File getStoredFile() {
@@ -200,7 +175,6 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 		jSongList.setForeground(Color.WHITE);
 		SwingComponents.getInstance().colourFeatureTab(jSongList, Color.decode("#33CCFF"));
 		listScroller = components.customJScrollPane(jSongList,_W - 10, screenHeight/2 - 160);
-
 		playerOptions.add(listScroller);	
 	}
 
@@ -213,8 +187,6 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 	}
 
 	public void generateMetaFromFile() throws InvalidMidiDataException {
-	
-		
 		//If .mid file already has a track for meta messages, this code below is not needed
 		//newMetaEvents.createFullSequenceMetaData();
 		Track metaTrack = MidiMessageTypes.getInstance().getMetaTrack();
@@ -256,11 +228,9 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 			case ShortMessage.NOTE_ON:
 				 noteOn = true;
 				startTick = (int) metaTrack.get(i++).getTick();
-				//endTick = (int) metaTrack.get(++i).getTick();
 				break;
 			case ShortMessage.NOTE_OFF:
 				 noteOff = true;
-				//startTick = (int) metaTrack.get(i).getTick();
 				endTick = (int) metaTrack.get(i++).getTick();
 				break;
 			case ShortMessage.PITCH_BEND:
@@ -275,10 +245,7 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 			
 		    if(noteOn == true && noteOff == true){
 		    	int notePosition = (int) metaTrack.get(i++).getMessage().getMessage()[1];
-		    	//holdBar = new JPanel();
-			    //holdBar.setBounds(0, 0, 0, 0);
 		    	MIDIVisualPanel testPanel = new MIDIVisualPanel(startTick, notePosition, endTick, 10);
-			    //holdBar.repaint(startTick, 40, endTick, 50);
 				midiVisulizer.add(testPanel);
 				noteOn = false;
 				noteOff = false;
@@ -339,8 +306,8 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 	public void playFeature() {
 		try {
 
-			if (MidiReceiver.getInstance().isRunning() == true) {
-				MidiReceiver.getInstance().returnSequencer().stop();
+			if (PlayBackDevices.getInstance().isRunning() == true) {
+				PlayBackDevices.getInstance().returnSequencer().stop();
 				btnPlay.setText(">");
 				PlaybackFunctions.resetChordsColor();
 				PlaybackFunctions.emptyNotes();
@@ -348,27 +315,27 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 
 			else {
 				btnPlay.setText("||");
-				MidiReceiver.getInstance().returnSequencer().addMetaEventListener(this);
+				PlayBackDevices.getInstance().returnSequencer().addMetaEventListener(this);
 				
 				int[] types = new int[128];
 		        for (int ii = 0; ii < 128; ii++) {
 		            types[ii] = ii;
 		        }
-		        MidiReceiver.getInstance().returnSequencer().addControllerEventListener(this, types);
+		        PlayBackDevices.getInstance().returnSequencer().addControllerEventListener(this, types);
 		        
 		         // Replace sequence with file in this feature
 		        Sequence original = MIDIFilePlayer.getInstance().playSelectedFile();
-		        MidiReceiver.getInstance().returnSequencer().setSequence(original);
+		        PlayBackDevices.getInstance().returnSequencer().setSequence(original);
 		        Track [] tracks = original.getTracks();
-	            Track trk = MidiReceiver.getInstance().returnSequencer().getSequence().createTrack();
+	            Track trk = PlayBackDevices.getInstance().returnSequencer().getSequence().createTrack();
 	            for (Track track : tracks) {
 	            	MidiMessageTypes.generateMetaData(track, trk);
 	            }
 	            
-	            Sequence updatedSeq = MidiReceiver.getInstance().returnSequencer().getSequence();
-				MidiReceiver.getInstance().returnSequencer().setSequence(updatedSeq);
-			    MidiReceiver.getInstance().returnSequencer().setTickPosition(0);
-			    MidiReceiver.getInstance().returnSequencer().start();
+	            Sequence updatedSeq = PlayBackDevices.getInstance().returnSequencer().getSequence();
+				PlayBackDevices.getInstance().returnSequencer().setSequence(updatedSeq);
+			    PlayBackDevices.getInstance().returnSequencer().setTickPosition(0);
+			    PlayBackDevices.getInstance().returnSequencer().start();
 			}
 
 		} catch (InvalidMidiDataException | IOException e) {
@@ -384,7 +351,7 @@ public class MIDIFilePlayer implements MouseListener, MetaEventListener, Control
 		 MidiMessageTypes.getInstance().metaEventColors(metaPlayer);
 		//0x2F in decimal is  47 - value for end MIDI track
 		if (metaPlayer.getType() == 0x2F) {
-			MidiReceiver.getInstance().returnSequencer().stop();
+			PlayBackDevices.getInstance().returnSequencer().stop();
 			btnPlay.setText(">");
 		}
 	}

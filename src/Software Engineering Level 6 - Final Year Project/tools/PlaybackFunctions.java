@@ -16,7 +16,7 @@ import midi.Chord;
 import midi.ListOfScales;
 import midi.MidiMessageTypes;
 import midi.Scale;
-import midiDevices.MidiReceiver;
+import midiDevices.PlayBackDevices;
 
 public class PlaybackFunctions {
 
@@ -85,6 +85,23 @@ public class PlaybackFunctions {
 		} else {
 			colorChordsAndScales(lastNote, Color.WHITE);
 
+		}
+	}
+	
+	//Only use when the user plays using an actual MIDI keyboard
+	public static void resetLastNotePianoColor(int pitch) {
+		Note lastNote = null;
+		for (Note aNote : storedPreColorChords){
+			if(aNote.getPitch() == pitch){
+				lastNote = aNote;
+				break;
+			}
+		}
+		if (lastNote.getType().equals("Sharp")) {
+			colorChordsAndScales(lastNote, Color.BLACK);
+
+		} else {
+			colorChordsAndScales(lastNote, Color.WHITE);
 		}
 	}
 
@@ -226,7 +243,7 @@ public class PlaybackFunctions {
 			colorChordsAndScales(intervalNote, Color.BLUE);
 		}
 		ShortMessage noteOne = new ShortMessage(ShortMessage.NOTE_ON, 0, intervalNote.getPitch(), 50);
-		MidiReceiver.getInstance().send(noteOne, -1);
+		PlayBackDevices.getInstance().send(noteOne, -1);
 
 		if (messages.getRandomState()) {
 			if (messages.getNoColorFirst()) {
@@ -262,7 +279,7 @@ public class PlaybackFunctions {
 			}
 
 			ShortMessage noteOne = new ShortMessage(ShortMessage.NOTE_ON, 0, aNote.getPitch(), 50);
-			MidiReceiver.getInstance().send(noteOne, -1);
+			PlayBackDevices.getInstance().send(noteOne, -1);
 		}
 	}
 
@@ -277,7 +294,7 @@ public class PlaybackFunctions {
 
 			if (isPlayOrDisplay()) {
 				ShortMessage noteOne = new ShortMessage(ShortMessage.NOTE_ON, 0, aNote.getPitch(), 50);
-				MidiReceiver.getInstance().send(noteOne, -1);
+				PlayBackDevices.getInstance().send(noteOne, -1);
 				timeDelay(1000);
 			}
 			// Add second condition to other methods if needed

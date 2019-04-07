@@ -21,16 +21,16 @@ import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import midiDevices.MidiReceiver;
+import midiDevices.PlayBackDevices;
 import midi.DurationTimer;
 import midi.MidiMessageTypes;
 import tools.MIDIFileManager;
 import tools.MIDIRecord;
-import tools.Metronome;
+import tools.ScreenPrompt;
 import midiDevices.GetInstruments;
 
-public class KeyboardInteractions implements ActionListener, ChangeListener, MouseListener,MetaEventListener
-{
+public class KeyboardInteractions implements ActionListener, 
+ChangeListener, MouseListener,MetaEventListener{
 
 	// Swing components
 	private JSlider slider;
@@ -39,10 +39,9 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	private JToggleButton debugButton;
 	private JToggleButton playMIDI;
 	private JToggleButton saveMIDI;
-	private JButton homeButton;
+	private JButton inputButton;
 	private JList<String> allInstruments;
-	private JList<String> tempoList;
-	
+
 	private byte bytePitch;
 	
 	// MIDI Timing and message variables
@@ -54,35 +53,23 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 	private int playedNotePitch;
 	private MIDIRecord record;
 	private boolean debugNoNotes =false;
-
-	public static final int DAMPER_PEDAL = 64;
-	public static final int DAMPER_ON = 127;
-	public static final int DAMPER_OFF = 0;
-	private boolean sustain = false; // is the sustain pedal depressed?
-	private boolean endDurationCycle = false;
-
-	private Metronome metronome = Metronome.getInstance();
-	
 	private MidiMessageTypes messages = MidiMessageTypes.getInstance();
-	private MidiReceiver midiReceiveInstance = MidiReceiver.getInstance();
+	private PlayBackDevices midiReceiveInstance = PlayBackDevices.getInstance();
 	private GetInstruments getInstruments = GetInstruments.getInstance();
-	//private SwingComponents components = SwingComponents.getInstance();
 	
 	public KeyboardInteractions() {
 	}
 
-	public KeyboardInteractions(JList<String> carriedChordsList) {
+	public KeyboardInteractions(JList<String> instrumentsList) {
 
-	 if (carriedChordsList.getName().equals("Instruments")) {
-			this.allInstruments = carriedChordsList;
+	 if (instrumentsList.getName().equals("Instruments")) {
+			this.allInstruments = instrumentsList;
 	}
-		else if (carriedChordsList.getName().equals("Tempos")) {
-			this.tempoList = carriedChordsList;
-	 }
+	 
 	}
 
 	public KeyboardInteractions(JButton aButton) {
-		this.homeButton = aButton;
+		this.inputButton = aButton;
 	}
 	
 	
@@ -115,10 +102,8 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 
 	// Construct Create MIDI track
 	public KeyboardInteractions(JButton pressedNote, int playedNotePitch) {
-
 		this.pressedNote = pressedNote;
 		this.playedNotePitch = playedNotePitch;
-		
 	}
 
 	// JSlider volume event
@@ -168,10 +153,8 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 				else if (midiReceiveInstance.getTrack().size() >= 3) {
 
 					// Get the current time in milliseconds, and remove the last
-					// note's off time from itself. To get absolute time to later user.
-					// Storage of the current time in memory is not needed,
-					// only each note's off time.
-					
+					// note's off time from current time to get absolute time difference to use later.
+					// Storage of the current time in memory is not needed, only each note's off time.
 					messages.sequenceTimingMessages(">>>>>START TIME OF NEW NOTE");
 					
 					Instant instantOnTime = Instant.now();
@@ -190,8 +173,7 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 //							+ diffBetweenRest);
 					
 					String startTickString = Long.toString(startTick);
-					
-					messages.sequenceTimingMessages("Tick time per second based starttick: "+rangeRestDiff);
+					messages.sequenceTimingMessages("Tick time per second based starttick: "+startTickString);
 					//Console debug
 //					System.out.println("\nTick time per second based starttick: " + startTickString);
 					}
@@ -220,12 +202,6 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 					midiReceiveInstance.getTrack().add(new MidiEvent(message, startTick));
 
 					DurationTimer.getInstance().setDurationTimer(pressedNote, false);
-
-					// ShortMessage sustainMessage = new ShortMessage();
-					// sustainMessage.setMessage(ShortMessage.CONTROL_CHANGE, 0,
-					// DAMPER_PEDAL, sustain ? DAMPER_ON : DAMPER_OFF);
-					// reciever.getTrack().add(new MidiEvent(sustainMessage,
-					// startTick));
 				} catch (InvalidMidiDataException e1) {
 					e1.printStackTrace();
 				}
@@ -302,7 +278,8 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 		Object obj = e.getSource();
 		try {
 		
-		if (obj.equals(homeButton)){
+		if (obj.equals(inputButton)){
+			ScreenPrompt.getInstance().changeInput();
 				//VirtualKeyboard.getInstance().home();
 		}
 			
@@ -314,12 +291,10 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 		 else if (obj.equals(debugButton)){
 			 
 			 //DEBUG Scenerio 1
-			 //If user has no started a recording on systen starp up prior to clicling debug mode.
-			 //Also if the user has started a recording, but has not ended it and played anything.
-			   if (messages.getDebugStatus()==false && messages.isRecordedDebug() ==false)
-					   {
+			 //This is if user has not started a recording on system start up prior to clicking debug mode.
+			 //Its also if the user has started a recording, but has not ended it and played anything.
+			   if (messages.getDebugStatus()==false && messages.isRecordedDebug() ==false) {
 				   messages.clearTimingMessages();
-				// messages.defaultNoTimingMessages();
 				 messages.sequenceTimingMessages(messages.returnDefault());
 				 messages.loadDebug();
 			 }
@@ -358,16 +333,7 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 						   messages.editTimingMessages();
 					   }
 					   messages.loadDebug();
-				   }
-			   
-		/////////////////////////////////////////////
-			   
-			
-			 //Not sure if needed as of yet
-//		     else if (messages.getDebugStatus() && messages.isRecordedDebug() && !messages.getTimingMessages().equals("") ){
-//			    	messages.loadDebug();
-//			    }
-			 
+				   }    
 		 }
 
 		// Go to another class to make enable and disable record feature
@@ -375,9 +341,9 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 				record.recordAction(recordMIDI);
 		}
 		
-		else if (obj.equals(homeButton)){
-		//Placeholder for now	
-		}
+//		else if (obj.equals(homeButton)){
+//		//Placeholder for now	
+//		}
 		else if (obj.equals(playMIDI)) {
 			// When sequence tracks are not empty, play sequence.
 
@@ -431,10 +397,10 @@ public class KeyboardInteractions implements ActionListener, ChangeListener, Mou
 
 	@Override
     public void meta(MetaMessage metaRec) {
-		
 	 messages.metaEventColors(metaRec);
     }
 	
+
 
 //	 @Override
 //     public void controlChange(ShortMessage event) {

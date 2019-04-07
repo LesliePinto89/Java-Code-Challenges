@@ -13,6 +13,7 @@ import java.awt.*;
 
 import javax.imageio.ImageIO;
 import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.Transmitter;
 import javax.speech.AudioException;
 import javax.speech.EngineException;
 import javax.speech.EngineStateError;
@@ -36,11 +37,15 @@ import midi.Scale.heptTonicDegree;
 import midi.Scale.hexaTonicDegrees;
 import midi.Scale.octaTonicDegree;
 import midi.Scale.pentatonicDegrees;
+import midiDevices.PlayBackDevices;
 
 public class ScreenPrompt implements MouseListener, ActionListener {
 
-	/**This class contains the applications screen prompt and displays the feature sets to the user.*/
-	
+	/**
+	 * This class contains the applications screen prompt and displays the
+	 * feature sets to the user.
+	 */
+
 	// GUI Swing components
 	private JPanel basePanel = null;
 	private static JLabel titleLabel;
@@ -70,13 +75,13 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 	private boolean createSong = false;
 
 	private boolean quizEnabled = false;
-	
+
 	private boolean chordQuizEnabled = false;
 	private boolean scaleQuizEnabled = false;
 	private boolean progressionQuizEnabled = false;
-	
-	//private boolean quizOneFeature = false;
-	//private boolean quizTwoFeature = false;
+
+	// private boolean quizOneFeature = false;
+	// private boolean quizTwoFeature = false;
 	private boolean resetReference = false;
 	private boolean randomTriggered = false;
 	private boolean randomTriggeredReference = false;
@@ -127,17 +132,17 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 	private TypesOfApreggios preg = TypesOfApreggios.getInstance();
 	private SwingComponents components = SwingComponents.getInstance();
 	private ChordProgressionActions prog = ChordProgressionActions.getInstance();
-	
+
 	private ChordProgression progressionChord;
 	private ArrayList<Chord> inversionChords = new ArrayList<Chord>();
 	private String scaleOrder = "";
 	private int progressionType;
-	
+
+	private boolean highlighted = false;
+
 	private static volatile boolean stopPlayback = false;
 	private static volatile boolean changeApreggio = false;
 	private static volatile ScreenPrompt instance = null;
-
-
 
 	public static ScreenPrompt getInstance() {
 		if (instance == null) {
@@ -162,7 +167,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 		basePanel.add(aPanel);
 	}
 
-	//CREATE THE VARIOUS FEATURE SETS' NAVIGATION AND ACTION BUTTONS
+	// CREATE THE VARIOUS FEATURE SETS' NAVIGATION AND ACTION BUTTONS
 	///////////////////////////////////////////////////////////////
 
 	public JComboBox<String> addApreggiosBox() {
@@ -238,18 +243,18 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 	}
 
 	public JToggleButton addColorModeButton() {
-		 colorModeState = components.customJToggleButton(70, 40, "Color Mode", this);
-		 colorModeState.setBackground(Color.decode("#FFE4C4"));
-		 return colorModeState;
+		colorModeState = components.customJToggleButton(70, 40, "Color Mode", this);
+		colorModeState.setBackground(Color.decode("#FFE4C4"));
+		return colorModeState;
 	}
 
 	public JToggleButton addScaleRangeColorModeButton() {
-		 scaleRangeColorModeState = components.customJToggleButton(70, 40, "Range Color Mode", this);
-		 scaleRangeColorModeState.setBackground(Color.decode("#FFE4C4"));
-		 return scaleRangeColorModeState;
+		scaleRangeColorModeState = components.customJToggleButton(70, 40, "Range Color Mode", this);
+		scaleRangeColorModeState.setBackground(Color.decode("#FFE4C4"));
+		return scaleRangeColorModeState;
 	}
-	
-	//INTERACT WITH FEATURE SETS FROM WELCOME SCREEN
+
+	// INTERACT WITH FEATURE SETS FROM WELCOME SCREEN
 	///////////////////////////////////////////////////////////////
 	public void changePageState(int pageNumber) {
 		pageState = pageNumber;
@@ -274,65 +279,63 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			break;
 		case 1:
 			if (pageState == 1) {
-				if(quizEnabled){
-					//Internal boolean values change implementation
-					imagesWelcomePrompt();		
+				if (quizEnabled) {
+					// Internal boolean values change implementation
+					imagesWelcomePrompt();
+				} else {
+					displayKeysPrompt();
 				}
-				else{
-				displayKeysPrompt();
-				}
-			}
-			else if (pageState == 2) {
-				
-                if(quizEnabled){
-                	basePanel.setLayout(new GridBagLayout());
-                	if (chordQuizEnabled){
-                	Quizes.getInstance().assignFeatureName("Chords");
-                	}
-              
-                	else if (scaleQuizEnabled){
-                    	Quizes.getInstance().assignFeatureName("Scales");
-                    	}
-                	
-                	else if (progressionQuizEnabled){
-                    	Quizes.getInstance().assignFeatureName("Progressions");
-                    	}
-                	
-			      	createCommandButtons("Quiz", Color.decode("#6495ED"));
+			} else if (pageState == 2) {
+
+				if (quizEnabled) {
+					basePanel.setLayout(new GridBagLayout());
+					if (chordQuizEnabled) {
+						Quizes.getInstance().assignFeatureName("Chords");
+					}
+
+					else if (scaleQuizEnabled) {
+						Quizes.getInstance().assignFeatureName("Scales");
+					}
+
+					else if (progressionQuizEnabled) {
+						Quizes.getInstance().assignFeatureName("Progressions");
+					}
+
+					createCommandButtons("Quiz", Color.decode("#6495ED"));
 					baseSummary("Quiz Test", Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));
-					displayConditionalPrompts("Quiz Answers", "Major", "Minor", Color.decode("#E0FFFF"), Color.decode("#87CEFA"));
-				
-					if(chordQuizEnabled){
-						if(components.getColorToggleStatus()){
+					displayConditionalPrompts("Quiz Answers", "Major", "Minor", Color.decode("#E0FFFF"),
+							Color.decode("#87CEFA"));
+
+					if (chordQuizEnabled) {
+						if (components.getColorToggleStatus()) {
 							components.changeColorToggle(false);
 							colorModeState.setSelected(false);
-							}
-							PlaybackFunctions.resetChordsColor();
-							PlaybackFunctions.emptyNotes();						
-							Quizes.getInstance().selectQuiz("2", "Chords", contentTextArea);
-						}
-				
-				else if(scaleQuizEnabled){
-					if(components.getColorToggleStatus()){
-						components.changeColorToggle(false);
-						colorModeState.setSelected(false);
 						}
 						PlaybackFunctions.resetChordsColor();
-						PlaybackFunctions.emptyNotes();						
+						PlaybackFunctions.emptyNotes();
+						Quizes.getInstance().selectQuiz("2", "Chords", contentTextArea);
+					}
+
+					else if (scaleQuizEnabled) {
+						if (components.getColorToggleStatus()) {
+							components.changeColorToggle(false);
+							colorModeState.setSelected(false);
+						}
+						PlaybackFunctions.resetChordsColor();
+						PlaybackFunctions.emptyNotes();
 						Quizes.getInstance().selectQuiz("2", "Scales", contentTextArea);
 					}
-					
-				else if(progressionQuizEnabled){
-					if(components.getColorToggleStatus()){
-						components.changeColorToggle(false);
-						colorModeState.setSelected(false);
+
+					else if (progressionQuizEnabled) {
+						if (components.getColorToggleStatus()) {
+							components.changeColorToggle(false);
+							colorModeState.setSelected(false);
 						}
 						PlaybackFunctions.resetChordsColor();
-						PlaybackFunctions.emptyNotes();						
+						PlaybackFunctions.emptyNotes();
 						Quizes.getInstance().selectQuiz("2", "Progressions", contentTextArea);
 					}
-			}
-                else if (chordProgressionFeature) {
+				} else if (chordProgressionFeature) {
 					createCommandButtons("stages", Color.decode("#6495ED"));
 					displayConditionalPrompts("Progressions", "Common chords in Major Scale",
 							"Common Chords in Minor Scale", Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));
@@ -341,9 +344,9 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 				else if (createSong) {
 					createCommandButtons("genre", Color.decode("#6495ED"));
-					displayConditionalPrompts("Genres", "Classical",
-							"Blues", Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));
-					basePanel.setBackground(Color.decode("#00BFFF"));		
+					displayConditionalPrompts("Genres", "Classical", "Blues", Color.decode("#F0F8FF"),
+							Color.decode("#F0FFFF"));
+					basePanel.setBackground(Color.decode("#00BFFF"));
 				}
 
 				else {
@@ -359,12 +362,12 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 				}
 
 				else if (relativePitchFeature == true) {
-					
-					createCommandButtons("stages", Color.decode("#6495ED"));		
-					basePanel.setBackground(Color.decode("#00BFFF"));	
+
+					createCommandButtons("stages", Color.decode("#6495ED"));
+					basePanel.setBackground(Color.decode("#00BFFF"));
 					// Diverge from scale names from feature 3
-					displayConditionalPrompts("Scale Order", "Ascending Order", null,
-							Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));	
+					displayConditionalPrompts("Scale Order", "Ascending Order", null, Color.decode("#F0F8FF"),
+							Color.decode("#F0FFFF"));
 				}
 
 				else if (chordProgressionFeature == true) {
@@ -376,8 +379,8 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 				else {
 					if (inversionFeature == true) {
-						 basePanel.setBackground(Color.decode("#00BFFF"));
-						 
+						basePanel.setBackground(Color.decode("#00BFFF"));
+
 					} else if (chordFeature == true) {
 						components.colourMenuPanels(jListInput, Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));
 						basePanel.setBackground(Color.decode("#00BFFF"));
@@ -389,14 +392,14 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			else if (pageState == 4) {
 				// Added command actions in below method as for ascending or
 				// descending scale
-				 if (relativePitchFeature == true) {
+				if (relativePitchFeature == true) {
 					scalesOrder();
 				} else if (chordProgressionFeature == true) {
 					createCommandButtons("feature 5", Color.decode("#6495ED"));
 					basePanel.setBackground(Color.decode("#00BFFF"));
-					progressionsList();	
+					progressionsList();
 				}
-				
+
 			}
 
 			else if (pageState == 5) {
@@ -408,145 +411,148 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 		}
 		return basePanel;
 	}
-	
+
 	public void setJListDimensions() {
 		jListTableWidth = screenWidth / 2 - 20;
 		jListTableHeight = screenHeight / 2 - 50;
 		jYAndHeight = jListYPos + jListTableHeight;
 	}
-	
-	public JPanel createWelcomeGridPanel(MouseListener mouse,Color back,String name){
+
+	public JPanel createWelcomeGridPanel(MouseListener mouse, Color back, String name) {
 		JPanel temp = new JPanel();
 		temp.setBackground(back);
 		temp.setName(name);
 		temp.addMouseListener(mouse);
-		temp.setPreferredSize(new Dimension (basePanel.getPreferredSize().width/3,basePanel.getPreferredSize().height/3));
-	return temp;
+		temp.setPreferredSize(
+				new Dimension(basePanel.getPreferredSize().width / 3, basePanel.getPreferredSize().height / 3));
+		return temp;
 	}
-	
-	
+
 	// Initial state with list model values added
 	public void imagesWelcomePrompt() throws InvalidMidiDataException {
 		basePanel.setLayout(new GridBagLayout());
 		actionBarConstraints = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);
 		basePanel.setBackground(Color.WHITE);
-		if (quizEnabled){
+		if (quizEnabled) {
 			createCommandButtons("stages", Color.decode("#6495ED"));
 		}
-		int width = basePanel.getPreferredSize().width/3;
-		int height = basePanel.getPreferredSize().height/3;
-		for (int i =1; i < 8; i++){
-			if (i ==1 || i ==2 || i==3){
+		int width = basePanel.getPreferredSize().width / 3;
+		int height = basePanel.getPreferredSize().height / 3;
+		for (int i = 1; i < 8; i++) {
+			if (i == 1 || i == 2 || i == 3) {
 				actionBarConstraints = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);
 			}
-			
-			else if (i ==4 || i ==5 || i==6){
-				  if(quizEnabled){actionBarConstraints = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);}
-				  else{
-				actionBarConstraints = components.conditionalConstraints(1, 1, 0, 2, GridBagConstraints.NONE);
-				  }
-				  }
-			else if (i==7){
+
+			else if (i == 4 || i == 5 || i == 6) {
+				if (quizEnabled) {
+					actionBarConstraints = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);
+				} else {
+					actionBarConstraints = components.conditionalConstraints(1, 1, 0, 2, GridBagConstraints.NONE);
+				}
+			} else if (i == 7) {
 				actionBarConstraints = components.conditionalConstraints(1, 1, 0, 1, GridBagConstraints.NONE);
-				}
-			try {
-			switch(i){
-				
-			case 1 : 
-				JPanel chord =null;
-				if(quizEnabled){
-					BufferedImage chordBuff = ImageIO.read(new File("src/Images/Chord quiz tile image.png"));
-					 chord = components.customizeFeaturePanel(width,height,this, chordBuff,"Chords Quiz");
-				}
-				else {
-				BufferedImage chordBuff = ImageIO.read(new File("src/Images/Chord tile image.png"));
-				 chord = components.customizeFeaturePanel(width,height,this, chordBuff,"Chords");
-				}
-				chord.setBackground(Color.white);
-				actionBarConstraints.anchor =GridBagConstraints.WEST;
-				actionBarConstraints.insets = new Insets(0,2,0,0);
-				basePanel.add(chord,actionBarConstraints);
-			break;
-			
-			case 2 : 
-				if(!quizEnabled){
-				BufferedImage inversionBuff = ImageIO.read(new File("src/Images/Chord inversion tile image.png"));
-				JPanel inversion = components.customizeFeaturePanel(width,height,this, inversionBuff,"Inversions");
-				inversion.setBackground(Color.white);
-				actionBarConstraints.anchor =GridBagConstraints.CENTER;
-				basePanel.add(inversion,actionBarConstraints);	
-				}
-			break;
-			
-			case 3 : 
-				JPanel scales =null;
-				if(quizEnabled){
-					BufferedImage scalesBuff = ImageIO.read(new File("src/Images/Scale quiz tile image.png"));
-					scales = components.customizeFeaturePanel(width,height,this, scalesBuff,"Scales Quiz");
-				}
-				else {
-				BufferedImage scalesBuff = ImageIO.read(new File("src/Images/Scale tile image.png"));
-				 scales = components.customizeFeaturePanel(width,height,this, scalesBuff,"Scales");
-				}
-				 scales.setBackground(Color.white);
-				actionBarConstraints.anchor =GridBagConstraints.EAST;
-				actionBarConstraints.insets = new Insets(0,0,0,2);
-				basePanel.add(scales,actionBarConstraints);	
-			break;
-			
-			case 4 :
-				if(!quizEnabled){
-				BufferedImage relativeBuff = ImageIO.read(new File("src/Images/Reletive pitch tile image.png"));
-				JPanel relative = components.customizeFeaturePanel(width,height,this, relativeBuff,"Relative");
-				relative.setBackground(Color.white);
-				actionBarConstraints.anchor =GridBagConstraints.WEST;
-				basePanel.add(relative,actionBarConstraints);	
-				}
-			break;
-			
-			case 5 : 	
-				JPanel progression =null;
-				if(quizEnabled){
-					BufferedImage progressionBuff = ImageIO.read(new File("src/Images/Chord progression quiz tile image.png"));
-					progression = components.customizeFeaturePanel(width,height,this, progressionBuff,"Progressions Quiz");
-				}
-				else {
-				BufferedImage progressionBuff = ImageIO.read(new File("src/Images/Chord Progression tile image.png"));
-				 progression = components.customizeFeaturePanel(width,height,this, progressionBuff,"Progressions");
-				}
-				 progression.setBackground(Color.white);
-				actionBarConstraints.anchor =GridBagConstraints.CENTER;
-				basePanel.add(progression,actionBarConstraints);	
-			break;
-			
-			case 6 : 	
-				if(!quizEnabled){
-				BufferedImage genresBuff = ImageIO.read(new File("src/Images/Genres tile image.png"));
-				JPanel genres = components.customizeFeaturePanel(width,height,this, genresBuff,"Genres");
-				genres.setBackground(Color.white);
-				actionBarConstraints.anchor =GridBagConstraints.EAST;
-				basePanel.add(genres,actionBarConstraints);		
-				}
-			break;
-			case 7 :
-				if(!quizEnabled){
-				BufferedImage quizBuff = ImageIO.read(new File("src/Images/Quizes tile image.png"));
-				JPanel quiz = components.customizeFeaturePanel(width,height,this, quizBuff,"Quizes");
-				quiz.setBackground(Color.white);
-				actionBarConstraints.anchor =GridBagConstraints.SOUTH;
-				basePanel.add(quiz,actionBarConstraints);	
-				}
-			break;
 			}
-			
-			
-		}catch (IOException e) {
+			try {
+				switch (i) {
+
+				case 1:
+					JPanel chord = null;
+					if (quizEnabled) {
+						BufferedImage chordBuff = ImageIO.read(new File("src/Images/Chord quiz tile image.png"));
+						chord = components.customizeFeaturePanel(width, height, this, chordBuff, "Chords Quiz");
+					} else {
+						BufferedImage chordBuff = ImageIO.read(new File("src/Images/Chord tile image.png"));
+						chord = components.customizeFeaturePanel(width, height, this, chordBuff, "Chords");
+					}
+					chord.setBackground(Color.white);
+					actionBarConstraints.anchor = GridBagConstraints.WEST;
+					actionBarConstraints.insets = new Insets(0, 2, 0, 0);
+					basePanel.add(chord, actionBarConstraints);
+					break;
+
+				case 2:
+					if (!quizEnabled) {
+						BufferedImage inversionBuff = ImageIO
+								.read(new File("src/Images/Chord inversion tile image.png"));
+						JPanel inversion = components.customizeFeaturePanel(width, height, this, inversionBuff,
+								"Inversions");
+						inversion.setBackground(Color.white);
+						actionBarConstraints.anchor = GridBagConstraints.CENTER;
+						basePanel.add(inversion, actionBarConstraints);
+					}
+					break;
+
+				case 3:
+					JPanel scales = null;
+					if (quizEnabled) {
+						BufferedImage scalesBuff = ImageIO.read(new File("src/Images/Scale quiz tile image.png"));
+						scales = components.customizeFeaturePanel(width, height, this, scalesBuff, "Scales Quiz");
+					} else {
+						BufferedImage scalesBuff = ImageIO.read(new File("src/Images/Scale tile image.png"));
+						scales = components.customizeFeaturePanel(width, height, this, scalesBuff, "Scales");
+					}
+					scales.setBackground(Color.white);
+					actionBarConstraints.anchor = GridBagConstraints.EAST;
+					actionBarConstraints.insets = new Insets(0, 0, 0, 2);
+					basePanel.add(scales, actionBarConstraints);
+					break;
+
+				case 4:
+					if (!quizEnabled) {
+						BufferedImage relativeBuff = ImageIO.read(new File("src/Images/Reletive pitch tile image.png"));
+						JPanel relative = components.customizeFeaturePanel(width, height, this, relativeBuff,
+								"Relative");
+						relative.setBackground(Color.white);
+						actionBarConstraints.anchor = GridBagConstraints.WEST;
+						basePanel.add(relative, actionBarConstraints);
+					}
+					break;
+
+				case 5:
+					JPanel progression = null;
+					if (quizEnabled) {
+						BufferedImage progressionBuff = ImageIO
+								.read(new File("src/Images/Chord progression quiz tile image.png"));
+						progression = components.customizeFeaturePanel(width, height, this, progressionBuff,
+								"Progressions Quiz");
+					} else {
+						BufferedImage progressionBuff = ImageIO
+								.read(new File("src/Images/Chord Progression tile image.png"));
+						progression = components.customizeFeaturePanel(width, height, this, progressionBuff,
+								"Progressions");
+					}
+					progression.setBackground(Color.white);
+					actionBarConstraints.anchor = GridBagConstraints.CENTER;
+					basePanel.add(progression, actionBarConstraints);
+					break;
+
+				case 6:
+					if (!quizEnabled) {
+						BufferedImage genresBuff = ImageIO.read(new File("src/Images/Genres tile image.png"));
+						JPanel genres = components.customizeFeaturePanel(width, height, this, genresBuff, "Genres");
+						genres.setBackground(Color.white);
+						actionBarConstraints.anchor = GridBagConstraints.EAST;
+						basePanel.add(genres, actionBarConstraints);
+					}
+					break;
+				case 7:
+					if (!quizEnabled) {
+						BufferedImage quizBuff = ImageIO.read(new File("src/Images/Quizes tile image.png"));
+						JPanel quiz = components.customizeFeaturePanel(width, height, this, quizBuff, "Quizes");
+						quiz.setBackground(Color.white);
+						actionBarConstraints.anchor = GridBagConstraints.SOUTH;
+						basePanel.add(quiz, actionBarConstraints);
+					}
+					break;
+				}
+
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	// Add current state model to be created for each prompt page
 	public void changePanelState() throws InvalidMidiDataException {
 		scrollPane = retrieveStatePane();
@@ -556,18 +562,16 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			basePanel.add(scrollPane, actionBarConstraints);
 		}
 
-		
 		else if (pageState == 2 && chordQuizEnabled || pageState == 2 && scaleQuizEnabled
 				|| pageState == 2 && progressionQuizEnabled) {
 			// Place adjacent to tetx area
 			actionBarConstraints = components.conditionalConstraints(1, 1, 1, 0, GridBagConstraints.NONE);
 			actionBarConstraints.anchor = GridBagConstraints.LINE_START;
 			// actionBarConstraints.insets = new Insets (0,0,0,0);
-			quizHolderContent.add(scrollPane, actionBarConstraints);		
-		} 
-		else {
+			quizHolderContent.add(scrollPane, actionBarConstraints);
+		} else {
 			basePanel.add(scrollPane);
-			
+
 		}
 	}
 
@@ -579,18 +583,18 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 		jListInput.addMouseListener(this);
 		scrollPane = new JScrollPane(jListInput);
 
-		if (pageState == 2 && chordQuizEnabled  || pageState == 2 && scaleQuizEnabled || pageState == 2 && progressionQuizEnabled){
+		if (pageState == 2 && chordQuizEnabled || pageState == 2 && scaleQuizEnabled
+				|| pageState == 2 && progressionQuizEnabled) {
 			scrollPane.setPreferredSize(new Dimension(jListTableWidth / 6, jListTableHeight / 3));
 			scrollPane.setMinimumSize(new Dimension(jListTableWidth / 6, jListTableHeight / 3));
-		} 
-		else if (pageState == 1){
-			scrollPane.setPreferredSize(new Dimension(jListTableWidth - jListTableWidth/7, jListTableHeight /2));
-			scrollPane.setMinimumSize(new Dimension(jListTableWidth  - jListTableWidth/7, jListTableHeight /2));
+		} else if (pageState == 1) {
+			scrollPane.setPreferredSize(new Dimension(jListTableWidth - jListTableWidth / 7, jListTableHeight / 2));
+			scrollPane.setMinimumSize(new Dimension(jListTableWidth - jListTableWidth / 7, jListTableHeight / 2));
 		}
-				
+
 		else {
-			scrollPane.setPreferredSize(new Dimension(jListTableWidth, jListTableHeight/2 + jListTableHeight/3));
-			scrollPane.setMinimumSize(new Dimension(jListTableWidth, jListTableHeight/2 + jListTableHeight/3));
+			scrollPane.setPreferredSize(new Dimension(jListTableWidth, jListTableHeight / 2 + jListTableHeight / 3));
+			scrollPane.setMinimumSize(new Dimension(jListTableWidth, jListTableHeight / 2 + jListTableHeight / 3));
 		}
 		return scrollPane;
 	}
@@ -601,11 +605,11 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 		jListInput = new JList<String>(conditionalModel);
 		createCommandButtons("stages", Color.decode("#6495ED"));
-		
+
 		JLabel title = null;
 		if (createSong == true) {
 			title = new JLabel("Genre key");
-			 
+
 		}
 
 		// Feature set 2 - inversion of chords
@@ -617,26 +621,25 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 		// Feature set 1 - Create chords
 		else if (chordFeature == true) {
 			title = new JLabel("Chord root");
-			
+
 		}
 
 		// Feature set 3 - play scales based on key
 		else if (scalesFeature == true) {
-			title= new JLabel("Scale key");
-			
+			title = new JLabel("Scale key");
+
 		}
-		
+
 		else if (relativePitchFeature == true) {
 			title = new JLabel("Referrence note");
-			
-		}
-		else if (chordProgressionFeature == true) {
-			title= new JLabel("Chord progression root");
-			
+
+		} else if (chordProgressionFeature == true) {
+			title = new JLabel("Chord progression root");
+
 		}
 		title.setFont(new Font("Serif", Font.BOLD, 30));
 		title.setForeground(Color.white);
-		basePanel.add(title); 
+		basePanel.add(title);
 		components.colourMenuPanels(jListInput, Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));
 		basePanel.setBackground(Color.decode("#00BFFF"));
 
@@ -648,7 +651,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			conditionalModel.addElement(noteString);
 		}
 
-		//jListInput.setFont(new Font("Arial", Font.BOLD, 65));
+		// jListInput.setFont(new Font("Arial", Font.BOLD, 65));
 		changePanelState();
 	}
 
@@ -661,10 +664,9 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 		jListInput.setName(listName);
 		jListInput.setFixedCellWidth(jListTableWidth - 20);
 		conditionalModel.addElement(text1);
-		if(text2 !=null){
-		conditionalModel.addElement(text2);
+		if (text2 != null) {
+			conditionalModel.addElement(text2);
 		}
-		jListInput.setFixedCellWidth(jListTableWidth - 20);
 		jListInput.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 		jListInput.setFont(new Font("Arial", Font.BOLD, 24));
 		changePanelState();
@@ -684,7 +686,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 		jListInput.setFixedCellWidth(jListTableWidth - 20);
 		jListInput.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 		jListInput.setFont(new Font("Arial", Font.BOLD, 24));
-		changePanelState();	
+		changePanelState();
 	}
 
 	// Create key names model list
@@ -698,7 +700,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			jListInput.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 		}
 
-		//Feature 1 and 2
+		// Feature 1 and 2
 		else {
 			conditionalModel = new DefaultListModel<String>();
 			jListInput = new JList<String>(conditionalModel);
@@ -710,7 +712,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 				conditionalModel.addElement(noteString);
 			}
 		}
-		
+
 		// Shared settings
 		createCommandButtons("stages", Color.decode("#6495ED"));
 		components.colourMenuPanels(jListInput, Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));
@@ -739,7 +741,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 		String completeChord = Chord.getStoredChord();
 
-		// cmajTetra
+		// e.g. cmajTetra
 		if (completeChord.length() == 9 && !completeChord.contains("#")
 				|| completeChord.length() == 10 && completeChord.contains("#")) {
 			scale = completeChord.contains("#") ? completeChord.substring(2, 10) : completeChord.substring(1, 9);
@@ -750,7 +752,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			scale = completeChord.contains("#") ? completeChord.substring(2, 9) : completeChord.substring(1, 8);
 		}
 
-		// cseven or c#seven
+		// e.g. cseven or c#seven
 		else if (completeChord.length() == 7 && !completeChord.contains("#")
 				|| completeChord.length() == 8 && completeChord.contains("#")) {
 			scale = completeChord.contains("#") ? completeChord.substring(2, 8) : completeChord.substring(1, 7);
@@ -792,7 +794,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 		foundChord = chordInstance.getChordFromKeyScale(key, scale);
 
 		if (foundChord == null) {
-			// Debugging
+			// Debugging details
 			System.out.println("Chord not found");
 		} else {
 
@@ -879,7 +881,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			} else {
 				createCommandButtons("feature 1", Color.decode("#6495ED"));
 				baseSummary("Chord Notes", Color.decode("#87CEFA"), Color.decode("#F0FFFF"));
-				chordSummary();		
+				chordSummary();
 			}
 		}
 	}
@@ -943,27 +945,27 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 		innerContent.setPreferredSize(new Dimension(screenWidth / 3, screenHeight / 3));
 		innerContent.setMinimumSize(new Dimension(screenWidth / 3, screenHeight / 3));
-		
+
 		actionBarConstraints = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);
-		innerContent.add(contentTextArea,actionBarConstraints);
+		innerContent.add(contentTextArea, actionBarConstraints);
 
 		if (pageState == 2 && chordQuizEnabled || pageState == 2 && scaleQuizEnabled
 				|| pageState == 2 && progressionQuizEnabled) {
-			
+
 			actionBarConstraints = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);
 			actionBarConstraints.anchor = GridBagConstraints.LINE_START;
 			quizHolderContent = new JPanel(new GridBagLayout());
 			quizHolderContent.setPreferredSize(new Dimension(screenWidth / 2, screenHeight / 2));
 			quizHolderContent.setMinimumSize(new Dimension(screenWidth / 2, screenHeight / 2));
-			actionBarConstraints.insets = new Insets(0,40,0,0);
+			actionBarConstraints.insets = new Insets(0, 40, 0, 0);
 			quizHolderContent.add(innerContent, actionBarConstraints);
 			quizHolderContent.setBackground(Color.decode("#00BFFF"));
 
 			actionBarConstraints = components.conditionalConstraints(1, 1, 1, 0, GridBagConstraints.NONE);
 			actionBarConstraints.anchor = GridBagConstraints.PAGE_START;
-			actionBarConstraints.insets = new Insets(50,0,0,50);
+			actionBarConstraints.insets = new Insets(50, 0, 0, 50);
 			quizHolderContent.add(Quizes.getInstance().addPlayQuiz(), actionBarConstraints);
-			
+
 			actionBarConstraints = components.conditionalConstraints(1, 1, 0, 1, GridBagConstraints.NONE);
 			basePanel.add(quizHolderContent, actionBarConstraints);
 		}
@@ -974,7 +976,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			actionBarConstraints.anchor = GridBagConstraints.PAGE_START;
 			basePanel.add(innerContent, actionBarConstraints);
 		}
-		
+
 	}
 
 	public void scaleSummary() {
@@ -1009,8 +1011,8 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 	}
 
 	public void scalesOrder() throws InvalidMidiDataException {
-			
-		basePanel.setBackground(Color.decode("#00BFFF"));	
+
+		basePanel.setBackground(Color.decode("#00BFFF"));
 		if (relativePitchFeature == true && pageState == 4) {
 			components.colourMenuPanels(jListInput, Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));
 			if (scaleOrder.contains("Ascending")) {
@@ -1021,7 +1023,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			baseSummary("Ordered Notes", Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));
 			relativePitch();
 		}
-		
+
 	}
 
 	public void scalesChoiceSummary() throws InvalidMidiDataException {
@@ -1031,8 +1033,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			baseSummary("Scales Notes", Color.decode("#F0F8FF"), Color.decode("#F0FFFF"));
 			scaleSummary();
 			generateDegreesText();
-			
-			
+
 		}
 	}
 
@@ -1091,8 +1092,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 		actionHolder = new JPanel(new GridBagLayout());
 		actionHolder.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 		actionHolder.setBackground(buttonsBacking);
-		actionHolder
-				.setPreferredSize(new Dimension((int) basePanel.getPreferredSize().getWidth(), screenHeight / 10));
+		actionHolder.setPreferredSize(new Dimension((int) basePanel.getPreferredSize().getWidth(), screenHeight / 10));
 		actionHolder.setMinimumSize(new Dimension((int) basePanel.getMinimumSize().getWidth(), screenHeight / 10));
 
 		actionBarConstraints = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.HORIZONTAL);
@@ -1109,7 +1109,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			actionBarConstraints.gridwidth = 1;
 			actionHolder.add(addColorModeButton(), actionBarConstraints);
 		}
-		
+
 		if (state.equals("feature 1") || state.equals("feature 2")) {
 			actionBarConstraints = components.conditionalConstraints(1, 1, 5, 0, GridBagConstraints.HORIZONTAL);
 			actionBarConstraints.gridwidth = 1;
@@ -1154,7 +1154,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			actionBarConstraints.gridwidth = 1;
 			actionHolder.add(addApreggiosBox(), actionBarConstraints);
 		}
-		
+
 		actionBarConstraints = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);
 		actionBarConstraints.anchor = GridBagConstraints.FIRST_LINE_START;
 		basePanel.add(actionHolder, actionBarConstraints);
@@ -1177,16 +1177,20 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			switch (foundScale.getScaleNotesList().size()) {
 
 			case 6:
-				contentTextArea.append("\nDegree " + ++scaleDegree + ": " + penDegrees[i] + " | " + noteInDegreeMinusOctave);
+				contentTextArea
+						.append("\nDegree " + ++scaleDegree + ": " + penDegrees[i] + " | " + noteInDegreeMinusOctave);
 				break;
 			case 7:
-				contentTextArea.append("\nDegree " + ++scaleDegree + ":" + hexDegrees[i] + " | " + noteInDegreeMinusOctave);
+				contentTextArea
+						.append("\nDegree " + ++scaleDegree + ":" + hexDegrees[i] + " | " + noteInDegreeMinusOctave);
 				break;
 			case 8:
-				contentTextArea.append("\nDegree " + ++scaleDegree + ":" + heptDegrees[i] + " | " + noteInDegreeMinusOctave);
+				contentTextArea
+						.append("\nDegree " + ++scaleDegree + ":" + heptDegrees[i] + " | " + noteInDegreeMinusOctave);
 				break;
 			case 9:
-				contentTextArea.append("\nDegree " + ++scaleDegree + ":" + octDegrees[i] + " | " + noteInDegreeMinusOctave);
+				contentTextArea
+						.append("\nDegree " + ++scaleDegree + ":" + octDegrees[i] + " | " + noteInDegreeMinusOctave);
 				break;
 			case 12:
 				if (foundScale.getScaleName().contains("Ascending")) {
@@ -1206,15 +1210,197 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 	}
 
+	public ArrayList<Component> listOfPanels() {
+		Component[] panels = basePanel.getComponents();
+		ArrayList<Component> tolist = new ArrayList<Component>(Arrays.asList(panels));
+		return tolist;
+	}
+
+	public void updateDisplay(String name, BufferedImage aBuff, int index, int xPos, int yPos, int anchor)
+			throws IOException {
+		int width = basePanel.getPreferredSize().width / 3;
+		int height = basePanel.getPreferredSize().height / 3;
+		// BufferedImage alternative = ImageIO.read(new File("src/Images/Genres
+		// selected tile image.png"));
+		JPanel replacePanel = components.customizeFeaturePanel(width, height, this, aBuff, name);
+		basePanel.remove(basePanel.getComponent(index));
+		actionBarConstraints = components.conditionalConstraints(1, 1, xPos, yPos, GridBagConstraints.NONE);
+		actionBarConstraints.anchor = anchor;
+		basePanel.add(replacePanel, actionBarConstraints, index);
+		basePanel.revalidate();
+		basePanel.repaint();
+	}
+
+	public void conditionalImages(String featureChosen, String file, String panelName) throws IOException {
+		try {
+			switch (featureChosen) {
+			case "Chords":
+				BufferedImage chordAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, chordAltBuff, 0, 0, 0, GridBagConstraints.WEST);
+				break;
+			case "Inversions":
+				BufferedImage inversionAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, inversionAltBuff, 1, 0, 0, GridBagConstraints.NORTH);
+				break;
+			case "Scales":
+				BufferedImage scalesAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, scalesAltBuff, 2, 0, 0, GridBagConstraints.EAST);
+				break;
+			case "Relative":
+				BufferedImage relativeAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, relativeAltBuff, 3, 0, 2, GridBagConstraints.WEST);
+				break;
+			case "Progressions":
+				BufferedImage progressionAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, progressionAltBuff, 4, 0, 2, GridBagConstraints.SOUTH);
+				break;
+			case "Genres":
+				BufferedImage genreAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, genreAltBuff, 5, 0, 2, GridBagConstraints.EAST);
+				break;
+			case "Quizes":
+				BufferedImage quizAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, quizAltBuff, 6, 0, 1, GridBagConstraints.CENTER);
+				break;
+			case "Chords Quiz":
+				BufferedImage chordQuizAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, chordQuizAltBuff, 1, 0, 0, GridBagConstraints.WEST);
+				break;
+			case "Scales Quiz":
+				BufferedImage scaleQuizAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, scaleQuizAltBuff, 2, 0, 0, GridBagConstraints.EAST);
+				break;
+			case "Progressions Quiz":
+				BufferedImage progressionQuizAltBuff = ImageIO.read(new File(file));
+				updateDisplay(panelName, progressionQuizAltBuff, 3, 0, 0, GridBagConstraints.CENTER);
+				break;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
+		Object obj = arg0.getSource();
 
+		if (VirtualKeyboard.getInstance().getLearnFrame() != null) {
+			if (obj.getClass().equals(JPanel.class)) {
+				if (listOfPanels().contains(obj)) {
+					if (!highlighted) {
+						JPanel check = (JPanel) obj;
+						String featureChosen = check.getName();
+						try {
+							switch (featureChosen) {
+							case "Chords":
+								conditionalImages(featureChosen, "src/Images/Chord selected tile image.png", "Chords");
+								break;
+							case "Inversions":
+								conditionalImages(featureChosen, "src/Images/Chord inversion selected tile image.png",
+										"Inversions");
+								break;
+							case "Scales":
+								conditionalImages(featureChosen, "src/Images/Scale selected tile image.png", "Scales");
+								break;
+							case "Relative":
+								conditionalImages(featureChosen, "src/Images/Relative selected tile image.png",
+										"Relative");
+								break;
+							case "Progressions":
+								conditionalImages(featureChosen, "src/Images/Progression selected tile image.png",
+										"Progressions");
+								break;
+							case "Genres":
+								conditionalImages(featureChosen, "src/Images/Genres selected tile image.png", "Genres");
+								break;
+							case "Quizes":
+								conditionalImages(featureChosen, "src/Images/Quizes selected tile image.png", "Quizes");
+								break;
+							case "Chords Quiz":
+								conditionalImages(featureChosen, "src/Images/Quizes 1 selected tile image.png",
+										"Chords Quiz");
+								break;
+							case "Scales Quiz":
+								conditionalImages(featureChosen, "src/Images/Quizes 3 selected tile image.png",
+										"Scales Quiz");
+								break;
+							case "Progressions Quiz":
+								conditionalImages(featureChosen, "src/Images/Quizes 2 selected tile image.png",
+										"Progressions Quiz");
+								break;
+							}
+							highlighted = true;
+
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+		
+//		if(obj.getClass().equals(JList.class)){
+//			JList <String> temp = (JList)obj;
+//			components.colourMenuPanels(temp, Color.green, Color.red);
+//		}
 	}
 
 	@Override
 	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
+		Object obj = arg0.getSource();
+		if (VirtualKeyboard.getInstance().getLearnFrame() != null) {
+			if (obj.getClass().equals(JPanel.class)) {
+
+				if (listOfPanels().contains(obj)) {
+					if (highlighted) {
+						JPanel check = (JPanel) obj;
+						String featureChosen = check.getName();
+						try {
+							switch (featureChosen) {
+							case "Chords":
+								conditionalImages(featureChosen, "src/Images/Chord tile image.png", "Chords");
+								break;
+							case "Inversions":
+								conditionalImages(featureChosen, "src/Images/Chord inversion tile image.png",
+										"Inversions");
+								break;
+							case "Scales":
+								conditionalImages(featureChosen, "src/Images/Scale tile image.png", "Scales");
+								break;
+							case "Relative":
+								conditionalImages(featureChosen, "src/Images/Reletive pitch tile image.png",
+										"Relative");
+								break;
+							case "Progressions":
+								conditionalImages(featureChosen, "src/Images/Chord Progression tile image.png",
+										"Progressions");
+								break;
+							case "Genres":
+								conditionalImages(featureChosen, "src/Images/Genres tile image.png", "Genres");
+								break;
+							case "Quizes":
+								conditionalImages(featureChosen, "src/Images/Quizes tile image.png", "Quizes");
+								break;
+							case "Chords Quiz":
+								conditionalImages(featureChosen, "src/Images/Chord quiz tile image.png", "Chords Quiz");
+								break;
+							case "Scales Quiz":
+								conditionalImages(featureChosen, "src/Images/Scale quiz tile image.png", "Scales Quiz");
+								break;
+							case "Progressions Quiz":
+								conditionalImages(featureChosen, "src/Images/Chord progression quiz tile image.png",
+										"Progressions Quiz");
+								break;
+							}
+							highlighted = false;
+
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public void recordInversions(Chord saveInversion) {
@@ -1228,9 +1414,9 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 	}
 
 	public void accessModelFeatures(String panelChoice) {
-	
+
 		try {
-			
+
 			switch (panelChoice) {
 			case "Chords":
 				featureState = 1; // If chords option (index 0), trigger feature
@@ -1279,35 +1465,37 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 				// SwingComponents.getInstance().displayScalesOnlyState(true);
 				VirtualKeyboard.getInstance().updateScreenPrompt();
 				break;
-				
-			case "Quizes" :
-			quizEnabled =true;
-			featureState = 1;
-			pageState = 1;
-			VirtualKeyboard.getInstance().updateScreenPrompt();
-			break;
-			
-			case "Chords Quiz" :
-				chordQuizEnabled =true;
+
+			case "Quizes":
+				quizEnabled = true;
+				featureState = 1;
+				pageState = 1;
+				VirtualKeyboard.getInstance().updateScreenPrompt();
+				break;
+
+			case "Chords Quiz":
+				chordQuizEnabled = true;
 				featureState = 1;
 				pageState = 2;
 				VirtualKeyboard.getInstance().updateScreenPrompt();
 				break;
-				
-			case "Scales Quiz" :
-				scaleQuizEnabled =true;
+
+			case "Scales Quiz":
+				scaleQuizEnabled = true;
 				featureState = 1;
 				pageState = 2;
 				VirtualKeyboard.getInstance().updateScreenPrompt();
 				break;
-				
-			case "Progressions Quiz" :
-				progressionQuizEnabled =true;
+
+			case "Progressions Quiz":
+				progressionQuizEnabled = true;
 				featureState = 1;
 				pageState = 2;
 				VirtualKeyboard.getInstance().updateScreenPrompt();
 				break;
 			}
+			// After user has clicked on selectable feature panel
+			highlighted = false;
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 		}
@@ -1336,11 +1524,12 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			components.changeRangeColorToggle(false); // Turn off color mode
 			reverseOnce = false;
 			chordProgressionFeature = false;
-			createSong =false;
-			
-			//This caused problems, below empty notes effects this for some reason
-			//progressionChord.getProgressionChords().clear();
-			
+			createSong = false;
+
+			// This caused problems, below empty notes effects this for some
+			// reason
+			// progressionChord.getProgressionChords().clear();
+
 			stopPlayback = true;
 			// Reset choice
 			preg.storeCurrentChoice("Clear");
@@ -1357,20 +1546,19 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			PlaybackFunctions.setMelodicIndexCounter(0);
 			PlaybackFunctions.emptyNotes();
 			// Will apply to all features
-			
-			
-			if(quizEnabled){
-				quizEnabled =false;
-				chordQuizEnabled =false;
-				scaleQuizEnabled =false;
-				progressionQuizEnabled =false;
+
+			if (quizEnabled) {
+				quizEnabled = false;
+				chordQuizEnabled = false;
+				scaleQuizEnabled = false;
+				progressionQuizEnabled = false;
 			}
-			
+
 			if (inversionFeature == true) {
 				inversionFeature = false; // turn off inversion feature on home
 											// return
 				PlaybackFunctions.resetChordsColor();
-				stopPlayback=true;
+				stopPlayback = true;
 			}
 			// ADDED relativePitchFeature addition - might cause problems
 			else if (scalesFeature == true || relativePitchFeature == true) {
@@ -1386,7 +1574,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			} else if (chordFeature == true) {
 				chordFeature = false;
 				PlaybackFunctions.resetChordsColor();
-				stopPlayback=true;
+				stopPlayback = true;
 			}
 			// Might need to tamper with this
 			else if (chordProgressionFeature == true) {
@@ -1402,8 +1590,8 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			else if (createSong) {
 				createSong = false;
 				PlaybackFunctions.resetChordsColor();
-				stopPlayback=true;
-				
+				stopPlayback = true;
+
 			}
 
 		}
@@ -1425,7 +1613,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 					if (chordProgressionFeature) {
 						pageState = 5;
 					}
-					//quizOneFeature = true;
+					// quizOneFeature = true;
 					VirtualKeyboard.getInstance().updateScreenPrompt();
 				}
 
@@ -1434,18 +1622,38 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			else if (obj.getClass().equals(JPanel.class)) {
 				JPanel check = (JPanel) obj;
 				String featureChosen = check.getName();
-				switch(featureChosen){
-				
-				case "Chords":  accessModelFeatures("Chords"); break;
-				case "Inversions":  accessModelFeatures("Inversions"); break;
-				case "Scales":  accessModelFeatures("Scales"); break;
-				case "Relative":  accessModelFeatures("Relative"); break;
-				case "Progressions":  accessModelFeatures("Progressions"); break;
-				case "Genres":  accessModelFeatures("Genres"); break;
-				case "Quizes":  accessModelFeatures("Quizes"); break;
-				case "Chords Quiz":  accessModelFeatures("Chords Quiz"); break;
-				case "Scales Quiz":  accessModelFeatures("Scales Quiz"); break;
-				case "Progressions Quiz":  accessModelFeatures("Progressions Quiz"); break;
+				switch (featureChosen) {
+
+				case "Chords":
+					accessModelFeatures("Chords");
+					break;
+				case "Inversions":
+					accessModelFeatures("Inversions");
+					break;
+				case "Scales":
+					accessModelFeatures("Scales");
+					break;
+				case "Relative":
+					accessModelFeatures("Relative");
+					break;
+				case "Progressions":
+					accessModelFeatures("Progressions");
+					break;
+				case "Genres":
+					accessModelFeatures("Genres");
+					break;
+				case "Quizes":
+					accessModelFeatures("Quizes");
+					break;
+				case "Chords Quiz":
+					accessModelFeatures("Chords Quiz");
+					break;
+				case "Scales Quiz":
+					accessModelFeatures("Scales Quiz");
+					break;
+				case "Progressions Quiz":
+					accessModelFeatures("Progressions Quiz");
+					break;
 				}
 			}
 
@@ -1453,32 +1661,38 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 				// Initial Main menu user choice
 				///////////////////////////////////////////////////////////////////////////////
 				///////////////////////////////////////////////////////////////////////////////
-//				if (jListInput.getName().equals("Welcome")) {
-//					//If user makes a recording and accesses feature sets afterwards
-//					if(PlaybackFunctions.getStoredPreNotes().size()>0){
-//						PlaybackFunctions.emptyNotes();
-//					}
-//					accessModelFeatures();
-//				}
+				// if (jListInput.getName().equals("Welcome")) {
+				// //If user makes a recording and accesses feature sets
+				// afterwards
+				// if(PlaybackFunctions.getStoredPreNotes().size()>0){
+				// PlaybackFunctions.emptyNotes();
+				// }
+				// accessModelFeatures();
+				// }
 
 				// 1st page actions
 				///////////////////////////////////////////////////////////////////////////////
 				///////////////////////////////////////////////////////////////////////////////
-				 if (jListInput.getName().equals("Key Names")) {
+				
+				
+				
+				
+				if (jListInput.getName().equals("Key Names")) {
 					pageState = 2;
 					int index = jListInput.locationToIndex(optionPressed.getPoint());
 
 					// Current key from list model in feature state 1's first
 					// page
 					String note = conditionalModel.getElementAt(index);
-//					
-//					try {
-//						TTS.getInstance().prepareFunction("Build",note);
-//						PlaybackFunctions.timeDelay(1000);
-//					} catch (EngineException | EngineStateError | IllegalArgumentException | AudioException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
+					//
+					// try {
+					// TTS.getInstance().prepareFunction("Build",note);
+					// PlaybackFunctions.timeDelay(1000);
+					// } catch (EngineException | EngineStateError |
+					// IllegalArgumentException | AudioException e) {
+					// // TODO Auto-generated catch block
+					// e.printStackTrace();
+					// }
 
 					// Only load scales from key on the first page. If the user
 					// later clicks previous from the 2nd page,
@@ -1512,7 +1726,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 					Chord.storeChordName(chord); // Store to later concatenate
 													// with previous stored root
 													// note
-					//Enable chord and chord inversion playback
+					// Enable chord and chord inversion playback
 					stopPlayback = false;
 					VirtualKeyboard.getInstance().updateScreenPrompt();
 				}
@@ -1527,8 +1741,8 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 					Scale.storeCurrentScaleName(foundScale.getScaleName());
 					ListOfScales.getInstance().displayedScaleNotes(foundScale);
 
-					//Enable scale start
-					stopPlayback=false;
+					// Enable scale start
+					stopPlayback = false;
 					VirtualKeyboard.getInstance().updateScreenPrompt();
 				}
 
@@ -1572,7 +1786,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 						Collections.reverse(foundScale.getScaleNotesList());
 						reverseOnce = false;
 					}
-					//Enable Relative Pitch start
+					// Enable Relative Pitch start
 					stopPlayback = false;
 					scaleOrder = conditionalModel.getElementAt(index);
 					VirtualKeyboard.getInstance().updateScreenPrompt();
@@ -1583,9 +1797,9 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 					int index = jListInput.locationToIndex(optionPressed.getPoint());
 					String selectedProgression = conditionalModel.getElementAt(index);
 
-					//Enable Chord progression start
-					stopPlayback =false;
-					
+					// Enable Chord progression start
+					stopPlayback = false;
+
 					// Store chosen progression to use in quiz
 					prog.storeCurrentProgressionString(selectedProgression);
 
@@ -1613,20 +1827,19 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 				if (pageState == 0) {
 					featureState = 0;
-					
-					//reset all feature conditions when on welcome screen prompt
-					inversionFeature = false; 		
+
+					// reset all feature conditions when on welcome screen
+					// prompt
+					inversionFeature = false;
 					scalesFeature = false;
 					chordFeature = false;
 					relativePitchFeature = false;
 					chordProgressionFeature = false;
 					createSong = false;
-					if(quizEnabled){
-					quizEnabled= false;
+					if (quizEnabled) {
+						quizEnabled = false;
 					}
-					
-					
-					
+
 					PlaybackFunctions.setIndexCounter(0);
 					PlaybackFunctions.setRandomIntervalCounter(0);
 					PlaybackFunctions.setMelodicIndexCounter(0);
@@ -1635,32 +1848,32 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 				}
 
 				// Used with feature set
-				else if (pageState == 1) { 
-					if(quizEnabled){
-						 //Quiz only conditions reset
-						chordQuizEnabled =false;
-						scaleQuizEnabled =false;
-						progressionQuizEnabled =false;
-						}
+				else if (pageState == 1) {
+					if (quizEnabled) {
+						// Quiz only conditions reset
+						chordQuizEnabled = false;
+						scaleQuizEnabled = false;
+						progressionQuizEnabled = false;
+					}
 					// ADDING SECOND BOOLEAN MIGHT CAUSE PROBLEM
 					if (scalesFeature == true || relativePitchFeature == true) {
-						// feature 3 =For each new key selected, prevents over 
-						//filling list and model
+						// feature 3 =For each new key selected, prevents over
+						// filling list and model
 						Scale.resetScalesLists();
 					}
-					
-//					else if (createSong) {
-//						pageState = 1;
-//						stopPlayback=true;
-//						PlaybackFunctions.resetChordsColor();
-//					}
+
+					// else if (createSong) {
+					// pageState = 1;
+					// stopPlayback=true;
+					// PlaybackFunctions.resetChordsColor();
+					// }
 				}
 
 				else if (pageState == 2) {
 
-					 if (scalesFeature && components.getColorToggleStatus()
+					if (scalesFeature && components.getColorToggleStatus()
 							|| scalesFeature && components.getColorToggleStatus() == false) {
-						
+
 						components.changeColorToggle(false);
 						// Stop playback thread
 						stopPlayback = true;
@@ -1678,8 +1891,8 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 							// Reset stored inversion for each new root/chord
 							// name combination
 							inversionChords = new ArrayList<Chord>();
-							inversionCounter = 1; 
-							chordInstance.resetInversion(); 
+							inversionCounter = 1;
+							chordInstance.resetInversion();
 							stopPlayback = true;
 						}
 
@@ -1698,11 +1911,13 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 							PlaybackFunctions.resetChordsColor();
 							stopPlayback = true;
 						}
-						
+
 						else if (createSong || createSong && components.getColorToggleStatus()) {
-							pageState =1;
+							pageState = 1;
 							PlaybackFunctions.resetChordsColor();
-							components.changeColorToggle(false); // Turn off color mode
+							components.changeColorToggle(false); // Turn off
+																	// color
+																	// mode
 						}
 
 						// Whether chordFeature or inversion feature is true
@@ -1715,19 +1930,19 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 				else if (pageState == 3) {
 					if (relativePitchFeature == true
-							|| relativePitchFeature == true && components.getColorToggleStatus()
-							) {
+							|| relativePitchFeature == true && components.getColorToggleStatus()) {
 						components.changeColorToggle(false);
-						if(relativePitchFeature == true && components.getRangeColorToggleStatus()){
+						if (relativePitchFeature == true && components.getRangeColorToggleStatus()) {
 							components.changeRangeColorToggle(false);
 						}
 						PlaybackFunctions.resetChordsColor();
 						reverseOnce = false;
-						//Disable relative pitch back
-						stopPlayback =true;
+						// Disable relative pitch back
+						stopPlayback = true;
 					}
 					// Either its own, turn it off, clear list and trigger stop
-					// thread, or make false again, clear list and trigger stop thread
+					// thread, or make false again, clear list and trigger stop
+					// thread
 					else if (chordProgressionFeature && components.getColorToggleStatus()
 							|| chordProgressionFeature && components.getColorToggleStatus() == false) {
 						progressionChord.getProgressionChords().clear();
@@ -1744,12 +1959,12 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 						PlaybackFunctions.resetChordsColor();
 					}
 
-				} 
-				
-//				else if (pageState == 4) {
-//					if (chordProgressionFeature) {
-//					}
-//				}
+				}
+
+				// else if (pageState == 4) {
+				// if (chordProgressionFeature) {
+				// }
+				// }
 				VirtualKeyboard.getInstance().updateScreenPrompt();
 			}
 
@@ -1758,32 +1973,32 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			}
 
 			else if (obj.equals(playChordState)) {
-				
+
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-				
+
 						try {
 							if (!stopPlayback) {
-				// Feature 2 play back
-				if (inversionFeature == true) {
-						Chord playCurrentInversion = chordInstance.getCurrentInversion();
-						PlaybackFunctions.playAnyChordLength(playCurrentInversion);
-						String editedNote = TTS.getInstance().theoryToTTS(playCurrentInversion);	
-						TTS.getInstance().prepareFunction("Chord",editedNote);
-				}
+								// Feature 2 play back
+								if (inversionFeature == true) {
+									Chord playCurrentInversion = chordInstance.getCurrentInversion();
+									PlaybackFunctions.playAnyChordLength(playCurrentInversion);
+									String editedNote = TTS.getInstance().theoryToTTS(playCurrentInversion);
+									TTS.getInstance().prepareFunction("Chord", editedNote);
+								}
 
-				else {
-					// Feature 1 play back
-					PlaybackFunctions.playAnyChordLength(foundChord);
-						String editedNote = TTS.getInstance().theoryToTTS(foundChord);					
-						TTS.getInstance().prepareFunction("Chord",editedNote);
-					}
+								else {
+									// Feature 1 play back
+									PlaybackFunctions.playAnyChordLength(foundChord);
+									String editedNote = TTS.getInstance().theoryToTTS(foundChord);
+									TTS.getInstance().prepareFunction("Chord", editedNote);
+								}
 							}
-				}
-				catch (EngineException | EngineStateError | IllegalArgumentException | AudioException | InvalidMidiDataException | InterruptedException e) {
-					e.printStackTrace();
-				}
+						} catch (EngineException | EngineStateError | IllegalArgumentException | AudioException
+								| InvalidMidiDataException | InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
 				}).start();
 			}
@@ -1800,19 +2015,22 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 								if (!stopPlayback) {
 									PlaybackFunctions.playIntervalNote(aNote);
 									String editedNote = aNote.getName();
-									editedNote = editedNote.substring(0, editedNote.length()-1);
-									editedNote = editedNote.contains("#") ? editedNote.replace("#", " SHARP") : editedNote;
-									
+									editedNote = editedNote.substring(0, editedNote.length() - 1);
+									editedNote = editedNote.contains("#") ? editedNote.replace("#", " SHARP")
+											: editedNote;
+
 									PlaybackFunctions.timeDelay(500);
-									TTS.getInstance().prepareFunction("Scale",editedNote);
+									TTS.getInstance().prepareFunction("Scale", editedNote);
 									PlaybackFunctions.timeDelay(1000);
-								} 
-								//Corrects last note colored and only works when not pressing home or previous
-//								if(!playback){
+								}
+								// Corrects last note colored and only works
+								// when not pressing home or previous
+								// if(!playback){
 								PlaybackFunctions.resetLastNoteColor();
-//								}
+								// }
 							}
-						} catch (InvalidMidiDataException | EngineException | EngineStateError | IllegalArgumentException | AudioException | InterruptedException e) {
+						} catch (InvalidMidiDataException | EngineException | EngineStateError
+								| IllegalArgumentException | AudioException | InterruptedException e) {
 							e.printStackTrace();
 						}
 					}
@@ -1823,27 +2041,29 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			////////////////////////////////////////////////////////////////////////////////
 			else if (obj.equals(playRandomIntervalState)) {
 				generateRandomPitch();
-				
-		        //////////////////////////////////////
-		           if (components.getRangeColorToggleStatus()) {
-		               components.changeColorToggle(false);
+
+				//////////////////////////////////////
+				if (components.getRangeColorToggleStatus()) {
+					components.changeColorToggle(false);
 					components.changeRangeColorToggle(false);
-					PlaybackFunctions.resetScaleDisplayColor(); 
+					PlaybackFunctions.resetScaleDisplayColor();
 					scaleRangeColorModeState.setSelected(false);
-					if(PlaybackFunctions.getStoredPreNotes().size() >0){
+					if (PlaybackFunctions.getStoredPreNotes().size() > 0) {
 						PlaybackFunctions.emptyNotes();
-						}
+					}
 					PlaybackFunctions.setIndexCounter(0);
 					PlaybackFunctions.setRandomIntervalCounter(0);
 					PlaybackFunctions.setMelodicIndexCounter(0);
-		}
-		           //////////////////////
-				
-                 //First instance of random button
-				if (messages.getRandomState() == false && PlaybackFunctions.getMelodicIndexCounter() == 0 && !scaleDisplayIsReset) {
+				}
+				//////////////////////
+
+				// First instance of random button
+				if (messages.getRandomState() == false && PlaybackFunctions.getMelodicIndexCounter() == 0
+						&& !scaleDisplayIsReset) {
 					messages.storeRandomState(true);
-					//int lastIndex = foundScale.getTonic().getName().length() > 2 ? 66 : 64;
-					//c/ontentTextArea.replaceRange("", 45, lastIndex);
+					// int lastIndex = foundScale.getTonic().getName().length()
+					// > 2 ? 66 : 64;
+					// c/ontentTextArea.replaceRange("", 45, lastIndex);
 				}
 
 				else if (messages.getRandomState() == false && PlaybackFunctions.getMelodicIndexCounter() > 0) {
@@ -1866,16 +2086,16 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 				/** THIS ADDES THE TEXT BUT MIGHT CAUSE PROBLEMS */
 				if (foundInterval.getName().equals(foundScale.getTonic().getName())) {
-					if(!randomTriggeredReference){
-					String removeOctave = foundScale.getScaleNotesList().get(0).getName();
-					contentTextArea.append("Reference pitch: " + removeOctave);
+					if (!randomTriggeredReference) {
+						String removeOctave = foundScale.getScaleNotesList().get(0).getName();
+						contentTextArea.append("Reference pitch: " + removeOctave);
 					}
 					randomTriggeredReference = true;
 				}
 
 				else if (foundInterval.getName().equals(foundScale.getTonic().getName()) && intervalCounter == 0) {
 					int lastIndex = foundScale.getTonic().getName().length() > 2 ? 66 : 64;
-				//	contentTextArea.replaceRange("", 45, lastIndex);
+					// contentTextArea.replaceRange("", 45, lastIndex);
 					randomTriggeredReference = false;
 				}
 
@@ -1885,36 +2105,35 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			////////////////////////////////////////////////////////////////////////////////
 
 			else if (obj.equals(playNextIntervalState)) {
-           
-		    if (components.getRangeColorToggleStatus()) {
-            components.changeColorToggle(false);
-			components.changeRangeColorToggle(false);
-			PlaybackFunctions.resetScaleDisplayColor(); 
-			scaleRangeColorModeState.setSelected(false);
-			if(PlaybackFunctions.getStoredPreNotes().size() >0){
-				PlaybackFunctions.emptyNotes();
-			}
-			PlaybackFunctions.setIndexCounter(0);
-			PlaybackFunctions.setRandomIntervalCounter(0);
-			PlaybackFunctions.setMelodicIndexCounter(0);
-			intervalCounter =0;
-}
-				
-           else	if (messages.getRandomState()) {
-				PlaybackFunctions.resetLastNoteColor();
-				PlaybackFunctions.setMelodicIndexCounter(PlaybackFunctions.currentRandomIntervalCounter());
-				intervalCounter = 0;
-				randomTriggered = true;
-				messages.storeRandomState(false);
-				messages.storeMelodyInterval(true);
-			}
+
+				if (components.getRangeColorToggleStatus()) {
+					components.changeColorToggle(false);
+					components.changeRangeColorToggle(false);
+					PlaybackFunctions.resetScaleDisplayColor();
+					scaleRangeColorModeState.setSelected(false);
+					if (PlaybackFunctions.getStoredPreNotes().size() > 0) {
+						PlaybackFunctions.emptyNotes();
+					}
+					PlaybackFunctions.setIndexCounter(0);
+					PlaybackFunctions.setRandomIntervalCounter(0);
+					PlaybackFunctions.setMelodicIndexCounter(0);
+					intervalCounter = 0;
+				}
+
+				else if (messages.getRandomState()) {
+					PlaybackFunctions.resetLastNoteColor();
+					PlaybackFunctions.setMelodicIndexCounter(PlaybackFunctions.currentRandomIntervalCounter());
+					intervalCounter = 0;
+					randomTriggered = true;
+					messages.storeRandomState(false);
+					messages.storeMelodyInterval(true);
+				}
 
 				// Partially Solve color timings
 				if (intervalCounter == foundScale.getScaleNotesList().size() && randomTriggered == true) {
 					intervalCounter = 0;
 					resetReference = true;
-				}
-				else if (intervalCounter == foundScale.getScaleNotesList().size() - 1 && randomTriggered == false) {
+				} else if (intervalCounter == foundScale.getScaleNotesList().size() - 1 && randomTriggered == false) {
 					PlaybackFunctions.resetLastNoteColor();
 					PlaybackFunctions.setMelodicIndexCounter(0);
 					intervalCounter = PlaybackFunctions.getMelodicIndexCounter();
@@ -1929,7 +2148,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 				// Handle referrence note text
 				if (intervalCounter == 0 || intervalCounter == 1) {
 					// Done on full cycle and is the note after the key
-					 if (intervalCounter == 1 && resetReference == true) {
+					if (intervalCounter == 1 && resetReference == true) {
 						resetReference = false;
 					}
 				}
@@ -1981,22 +2200,22 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 				// Turn on color mode
 				if (!components.getColorToggleStatus()) {
 					components.changeColorToggle(true);
-					
-					//Change 3 - Might cause problems
+
+					// Change 3 - Might cause problems
 					//////////////////////////////////////
 					if (components.getRangeColorToggleStatus()) {
 						components.changeColorToggle(true);
-									components.changeRangeColorToggle(false);
-									PlaybackFunctions.resetScaleDisplayColor(); 
-									scaleRangeColorModeState.setSelected(false);
-									if(PlaybackFunctions.getStoredPreNotes().size() >0){
-										PlaybackFunctions.emptyNotes();
-										}
-									PlaybackFunctions.setIndexCounter(0);
-									PlaybackFunctions.setRandomIntervalCounter(0);
-									PlaybackFunctions.setMelodicIndexCounter(0);
-						
+						components.changeRangeColorToggle(false);
+						PlaybackFunctions.resetScaleDisplayColor();
+						scaleRangeColorModeState.setSelected(false);
+						if (PlaybackFunctions.getStoredPreNotes().size() > 0) {
+							PlaybackFunctions.emptyNotes();
 						}
+						PlaybackFunctions.setIndexCounter(0);
+						PlaybackFunctions.setRandomIntervalCounter(0);
+						PlaybackFunctions.setMelodicIndexCounter(0);
+
+					}
 
 					///////////////////////////////////
 
@@ -2006,7 +2225,6 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 					components.changeColorToggle(false);
 
-					
 					// Might need to remove
 					if (relativePitchFeature == true) {
 
@@ -2022,22 +2240,20 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 					}
 
 					// Chord base features
-					else { //So far Re color original keys colour
-						PlaybackFunctions.resetChordsColor(); 										
+					else { // So far Re color original keys colour
+						PlaybackFunctions.resetChordsColor();
 					}
 				}
 			}
 
 			else if (obj.equals(scaleRangeColorModeState)) {
-
+				PlaybackFunctions.playOrDisplay(false);
 				// Turn on color mode
 				if (!components.getRangeColorToggleStatus()) {
 
-				
-					
 					if (components.getColorToggleStatus()) {
-						if(PlaybackFunctions.getStoredPreNotes().size() >0){
-						PlaybackFunctions.resetLastNoteColor();
+						if (PlaybackFunctions.getStoredPreNotes().size() > 0) {
+							PlaybackFunctions.resetLastNoteColor();
 						}
 						components.changeColorToggle(false);
 						colorModeState.setSelected(false);
@@ -2050,17 +2266,17 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 
 					// Turn off color mode
 				} else if (components.getRangeColorToggleStatus()) {
-																															
+
 					// Re color original keys colour
 					components.changeRangeColorToggle(false);
-					PlaybackFunctions.resetScaleDisplayColor(); 
-					
-					//Change 4 - Might cause problems
+					PlaybackFunctions.resetScaleDisplayColor();
+
+					// Change 4 - Might cause problems
 					PlaybackFunctions.setIndexCounter(0);
 					PlaybackFunctions.setRandomIntervalCounter(0);
 					PlaybackFunctions.setMelodicIndexCounter(0);
 					PlaybackFunctions.emptyNotes();
-					scaleDisplayIsReset =true;
+					scaleDisplayIsReset = true;
 				}
 			}
 
@@ -2096,7 +2312,7 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 										}
 										i++;
 									}
-								} 
+								}
 							}
 						} catch (InvalidMidiDataException | InterruptedException | BadLocationException e) {
 							e.printStackTrace();
@@ -2116,14 +2332,14 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 	public void mouseReleased(MouseEvent arg0) {
 	}
 
-	public boolean getShared () {
+	public boolean getShared() {
 		return stopPlayback;
 	}
-	
-	public void changeSharedState (boolean change) {
+
+	public void changeSharedState(boolean change) {
 		stopPlayback = change;
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		Object obj = arg0.getSource();
@@ -2132,6 +2348,60 @@ public class ScreenPrompt implements MouseListener, ActionListener {
 			preg.storeCurrentChoice(apreggioName);
 			changeApreggio = true;
 		}
-
 	}
+	
+	
+	
+	
+	
+	
+	public void changeInput(){
+		//int screenWidth = SwingComponents.getInstance().getScreenWidth();
+		//int screenHeight = SwingComponents.getInstance().getScreenHeight();
+	    JFrame connectionsPanel = SwingComponents.getInstance().floatingDebugFrame(true, false, null, "Connections", 
+	    		screenWidth/2, screenHeight/2, screenWidth/2, screenHeight/2);
+	    connectionsPanel.getContentPane().setBackground(Color.decode("#00BFFF"));
+	   
+	    int width = connectionsPanel.getPreferredSize().width;
+	    int height = connectionsPanel.getPreferredSize().height;
+	    
+		conditionalModel = new DefaultListModel<String>();	
+		if (PlayBackDevices.getInstance().getConnections().isEmpty()){
+			conditionalModel.addElement("No input connecions detected");
+			conditionalModel.addElement("No input connecions detected");
+			conditionalModel.addElement("No input connecions detected");
+		}
+		else {
+		for(Transmitter aTransmitter : PlayBackDevices.getInstance().getConnections()){
+			conditionalModel.addElement(aTransmitter.toString());
+		     }
+		}
+		jListInput = new JList<String>(conditionalModel);
+		jListInput.setName("Input");
+		jListInput.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+		jListInput.setFixedCellWidth(connectionsPanel.getPreferredSize().width - 20);
+		components.colourMenuPanels(jListInput, Color.WHITE, Color.LIGHT_GRAY);
+		
+		
+		jListInput.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		jListInput.setVisibleRowCount(-1);
+		jListInput.setBorder(new LineBorder(Color.BLUE));
+		jListInput.addMouseListener(this);
+		//jListInput.setFont(new Font("Arial", Font.BOLD, 14));
+		
+
+		
+		scrollPane = new JScrollPane(jListInput);
+		scrollPane.setPreferredSize(new Dimension(width,height));
+		scrollPane.setMinimumSize(new Dimension(width,height));
+
+
+		
+
+	    
+	    // JTextArea log = new JTextArea();
+	    //JScrollPane connectionScroll = new JScrollPane(jListInput, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	    connectionsPanel.setLayout(new GridLayout(2, 1));
+	    connectionsPanel.getContentPane().add(scrollPane);
+	  }
 }

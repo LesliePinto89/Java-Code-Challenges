@@ -3,7 +3,7 @@ package midi;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JButton;
-import midiDevices.MidiReceiver;
+import midiDevices.PlayBackDevices;
 
 public class DurationTimer {
 
@@ -75,7 +75,7 @@ public class DurationTimer {
 				public void run() {	
 					// Added the smallest value of a 1/64 note of the set resolution used in the 
 					// cycle to determine exact note through use of cumulative tick values during sustain.
-					buildDuration(MidiReceiver.getInstance().getCurrentSequenceResolution() / 16);
+					buildDuration(PlayBackDevices.getInstance().getCurrentSequenceResolution() / 16);
 				}
 			};
 
@@ -89,10 +89,10 @@ public class DurationTimer {
 						try {
 							//MIGHT NEED TO GET RID OF THIS CODE INCASE THE SUSTAIN AFFECT OF SOME
 							//NOTES GET RUINED OR THE TIMING AFTER NO SOUND GETS AFFECTED
-							if(getCycledDuration() == MidiReceiver.getInstance().getCurrentSequenceResolution() * 4){
+							if(getCycledDuration() == PlayBackDevices.getInstance().getCurrentSequenceResolution() * 4){
 								if(messages.getDebugStatus()){
 									String durationValue = Integer.toString(getCycledDuration());
-									String wholeNoteValue =  Integer.toString(MidiReceiver.getInstance().getCurrentSequenceResolution() * 4);
+									String wholeNoteValue =  Integer.toString(PlayBackDevices.getInstance().getCurrentSequenceResolution() * 4);
 								
 									messages.sequenceTimingMessages("Current duration value"+durationValue);
 									messages.sequenceTimingMessages("Is this a whole note value"+wholeNoteValue);

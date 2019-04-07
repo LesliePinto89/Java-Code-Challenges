@@ -23,7 +23,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import keyboard.Note;
-import midiDevices.MidiReceiver;
+import midiDevices.PlayBackDevices;
 import tools.DebugConsole;
 import tools.PlaybackFunctions;
 import tools.SwingComponents;
@@ -60,7 +60,7 @@ public class MidiMessageTypes {
 			synchronized (Chord.class) {
 				if (instance == null) {
 					instance = new MidiMessageTypes();
-					channel = ((Synthesizer) MidiReceiver.getInstance().returnDevice()).getChannels()[0];
+					channel = PlayBackDevices.getInstance().returnSynth().getChannels()[0];
 					instance.storedTemposMap();
 					instance.storeTemposInModel();
 				}
@@ -207,7 +207,7 @@ public class MidiMessageTypes {
 		
 		//Used to keep selected tempo when the start recording functions reset it back to default
 		public void saveTempoSeqEnd(String choice) {
-			MidiReceiver.getInstance().returnSequencer().setTempoInBPM(tempoMarkersMap.get(choice));
+			PlayBackDevices.getInstance().returnSequencer().setTempoInBPM(tempoMarkersMap.get(choice));
 		}
 		
 		public void selectedTempo(String remembered) {
