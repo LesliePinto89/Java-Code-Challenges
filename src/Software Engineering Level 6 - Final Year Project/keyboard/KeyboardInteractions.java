@@ -1,5 +1,6 @@
 package keyboard;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -27,6 +28,7 @@ import midi.MidiMessageTypes;
 import tools.MIDIFileManager;
 import tools.MIDIRecord;
 import tools.ScreenPrompt;
+import tools.SwingComponents;
 import midiDevices.GetInstruments;
 
 public class KeyboardInteractions implements ActionListener, 
@@ -41,8 +43,6 @@ ChangeListener, MouseListener,MetaEventListener{
 	private JToggleButton saveMIDI;
 	private JButton inputButton;
 	private JList<String> allInstruments;
-
-	private byte bytePitch;
 	
 	// MIDI Timing and message variables
 	private int durationValue;
@@ -51,10 +51,9 @@ ChangeListener, MouseListener,MetaEventListener{
 	static Timer timer;
 	boolean noteIsOn = true;
 	private int playedNotePitch;
-	private MIDIRecord record;
 	private boolean debugNoNotes =false;
 	private MidiMessageTypes messages = MidiMessageTypes.getInstance();
-	private PlayBackDevices midiReceiveInstance = PlayBackDevices.getInstance();
+	private PlayBackDevices devices = PlayBackDevices.getInstance();
 	private GetInstruments getInstruments = GetInstruments.getInstance();
 	
 	public KeyboardInteractions() {
@@ -83,9 +82,7 @@ ChangeListener, MouseListener,MetaEventListener{
 			break;
 		case "recordButton":
 			this.recordMIDI = optionButton;
-			record = new MIDIRecord();
-			record.recordReciever();
-			midiReceiveInstance.storedRecordStart(record);
+			MIDIRecord.getInstance();
 			break;
 		case "saveButton" : 
 			this.saveMIDI = optionButton;
@@ -112,6 +109,7 @@ ChangeListener, MouseListener,MetaEventListener{
 		if (!slider.getValueIsAdjusting()) {
 			int value = slider.getValue();	
 			messages.getMidiChannel().controlChange(7, value);
+			System.out.println(messages.getMidiChannel().getController(7));
 		}
 	}
 
@@ -128,18 +126,18 @@ ChangeListener, MouseListener,MetaEventListener{
 		else if (obj.equals(pressedNote)) {
 
 			// Free play mode
-			if (midiReceiveInstance.isFreePlayEnded() == false) {
+			if (devices.isFreePlayEnded() == false) {
 				try {
-					midiReceiveInstance.freeNotePlay(playedNotePitch);
+					devices.freeNotePlay(playedNotePitch);
 				} catch (InvalidMidiDataException e1) {
 					e1.printStackTrace();
 				}
 			}
 
 			// Record mode
-			else if (midiReceiveInstance.isRecEnded() == false) {
-				if (midiReceiveInstance.getTrack().size() == 1) {
-					midiReceiveInstance.returnSequencer().startRecording();
+			else if (devices.isRecEnded() == false) {
+				if (devices.getTrack().size() == 1) {
+					devices.returnSequencer().startRecording();
 					startTick = 0;
 					if (messages.getDebugStatus()){
 						String startTickString = Long.toString(startTick);
@@ -150,7 +148,7 @@ ChangeListener, MouseListener,MetaEventListener{
 						}
 
 				}
-				else if (midiReceiveInstance.getTrack().size() >= 3) {
+				else if (devices.getTrack().size() >= 3) {
 
 					// Get the current time in milliseconds, and remove the last
 					// note's off time from current time to get absolute time difference to use later.
@@ -185,7 +183,7 @@ ChangeListener, MouseListener,MetaEventListener{
 						int program = getInstruments.getProgramNumber();
 						ShortMessage changeInstrument = new ShortMessage();
 						changeInstrument.setMessage(ShortMessage.PROGRAM_CHANGE,0,program,0);
-						midiReceiveInstance.getTrack().add(new MidiEvent(changeInstrument, startTick));
+						devices.getTrack().add(new MidiEvent(changeInstrument, startTick));
 						//reset detect instrument change until it occurs again
 						getInstruments.instrumentChanged(false);
 					}
@@ -194,12 +192,12 @@ ChangeListener, MouseListener,MetaEventListener{
 
 					// Allows immediate wire play back while short messages
 					// are added to sequence
-					midiReceiveInstance.freeNotePlay(playedNotePitch);
+					devices.freeNotePlay(playedNotePitch);
 
 					//System.out.println("Instrument choice :"+getInstruments.getChannelSetToInstrument());
 					
 					message.setMessage(ShortMessage.NOTE_ON, 0, playedNotePitch, 90);
-					midiReceiveInstance.getTrack().add(new MidiEvent(message, startTick));
+					devices.getTrack().add(new MidiEvent(message, startTick));
 
 					DurationTimer.getInstance().setDurationTimer(pressedNote, false);
 				} catch (InvalidMidiDataException e1) {
@@ -211,17 +209,17 @@ ChangeListener, MouseListener,MetaEventListener{
 
 	public void mouseReleased(MouseEvent e) {
 		try {
-		if (midiReceiveInstance.isFreePlayEnded() == false) {
-				midiReceiveInstance.freeNoteStop(playedNotePitch);
+		if (devices.isFreePlayEnded() == false) {
+				devices.freeNoteStop(playedNotePitch);
 		}
 					
-		if (midiReceiveInstance.isRecEnded() == false) {
-			resolution = midiReceiveInstance.returnSequencer().getSequence().getResolution();
+		if (devices.isRecEnded() == false) {
+			resolution = devices.returnSequencer().getSequence().getResolution();
 				durationValue = DurationTimer.getInstance().getCycledDuration();
 
 				ShortMessage turnNoteOff = new ShortMessage();
 				turnNoteOff.setMessage(ShortMessage.NOTE_OFF, 0, playedNotePitch, 0);
-				midiReceiveInstance.getTrack().add(new MidiEvent(turnNoteOff, startTick + durationValue - 1));
+				devices.getTrack().add(new MidiEvent(turnNoteOff, startTick + durationValue - 1));
 
 				if (messages.getDebugStatus()){
 					String durationValueString = Integer.toString(durationValue);
@@ -240,7 +238,7 @@ ChangeListener, MouseListener,MetaEventListener{
 				////////////////////////////////////////////////////////
 
 				// When user released a button before or after it has decayed
-				midiReceiveInstance.freeNoteStop(playedNotePitch);
+				devices.freeNoteStop(playedNotePitch);
 
 				// Make the value of the duration timer be 0 at end of note
 				// messages construction
@@ -280,7 +278,7 @@ ChangeListener, MouseListener,MetaEventListener{
 		
 		if (obj.equals(inputButton)){
 			ScreenPrompt.getInstance().changeInput();
-				//VirtualKeyboard.getInstance().home();
+				
 		}
 			
 		else if (obj.equals(saveMIDI)) {
@@ -338,42 +336,33 @@ ChangeListener, MouseListener,MetaEventListener{
 
 		// Go to another class to make enable and disable record feature
 		else if (obj.equals(recordMIDI)) {
-				record.recordAction(recordMIDI);
+				MIDIRecord.getInstance().recordAction(recordMIDI);
 		}
 		
-//		else if (obj.equals(homeButton)){
-//		//Placeholder for now	
-//		}
 		else if (obj.equals(playMIDI)) {
 			// When sequence tracks are not empty, play sequence.
 
-			if (midiReceiveInstance.getSequence() != null) {
-				int empty = midiReceiveInstance.getSequence().getTracks()[0].size();
-				if (midiReceiveInstance.isRecEnded() == true
-						|| empty >= 2 && midiReceiveInstance.isRecEnded() == true) {
-					
-//					int[] types = new int[128];
-//			        for (int ii = 0; ii < 128; ii++) {
-//			            types[ii] = ii;
-//			        }
-//					midiReceiveInstance.returnSequencer().addControllerEventListener(this, types);
+			if (devices.getSequence() != null) {
+				int empty = devices.getSequence().getTracks()[0].size();
+				if (devices.isRecEnded() == true
+						|| empty >= 2 && devices.isRecEnded() == true) {
 					
 					//Create meta event data
-					Track [] tracks = midiReceiveInstance.returnSequencer().getSequence().getTracks();
-		            Track trk = midiReceiveInstance.returnSequencer().getSequence().createTrack();
+					Track [] tracks = devices.returnSequencer().getSequence().getTracks();
+		            Track trk = devices.returnSequencer().getSequence().createTrack();
 		            for (Track track : tracks) {
 		            	MidiMessageTypes.generateMetaData(track, trk);
 		            }
-					midiReceiveInstance.returnSequencer().addMetaEventListener(this);
+					devices.returnSequencer().addMetaEventListener(this);
 					
 					//Have to set the new sequence with a track of meta events onto the sequence
-					Sequence editSequence = midiReceiveInstance.returnSequencer().getSequence();
+					Sequence editSequence = devices.returnSequencer().getSequence();
 					
-					midiReceiveInstance.returnSequencer().setSequence(editSequence);
-					midiReceiveInstance.returnSequencer().setTickPosition(0);
-					midiReceiveInstance.returnSequencer().start();
+					devices.returnSequencer().setSequence(editSequence);
+					devices.returnSequencer().setTickPosition(0);
+					devices.returnSequencer().start();
 
-					if (midiReceiveInstance.returnSequencer().isRunning() == true) {
+					if (devices.returnSequencer().isRunning() == true) {
 						playMIDI.setSelected(false);
 						playMIDI.setEnabled(true);
 					}
@@ -397,7 +386,7 @@ ChangeListener, MouseListener,MetaEventListener{
 
 	@Override
     public void meta(MetaMessage metaRec) {
-	 messages.metaEventColors(metaRec);
+	 messages.eventColors(metaRec);
     }
 	
 

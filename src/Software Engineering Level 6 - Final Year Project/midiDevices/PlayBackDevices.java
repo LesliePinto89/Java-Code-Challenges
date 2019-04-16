@@ -49,7 +49,10 @@ public class PlayBackDevices implements Receiver {
 	private Track track;
 	private ArrayList<Transmitter> listOfConnections = new ArrayList<Transmitter>();
 
-	private MIDIRecord carriedRecord;
+	//private MIDIRecord carriedRecord;
+	
+	private String currentInputDevice ="";
+	
 	private static volatile PlayBackDevices instance = null;
 
     private PlayBackDevices() {}
@@ -107,6 +110,7 @@ public class PlayBackDevices implements Receiver {
 				 listOfConnections.add(transToSynReceiver);
 				 transToDummyReceiver = device.getTransmitter();
 				 transToSeqReceiver = device.getTransmitter();
+				 currentInputDevice = "Digital Piano";
 			}
 			
 			//If assigning MIDI input port to do stuff, however Java SDK is temperamental
@@ -126,16 +130,10 @@ public class PlayBackDevices implements Receiver {
 		return resolution; 
 	}
 	
-	// To keep instance of record class object (Could use singleton pattern
-	// alternative)
-	public void storedRecordStart(MIDIRecord storedRecord) {
-		carriedRecord = storedRecord;
+	public String getCurrentInputDevice() {
+		return currentInputDevice; 
 	}
-
-	public MIDIRecord getStoredRecordStart() {
-		return carriedRecord;
-	}
-
+	
 	public void loadUp() throws MidiUnavailableException {
 		sequencer = MidiSystem.getSequencer();	
 		sequencer.open();
@@ -148,6 +146,7 @@ public class PlayBackDevices implements Receiver {
 		else {
 			transToDummyReceiver.setReceiver(new DummyReceiver());
 			seqRcvr = sequencer.getReceiver();
+			transToSeqReceiver.setReceiver(seqRcvr);
 		}   
 		transToSynReceiver.setReceiver(synthRcvr);
 	}

@@ -6,23 +6,23 @@ import javax.sound.midi.InvalidMidiDataException;
 import keyboard.Note;
 import tools.PlaybackFunctions;
 
-public class TypesOfApreggios {
+public class TypesOfArpeggios {
 
 	private ArrayList<Note> brokenNotes = new ArrayList<Note>();
 	private String[] brokenNotesNames;
 	private String boxChoice = "";
 	private ListOfScales scales = ListOfScales.getInstance();
 
-	private static volatile TypesOfApreggios instance = null;
+	private static volatile TypesOfArpeggios instance = null;
 
-	private TypesOfApreggios() {
+	private TypesOfArpeggios() {
 	}
 
-	public static TypesOfApreggios getInstance() {
+	public static TypesOfArpeggios getInstance() {
 		if (instance == null) {
-			synchronized (TypesOfApreggios.class) {
+			synchronized (TypesOfArpeggios.class) {
 				if (instance == null) {
-					instance = new TypesOfApreggios();
+					instance = new TypesOfArpeggios();
 					instance.createBox();
 				}
 			}

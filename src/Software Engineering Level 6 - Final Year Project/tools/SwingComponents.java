@@ -27,12 +27,13 @@ import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 
-import midi.TypesOfApreggios;
+import midi.TypesOfArpeggios;
 
 public class SwingComponents implements MouseListener {
 	
@@ -41,7 +42,7 @@ public class SwingComponents implements MouseListener {
 	private boolean colorToggleState = false;
 	private boolean colorRangeToggleState = false;
 	private boolean displayScaleNotesOnly = false;
-	private TypesOfApreggios apreggrioType = TypesOfApreggios.getInstance();
+	private TypesOfArpeggios arpeggioType = TypesOfArpeggios.getInstance();
 	private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	private int screenWidth = (int) screenSize.getWidth();
 	private int screenHeight = (int) screenSize.getHeight();
@@ -97,7 +98,7 @@ public class SwingComponents implements MouseListener {
 		int startIndex = area.getLineStartOffset(i);
 		int endIndex = area.getLineEndOffset(i);
 		Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(
-				Color.YELLOW);
+				 Color.decode("#303030"));
 		area.getHighlighter().addHighlight(startIndex, endIndex, painter);
 	}
 	
@@ -126,12 +127,12 @@ public class SwingComponents implements MouseListener {
 	}
 
 	public void featureTabDimensions() {
+		
+		//UIManager.put("TabbedPane.unselectedBackground", Color.decode("#303030"));
+	    UIManager.put("TabbedPane.selected", Color.decode("#303030"));
+		UIManager.put("TabbedPane.selectedForeground", Color.YELLOW);		
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setPreferredSize(new Dimension(screenWidth / 2 - 40, screenHeight / 2));
-		// tabbedPane.setBackground(Color.decode("#F0F8FF"));
-		// This makes all display not change size - its kind of good and bad
-		// thing tabbedPane.setMinimumSize(new Dimension (screenWidth / 2,
-		// screenHeight / 3));
 		jListTableWidth = screenWidth / 2;
 		jListTableHeight = screenHeight / 3;
 	}
@@ -184,6 +185,12 @@ public class SwingComponents implements MouseListener {
 				listCellRendererComponent.setBorder(BorderFactory.createMatteBorder(0, 1, 1, 0, Color.BLACK));
 				Font aFont =null;
 				
+				Component c = super.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+				
+				if (list.getName().equals("Arpeggios")){
+					System.out.println("Detected");
+				}
 				
 				if (list.getName().equals("Instruments") || list.getName().equals("Tempos") || list.getName().equals("allSongsList")) {
 					int width = (int) tabbedPane.getPreferredSize().getWidth();
@@ -196,7 +203,7 @@ public class SwingComponents implements MouseListener {
 						
 	                    //Tempos stuff
 						else{
-						aFont = new Font("Serif", Font.BOLD, 26);
+						aFont = new Font("Tahoma", Font.BOLD, 26);
 						listCellRendererComponent.setPreferredSize(new Dimension(width / 2, height / 5));
 						listCellRendererComponent.setMinimumSize(new Dimension(width / 2, getScreenHeight() / 5));
 						}
@@ -206,12 +213,12 @@ public class SwingComponents implements MouseListener {
 					else {
 					listCellRendererComponent.setPreferredSize(new Dimension(width / 7, height / 20));
 					listCellRendererComponent.setMinimumSize(new Dimension(width / 7, getScreenHeight() / 20));
-					 aFont = new Font("Serif", Font.BOLD, 26);
+					 aFont = new Font("Tahoma", Font.BOLD, 26);
 					}
 					listCellRendererComponent.setBackground(renderColor);
 
 					if (isSelected) {
-						listCellRendererComponent.setBackground(Color.decode("#F5DEB3"));
+						listCellRendererComponent.setBackground(Color.decode("#303030"));
 						listCellRendererComponent.setForeground(Color.YELLOW);
 					}
 					
@@ -224,20 +231,22 @@ public class SwingComponents implements MouseListener {
 			listCellRendererComponent
 					.setMinimumSize(new Dimension(getScreenWidth() / 6, getScreenHeight() / 6));
 			listCellRendererComponent.setBackground(renderColor);
-			 aFont = new Font("Serif", Font.BOLD, 16);
+			 aFont = new Font("Tahoma", Font.BOLD, 16);
 			
 				}
-				//Screenprompt stuff 
+				//Screen prompt stuff 
 				else {
 					listCellRendererComponent
 							.setPreferredSize(new Dimension(getScreenWidth() / 8, getScreenHeight() / 20));
 					listCellRendererComponent
 							.setMinimumSize(new Dimension(getScreenWidth() / 8, getScreenHeight() / 20));
 					listCellRendererComponent.setBackground(renderColor);
-					 aFont = new Font("Serif", Font.BOLD, 36);
-					 
+					
+					aFont = new Font("Tahoma", Font.BOLD, 36);
+					
+					
+					 //Genre
 					 if (isSelected) {
-							listCellRendererComponent.setBackground(Color.decode("#F5DEB3"));
 							listCellRendererComponent.setForeground(Color.YELLOW);
 						}
 				}
@@ -247,12 +256,14 @@ public class SwingComponents implements MouseListener {
 		};
 	}
 	
-	public JButton customTrackJButton(int width, int height, String text, String name, MouseListener listen) {
+	public JButton customTrackJButton(int width, int height, String text, String name, MouseListener listen,
+			Color border,int top, int left, int bottom, int right) {
 		JButton aButton = new JButton();
 		aButton.setPreferredSize(new Dimension(width, height));
 		aButton.setText(text);
 		aButton.setName(name);
 		aButton.addMouseListener(listen);
+		aButton.setBorder(BorderFactory.createMatteBorder(top, left, bottom, right, border));
 		return aButton;
 	}
 	
@@ -272,20 +283,27 @@ public class SwingComponents implements MouseListener {
 		return aScrollPane;
 	}
 	
-	public JComboBox <String> customJComboBox(int width, int height, String text, ActionListener listen) {
-		JComboBox <String> aBox = new JComboBox <String> (apreggrioType.getNames());
+	public JComboBox <String> customJComboBox(int width, int height, String text, ActionListener listen,int font) {
+		JComboBox <String> aBox = new JComboBox <String> (arpeggioType.getNames());
 		aBox.setPreferredSize(new Dimension(width, height));
 		aBox.setName(text);
 		aBox.addActionListener(listen);
+		aBox.setBackground(Color.decode("#B8B8B8"));
+		aBox.setFont(new Font ("Tahoma",Font.BOLD, font));
+		aBox.setForeground(Color.WHITE);
+		aBox.setRenderer(getRenderer(Color.decode("#B8B8B8")));
 		return aBox;
 	}
 	
-	public JButton customJButton(int width, int height, String text, MouseListener listen) {
+	public JButton customJButton(int width, int height, String text, MouseListener listen,int font,Color aColor) {
 		JButton aButton = new JButton();
 		aButton.setPreferredSize(new Dimension(width, height));
 		aButton.setText(text);
 		aButton.setName(text);
 		aButton.addMouseListener(listen);
+		aButton.setBackground(aColor);
+		aButton.setFont(new Font ("Tahoma",Font.BOLD, font));
+		aButton.setForeground(Color.WHITE);
 		return aButton;
 	}
 	
@@ -303,7 +321,19 @@ public class SwingComponents implements MouseListener {
 		return aButton;
 	}
 
-	//Scale on and off image for JToggleButton
+	public JToggleButton customActionJToggleButton(int width, int height, String text, MouseListener listen,int font,Color aColor) {
+		JToggleButton aJToggleButton = new JToggleButton();
+		aJToggleButton.setPreferredSize(new Dimension(width, height));
+		aJToggleButton.setText(text);
+		aJToggleButton.setName(text);
+		aJToggleButton.addMouseListener(listen);
+		aJToggleButton.setBackground(aColor);
+		aJToggleButton.setFont(new Font ("Tahoma",Font.BOLD, font));
+		aJToggleButton.setForeground(Color.WHITE);
+		return aJToggleButton;
+	}
+	
+	//For JToggleButtons with a scaled icon inside, e.g. record button
 	public JToggleButton featureJToggleButtonAlt(int width, int height, String name, boolean focus,boolean content,
 			Color backColor,Color borderColor, BufferedImage aImageOff,BufferedImage aImageOn) {
 		JToggleButton aJToggleButton = new JToggleButton();
@@ -313,12 +343,10 @@ public class SwingComponents implements MouseListener {
 		aJToggleButton.setBorder(new LineBorder(borderColor));
 		aJToggleButton.setFocusPainted(focus);
 		aJToggleButton.setContentAreaFilled(content);
-		
 		Image scaledOff = aImageOff.getScaledInstance(50, 42, Image.SCALE_SMOOTH);
 		ImageIcon aIcon = new ImageIcon(scaledOff);
 		Image scaledOn = aImageOn.getScaledInstance(50, 42, Image.SCALE_SMOOTH);
 		ImageIcon aIconTwo = new ImageIcon(scaledOn);
-		
 		aJToggleButton.setIcon(aIcon);
 		aJToggleButton.setSelectedIcon(aIconTwo);
 		return aJToggleButton;
@@ -333,6 +361,7 @@ public class SwingComponents implements MouseListener {
 		aJToggleButton.setBackground(backColor);
 		aJToggleButton.setForeground(textColor);
 		aJToggleButton.setText(text);
+		aJToggleButton.setFont(new Font ("Tahoma",Font.BOLD,20));
 		aJToggleButton.setName(name);
 		aJToggleButton.setBorder(new LineBorder(borderColor));
 		aJToggleButton.setFocusPainted(focus);
@@ -351,15 +380,6 @@ public class SwingComponents implements MouseListener {
 		return aJToggleButton;
 	}
 	
-	public JToggleButton customJToggleButton(int width, int height, String text, MouseListener listen) {
-		JToggleButton aJToggleButton = new JToggleButton();
-		aJToggleButton.setPreferredSize(new Dimension(width, height));
-		aJToggleButton.setText(text);
-		aJToggleButton.setName(text);
-		aJToggleButton.addMouseListener(listen);
-		return aJToggleButton;
-	}
-
 	public JPanel generateEventPanel(int width, int height, MouseListener listen, Color panelColor, Color border,
 			int top, int left, int bottom, int right) {
 		JPanel carriedJPanel = new JPanel();
@@ -410,7 +430,7 @@ public class SwingComponents implements MouseListener {
 	public JPanel customizeFeaturePanel(int width, int height, MouseListener listen,
 			BufferedImage carriedBufferedImage,String name) {
 		JPanel carriedJPanel = new JPanel();
-		carriedJPanel.setBackground(Color.decode("#696969"));
+		carriedJPanel.setBackground(Color.decode("#000000"));
 		carriedJPanel.setPreferredSize(new Dimension(width-5, height-5));
 		carriedJPanel.setMinimumSize(new Dimension(width, height));
 		if(name !=null){

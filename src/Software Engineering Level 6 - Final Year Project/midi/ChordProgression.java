@@ -64,9 +64,12 @@ public class ChordProgression {
 	
 	
 	public enum chordNumerals{
-		i("one minor"),ii("two minor"),iii("three minor"),iv("four minor"),v("five"),vi("six minor"),vii("seven minor"),
-		I("one major"),II("two major"),III("three major"),IV("four major"),V("five major"),VI("six major"),VII("seven major"); 
+		//i("one minor"),ii("two minor"),iii("three minor"),iv("four minor"),v("five minor"),vi("six minor"),vii("seven minor"),
+		//I("one major"),II("two major"),III("three major"),IV("four major"),V("five major"),VI("six major"),VII("seven major"); 
 	
+		i("one"),ii("two"),iii("three"),iv("four"),v("five"),vi("six"),vii("seven"),
+		I("one"),II("two"),III("three"),IV("four"),V("five"),VI("six"),VII("seven"); 
+		
 		public final String prog;
 		chordNumerals(String prog) {
 		        this.prog = prog;

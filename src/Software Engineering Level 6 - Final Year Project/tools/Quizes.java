@@ -76,15 +76,14 @@ public class Quizes implements MouseListener {
 
 	public JButton addPlayQuiz() {
 		if (handlefeature.equals("Chords")) {
-			userChoice = components.customJButton(270, 40, "Play chord", this);
+			userChoice = components.customJButton(270, 40, "Play chord", this,20,Color.decode("#505050"));
 		}
 		else if (handlefeature.equals("Scales")) {
-			userChoice = components.customJButton(270, 40, "Play scale", this);
+			userChoice = components.customJButton(270, 40, "Play scale", this,20,Color.decode("#505050"));
 		}
 		else if (handlefeature.equals("Progressions")) {
-			userChoice = components.customJButton(270, 40, "Play progression", this);
+			userChoice = components.customJButton(270, 40, "Play progression", this,20,Color.decode("#505050"));
 		}
-		userChoice.setBackground(Color.decode("#E0FFFF"));
 		return userChoice;
 	}
 
@@ -135,8 +134,8 @@ public class Quizes implements MouseListener {
 		String[] getBits = null;
 		ArrayList<String> coll = Note.randomNotesForScaleKeys();
 		String baseKey = ScreenPrompt.random(coll);
-		text.append("Progression Quiz \n\nThe purpose of this quiz is to find out if this "
-				+ "progression\nis a major or minor progression\n\n");
+		text.append("Progression Quiz \n\nThe purpose of this quiz is to find\nout if this "
+				+ "progression is a major \nor minor progression\n\n");
 
 		randomMajorProgressionString = ScreenPrompt.random(prog.getMajorProgsNames());
 		getBits = randomMajorProgressionString.split("\\s+");
@@ -176,7 +175,7 @@ public class Quizes implements MouseListener {
 		}
 		ArrayList<Scale> mixScales = mixedValues(quizMajorScale, quizMinorScale);
 		randomScaleName = ScreenPrompt.random(mixScales);
-		text.append("Scale Quiz \n\nThe purpose of this quiz is to find out if this scale is a major or minor\n\n");
+		text.append("Scale Quiz \n\nThe purpose of this quiz is to find\nout if this scale is a major or minor\n\n");
 	}
 
 	public void minOrMajChordQuiz() {
@@ -185,7 +184,7 @@ public class Quizes implements MouseListener {
 		ArrayList<String> temp = Note.randomNotesForScaleKeys();
 		String baseRoot = ScreenPrompt.random(temp);
 		randomChordName = ScreenPrompt.random(allMajorChordNames);
-		text.append("Chords Quiz \n\nThe purpose of this quiz is to find out if this chord is a major or minor\n\n");
+		text.append("Chords Quiz \n\nThe purpose of this quiz is to find\nout if this chord is a major or minor\n\n");
 		
 		int i = 0;
 		for (Chord aChord : allMajorChords) {
@@ -208,13 +207,13 @@ public class Quizes implements MouseListener {
 		if (check) {
 			successCounter++;
 			text.setText("");
-			text.append("You are correct - The answer was the " + userChoice.getName() + " " + quizTargetName);
+			text.append("You are correct - It was\na " + userChoice.getName() + " " + quizTargetName);
 			String correct = quizFeature + "Quiz: Easy Mode | No of success: " + successCounter;
 			tempStoreScore.add(correct);
 		}
 		else {
 			text.setText("");
-			text.append("You are wrong. The answer was the " + userChoice.getName() + " " + quizTargetName);
+			text.append("You are wrong. It was\na " + userChoice.getName() + " " + quizTargetName);
 		}
 	}
 
@@ -222,7 +221,7 @@ public class Quizes implements MouseListener {
 		boolean resultOne = false;
 		String quizTargetName = handlefeature.substring(0, handlefeature.length() - 1);
 		if (!userChoice.getName().equals("Major") && !userChoice.getName().equals("Minor")) {
-			text.append("Please listen to the " + quizTargetName + " chord before deciding");
+			text.append("Please listen to the\n" + quizTargetName + " chord before deciding");
 		}
 		else {
 			resultOne = userChoice.getName().equals(choice) ? true : false;

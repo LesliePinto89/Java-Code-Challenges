@@ -31,27 +31,26 @@ import tools.SwingComponents;
 public class MidiMessageTypes {
 
 	
-	/**This class stores MIDI message data that affects composition of Tempo and MIDI timing metrics*/
+	/**This class stores MIDI message data that affects composition of tempo and MIDI timing metrics*/
 	
 	private LinkedHashMap <String,Float> tempoMarkersMap = new LinkedHashMap<String,Float>();
 	private DefaultListModel <String> temposInModel = new DefaultListModel <String>();
 	private EnumSet<tempoNames> tempoEnums = null;
 	private String rememberedTempo ="AllegroModerato";
+	private static Track trk;
 	private static MidiChannel channel;
 	private int nextIntervalIndex;
 	private boolean tempoChanged =false;
 	private boolean tempoSliderChanged =false;
 	private boolean randomState =false;
 	private boolean melodyState =false;
-	private boolean condition =false;
+	private boolean noColorFirst =false;
+	
 	private boolean debugMode =false;
 	private boolean showDebugMode =false;
-	
 	private String debugMessage ="";
 	private String defaultDebugMessage = "No timing measures have been recorded - Record a sequence to start debugging";    
 	
-	private static Track trk;
-	private int trackCounter; 
 	
 	
 	private static volatile MidiMessageTypes instance = null;
@@ -138,27 +137,70 @@ public class MidiMessageTypes {
 	
 	///////////////////////////////////////////////////////////////////////////////////
 	
-	//This is a function that processes the argument Meta function
-	public void metaEventColors(MetaMessage meta){
-		if (meta.getType() ==1) {
-			if(PlaybackFunctions.getStoredPreNotes().size()>0){
-				PlaybackFunctions.resetChordsColor();
+	
+	/**This method processes both MidiMessage and MetaMessage data, in order to
+	 * change the piano notes' colour as they are are played. This enables coloured
+	 * mode support for: MIDI Keyboard device input, playback of recorded sequences, 
+	 * and playback of any MIDI type 1 file. The latter includes notes with velocities 
+	 * that are either: NOTE_ON (>0) / NOTE_ON(O) MidiMessages, NOTE_ON (>0) / NOTE_OFF(>0) MidiMessages
+	 * NOTE_ON (>0) / NOTE_ON(O) MetaMessages, and NOTE_ON (>0) / NOTE_OFF(>0) MetaMessages
+	 * @param event - The message that can either be a MetaEvent or a MidiMessage*/
+	public <T> void eventColors(T event){
+		int statusByteToInt =0;
+		int notePitch = 0;
+		int velocity = 0;
+		byte[] messageBytes = null;
+		byte bytePitch =0;
+		
+		if(event.getClass().equals(MetaMessage.class)){
+			MetaMessage convert = (MetaMessage)event;
+			if (convert.getType() == 0x2F) {
+				return;
 			}
-			byte bytePitch = meta.getMessage()[4];
-			Note playNote = null;
-			for(Note aNote : Note.getNotesMap().values()){
-				if(aNote.getPitch() == bytePitch){
-					playNote = aNote;
-					break;
-					
-				}
-			}	
-			PlaybackFunctions.storedPreColorNotes(playNote);
-			PlaybackFunctions.colorChordsAndScales(playNote,Color.BLUE);
+			messageBytes = convert.getMessage();
 			
+			statusByteToInt = messageBytes[3] & 0xFF & 0xF0;
+			 notePitch = messageBytes[4];
+			 velocity = messageBytes[5];
+			 bytePitch = messageBytes[4];
 		}
-		else if (meta.getType() ==47) {
-			PlaybackFunctions.resetChordsColor();
+		
+		else  if(event instanceof ShortMessage){
+			MidiMessage convert = (MidiMessage)event;
+			messageBytes = convert.getMessage();
+			statusByteToInt = messageBytes[0] & 0xFF & 0xF0;
+			 notePitch = messageBytes[1];
+			 velocity = messageBytes[2];
+			 bytePitch = messageBytes[1];
+		}
+		
+		switch (statusByteToInt) {
+		// By default, MIDI Keyboard's do not use NOTE ON and OFF messages.
+		// It uses NOTE_ON velocity(1=> to <=100) for being on, and NOTE_ON (0)
+		// as its NOTE OFF equivalent.
+		case ShortMessage.NOTE_ON:
+			// For when releasing depressed notes creates a NOTE_ON (0) message 
+			// with 0 velocity.
+			if (velocity == 0) {
+				PlaybackFunctions.resetLastNotePianoColor(notePitch);
+			} else {
+				Note playNote = null;
+				for (Note aNote : Note.getNotesMap().values()) {
+					if (aNote.getPitch() == bytePitch) {
+						playNote = aNote;
+						break;
+					}
+				}
+				PlaybackFunctions.storedPreColorNotes(playNote);
+				PlaybackFunctions.colorChordsAndScales(playNote, Color.YELLOW);
+				break;
+			}
+			
+			//Some notes' Meta or Midi message type use NOTE_OFF (velocity 0>) rather than
+			//NOTE_ON (velocity 0) 
+		case ShortMessage.NOTE_OFF:   
+			PlaybackFunctions.resetLastNotePianoColor(notePitch);
+		break;
 		}
 	}
 	
@@ -283,19 +325,20 @@ public class MidiMessageTypes {
 		    	 System.out.print(debugMessage);
 		    }
 		
+		    /**Feature - Displays the MIDI sequence's timing values through
+		     *stages of its construction.*/
 			public void loadDebug(){
 				int screenWidth = SwingComponents.getInstance().getScreenWidth();
 				int screenHeight = SwingComponents.getInstance().getScreenHeight();
 			    JFrame debugPanel = SwingComponents.getInstance().floatingDebugFrame(true, false, null, "Debug MIDI Timing Summary", 0, 0, screenWidth/2+screenWidth/5, screenHeight/2+screenHeight/5);
-				debugPanel.getContentPane().setBackground(Color.decode("#00BFFF"));
+				debugPanel.getContentPane().setBackground(Color.decode("#303030"));
 			    JTextArea log = new JTextArea();
 			    JScrollPane debugDataScroll = new JScrollPane(log, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-			   
 			    DebugConsole debugInfo = new DebugConsole(log, "DebugConsole");
 			    debugPanel.setLayout(new GridLayout(2, 1));
 			    debugPanel.getContentPane(). add(debugDataScroll);
 			    System.setOut(new PrintStream(debugInfo));
-			         
+			        
 			    MidiMessageTypes.getInstance().getSequenceTimingMessages(); 
 			  }
 			
@@ -324,10 +367,10 @@ public class MidiMessageTypes {
 			}
 			
 			public void noColorFirst(boolean bool){
-				condition = bool;
+				noColorFirst = bool;
 			}
 			public boolean getNoColorFirst(){
-				return condition;
+				return noColorFirst;
 			}
 			
 }

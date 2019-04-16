@@ -101,25 +101,29 @@ public  class Metronome implements MetaEventListener {
 	
        public void stopLoop() {
 		sequencer.stop();
+		//return to standard tempo for when user goes to different features
+		 sequencer.setTempoInBPM(120);
+		//This stops metronome affecting playing MIDI file tempo
+    	sequencer.close();
 	    }
 
    	public JPanel tempoSlider() {
    		
    		JPanel instancePanel = new JPanel();
    		int featureWidth = SwingComponents.getInstance().getScreenWidth();
-   		instancePanel.setBackground(Color.decode("#6495ED"));
+   		instancePanel.setBackground(Color.decode("#303030"));
    		tempoSlider = new JSlider(0, 218, (int)defaultScaleBPM);
    	    //DOES NOT NEED MINIMUM SIZE - RUINS SCALING	#6495ED
-   		tempoSlider.setPreferredSize(new Dimension (featureWidth/4 - 20, featureWidth/8));
+   		tempoSlider.setPreferredSize(new Dimension (featureWidth/3 - 20, featureWidth/6));
    		tempoSlider.setForeground(Color.WHITE);
-   		tempoSlider.setBackground(Color.decode("#33CCFF"));
+   		tempoSlider.setBackground(Color.decode("#303030"));
    		tempoSlider.setPaintTrack(true); 
    		tempoSlider.setPaintTicks(true); 
    		tempoSlider.setPaintLabels(true); 
    		tempoSlider.setMajorTickSpacing(50); 
    		tempoSlider.setMinorTickSpacing(5); 
-   		tempoSlider.setOrientation(SwingConstants.HORIZONTAL);  
-   		tempoSlider.setFont(new Font("Serif", Font.ITALIC, 20)); 
+   		tempoSlider.setOrientation(SwingConstants.VERTICAL);  
+   		tempoSlider.setFont(new Font("Serif", Font.ITALIC, 22)); 
    		
    		tempoSlider.addChangeListener(new ChangeListener(){
    		 	public void stateChanged(ChangeEvent e) 
@@ -129,15 +133,16 @@ public  class Metronome implements MetaEventListener {
    		    } });
 
         currentTempo = new JLabel();
-        currentTempo.setText(tempoSlider.getValue()+" BPM");
+        currentTempo.setText("BPM: "+tempoSlider.getValue());
         currentTempo.setForeground(Color.WHITE);
+        currentTempo.setFont(new Font ("Tahoma",Font.BOLD,22));
         
         //DOES NOT NEED MINIMUM SIZE - RUINS SCALING
-        currentTempo.setPreferredSize(new Dimension (100, 40));
+        currentTempo.setPreferredSize(new Dimension (150, 40));
         
         instancePanel.add(currentTempo);
         instancePanel.add(tempoSlider);
-        instancePanel.setPreferredSize(new Dimension(featureWidth/4 - 20, featureWidth/8)); 
+        instancePanel.setPreferredSize(new Dimension(featureWidth/4 - 20, featureWidth/4)); 
 		return instancePanel;
 	}
 	 private void addNoteEvent(Track track, long tick) throws InvalidMidiDataException {

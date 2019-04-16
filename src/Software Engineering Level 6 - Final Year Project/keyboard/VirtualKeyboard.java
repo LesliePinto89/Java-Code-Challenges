@@ -45,9 +45,11 @@ public class VirtualKeyboard {
 	private ArrayList<JButton> naturalKeys = new ArrayList<JButton>();
 	private int screenWidth = (int) SwingComponents.getInstance().getScreenWidth();
 	private int screenHeight = (int) SwingComponents.getInstance().getScreenHeight();
-	private int PITCH_OCTAVE = 2;
+	private int PITCH_OCTAVE = 0;
 	private int START_WHOTE_NOTE_POSITION = screenWidth / 125;
-	private int START_SHARP_NOTE_POSITION = screenWidth / 45;
+//	private int START_SHARP_NOTE_POSITION = screenWidth / 45;
+	//Start for A#0
+	private int START_SHARP_NOTE_POSITION = screenWidth / 55;
 	private boolean userChoice;
 	
 	//Java Swing Components
@@ -66,9 +68,6 @@ public class VirtualKeyboard {
 	private GridBagConstraints aConstraint;
 	
 	private SwingComponents components = SwingComponents.getInstance();
-	
-	
-
 	
 
 	////////////////////////
@@ -102,33 +101,51 @@ public class VirtualKeyboard {
 	 * 
 	 */
 	public void createSharpKeys() throws InvalidMidiDataException, MidiUnavailableException {
-		PITCH_OCTAVE = 1;
+		PITCH_OCTAVE = 0;
+		int counter =0;
+		boolean end = false;
 		EnumSet<Note.SharpNoteType> sharpKeysEnums = EnumSet.allOf(Note.SharpNoteType.class);
-		while (PITCH_OCTAVE < 6) {
+		while (PITCH_OCTAVE < 8) {
+			if (end) {
+				break;
+			}
 			for (Note.SharpNoteType getNote : sharpKeysEnums) {
 				if (getNote.getSharp().equals("C#")) {
 					PITCH_OCTAVE++;
-
 				}
 				JButton button = new JButton(getNote.getSharp() + Integer.toString(PITCH_OCTAVE));
-				if (button.getText().startsWith("C") && PITCH_OCTAVE >= 3) {
-					START_SHARP_NOTE_POSITION += screenWidth / 55;
+				if (button.getText().startsWith("C") && PITCH_OCTAVE > 0) {
+//					START_SHARP_NOTE_POSITION += screenWidth / 55;
+					START_SHARP_NOTE_POSITION += screenWidth / 105;
 				}
-
 				else if (button.getText().startsWith("F")) {	
-					START_SHARP_NOTE_POSITION += screenWidth / 42;
-				}
-				
-				button.setBounds(START_SHARP_NOTE_POSITION, 145, screenWidth / 55, 126);
+//					START_SHARP_NOTE_POSITION += screenWidth / 42;
+					START_SHARP_NOTE_POSITION += screenWidth / 122;
+				}		
+//				button.setBounds(START_SHARP_NOTE_POSITION, 145, screenWidth / 55, 126);
+				button.setBounds(START_SHARP_NOTE_POSITION, 145, screenWidth / 70, 126);
 				button.setFont(new Font("Arial", Font.PLAIN, 6));
 				button.setVerticalAlignment(SwingConstants.BOTTOM);
 				button.setMargin(new Insets(1, 1, 1, 1));
-
 				styleKeys(button);
 				storeButtons(button);
-				START_SHARP_NOTE_POSITION += screenWidth / 35.5;
+//				START_SHARP_NOTE_POSITION += screenWidth / 35.5;
+				
+				if (counter ==35) {
+					end =true;
+					break;
+				}	
+				else if (button.getText().startsWith("G")) {	
+//						START_SHARP_NOTE_POSITION += screenWidth / 42;
+						START_SHARP_NOTE_POSITION += screenWidth / 55.5;
+					}
+				 else{
+				START_SHARP_NOTE_POSITION += screenWidth / 45.5;
+				}
+				 counter++;
 			}
 		}
+		 counter =100;
 	}
 
 	/**
@@ -137,18 +154,21 @@ public class VirtualKeyboard {
 	 */
 	public void createWholeKeys() throws InvalidMidiDataException, MidiUnavailableException {
 
+		
 		EnumSet<Note.NoteType> naturalKeysEnums = EnumSet.allOf(Note.NoteType.class);
 		boolean endOctave = false;
 		while (endOctave == false) {
 			for (Note.NoteType getNote : naturalKeysEnums) {
 				JButton button = new JButton(getNote.toString() + Integer.toString(PITCH_OCTAVE));
-				button.setBounds(START_WHOTE_NOTE_POSITION, 145, screenWidth / 37, 196);
+				
+//				button.setBounds(START_WHOTE_NOTE_POSITION, 145, screenWidth / 37, 196);
+				button.setBounds(START_WHOTE_NOTE_POSITION, 145, screenWidth / 58, 196);
 				button.setFont(new Font("Arial", Font.PLAIN, 10));
 				button.setVerticalAlignment(SwingConstants.BOTTOM);
 				button.setMargin(new Insets(1, 1, 1, 1));
 
 				// Fixed octave number matches 61 notes keyboard
-				if (getNote.toString().equals("C") && PITCH_OCTAVE == 7) {
+				if (getNote.toString().equals("C") && PITCH_OCTAVE == 8) {
 					styleKeys(button);
 					storeButtons(button);
 					endOctave = true;
@@ -157,10 +177,13 @@ public class VirtualKeyboard {
 				styleKeys(button);
 				storeButtons(button);
 
-				START_WHOTE_NOTE_POSITION += screenWidth / 38;
+//				START_WHOTE_NOTE_POSITION += screenWidth / 38;
+				//Fits in piano
+				START_WHOTE_NOTE_POSITION += screenWidth / 55;
 				if (getNote.toString().equals("B")) {
 					PITCH_OCTAVE++;
 				}
+				
 			}
 		}
 	}
@@ -307,8 +330,6 @@ public class VirtualKeyboard {
 	 * 
 	 */
 	public void drawKeyboardGUI(boolean mode) throws InvalidMidiDataException, MidiUnavailableException, IOException {
-
-		
 		contentPane.setLayout(new GridBagLayout());
 		if (mode == false) {
 			
@@ -319,26 +340,11 @@ public class VirtualKeyboard {
 
 		else if (mode == true) {
 			learnGuiFrame = components.customJFrame("", screenWidth, screenHeight, contentPane, null);
-			contentPane.setBackground(Color.decode("#4169E1"));
+			contentPane.setBackground(Color.decode("#202020"));
 			learnGuiFrame.setName("6100COMP: Computer Music Education Application -Learn Mode");
 		}
 	}
 
-	
-	
-	
-//	public void home(){
-//	
-//			if(userChoice){
-//				learnGuiFrame.setVisible(false);
-//			}
-//			else {
-//			freeGuiFrame.setVisible(false);
-//			}
-//			ProgramMainGUI.getInstance().enableFrame();
-//	}
-	
-	
 	/**
 	 * Main keyboard layout, with method calls to its various components.
 	 * 
@@ -348,13 +354,8 @@ public class VirtualKeyboard {
 	 */
 	public void createVirtualKeyboard(boolean mode)
 			throws InvalidMidiDataException, MidiUnavailableException, IOException {
-
-		
-		
 		userChoice = mode;
-
 		drawKeyboardGUI(mode);
-		
 		if (mode) {
 			addFeatureTabs();
 			learnMode();
@@ -378,56 +379,45 @@ public class VirtualKeyboard {
 
 	public void learnMode() throws InvalidMidiDataException {
 		addScreenPrompt();
-
 	}
 
 	public JPanel createSpeaker() throws IOException {
-
-		JPanel speakerOne = new JPanel(new GridBagLayout());
-		speakerOne.setBackground(Color.black);
-
-		// speakerOne.setBorder(BorderFactory.createMatteBorder(2, 2, 2,
-		// 2,Color.GRAY));
-		speakerOne.setPreferredSize(new Dimension(300, 100));
-		speakerOne.setMinimumSize(new Dimension(300, 100));
-
-		// Chosen button holder color
-		speakerOne.setBackground(Color.decode("#303030"));
-
-		// Removing layout makes the inenr oane;s color show through
+		JPanel speaker = new JPanel(new GridBagLayout());
+		speaker.setBackground(Color.black);
+		speaker.setPreferredSize(new Dimension(300, 100));
+		speaker.setMinimumSize(new Dimension(300, 100));
+		speaker.setBackground(Color.decode("#303030"));
+		
 		JPanel holdSpeaker = new JPanel(new GridBagLayout());
 		holdSpeaker.setPreferredSize(new Dimension(290, 90));
 		holdSpeaker.setMinimumSize(new Dimension(290, 90));
-		// holdSpeaker.setBackground(Color.BLUE);
-
 		GridBagConstraints speakerConstraints = new GridBagConstraints();
 		speakerConstraints.fill = GridBagConstraints.BOTH;
-		speakerOne.add(holdSpeaker);
+		speaker.add(holdSpeaker);
 
 		BufferedImage image = ImageIO.read(new File("src/Images/Speaker Grill 4.jpg"));
-
 		Image dimg = image.getScaledInstance(screenWidth / 4, screenHeight / 2, Image.SCALE_SMOOTH);
 		JLabel picLabel = new JLabel(new ImageIcon(dimg));
 		holdSpeaker.add(picLabel);
 
-		return speakerOne;
+		return speaker;
 	}
 
 	public void drawPiano() throws IOException, InvalidMidiDataException {
 		aConstraint = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);
 		aConstraint.anchor =GridBagConstraints.PAGE_END;
 		aConstraint.gridwidth = 2;
-
-		// Black Panel
+		
 		if (freeGuiFrame !=null) {
 		pianoBackingPanel = components.customPanelTwo(freeGuiFrame.getWidth() - 50, 322, Color.decode("#0D0707"),
-				new GridBagLayout());}
-		
+				new GridBagLayout());
+		}
 		else if (learnGuiFrame !=null) {
 			pianoBackingPanel = components.customPanelTwo(learnGuiFrame.getWidth() - 50, 322, Color.decode("#0D0707"),
 					new GridBagLayout());
 			}
 		
+		// Black Panel
 		pianoBackingPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 		contentPane.add(pianoBackingPanel, aConstraint);
 
@@ -441,26 +431,19 @@ public class VirtualKeyboard {
 		aConstraint.anchor =GridBagConstraints.CENTER;
 		aConstraint.gridwidth = 5;
 		aConstraint.gridheight = 0; // To carry size
-
 		redPanelkeysHolder = components.customPanelTwo(screenWidth - 90, 122, Color.decode("#8C1400"), new BorderLayout());
 		pianoBackingPanel.add(redPanelkeysHolder, aConstraint);
-		
-		
 		redPanelkeysHolder.add(allPianoKeysLayeredPanel, BorderLayout.CENTER);
-
+		
 		aConstraint = components.conditionalConstraints(1, 1, 0, 0, GridBagConstraints.NONE);
 		aConstraint.anchor = GridBagConstraints.LINE_START;
-		
-		
 		JPanel speakerOne = createSpeaker();
 		controlPanel.add(speakerOne, aConstraint);
-
 		aConstraint = components.conditionalConstraints(1, 1, 1, 0,GridBagConstraints.HORIZONTAL);
-		
 		aConstraint.anchor = GridBagConstraints.LINE_START;
-		
 		aConstraint.insets = new Insets(0, 0, 0, 0);
 		aConstraint.gridwidth = 1;
+		
 		int panelSize = (int) controlPanel.getPreferredSize().getHeight();
 		buttonHolder.setBorder(BorderFactory.createMatteBorder(3, 3, 3, 3, Color.decode("#303030")));
 		buttonHolder.setPreferredSize(new Dimension(screenWidth / 3 + 210, panelSize - 20));
@@ -477,7 +460,6 @@ public class VirtualKeyboard {
 		buttonHolder.add(innerButtonHolder, aConstraint);
 
 		aConstraint = components.conditionalConstraints(1, 1, 2, 0, GridBagConstraints.NONE);
-		
 		aConstraint.anchor = GridBagConstraints.LINE_END;
 		aConstraint.gridwidth = 1;
 		JPanel speakerTwo = createSpeaker();
@@ -486,7 +468,6 @@ public class VirtualKeyboard {
 
 	public void addFeatureTabs() throws InvalidMidiDataException {
 		JTabbedPane getFeatures = FeatureTabs.getInstance().createTabbedBar();
-		
 		aConstraint = components.conditionalConstraints(1, 1, 0, 0,	GridBagConstraints.NONE);
 		aConstraint.anchor = GridBagConstraints.FIRST_LINE_START;
 		aConstraint.gridwidth =1;
@@ -495,13 +476,10 @@ public class VirtualKeyboard {
 	}
 
 	public void addScreenPrompt() throws InvalidMidiDataException {
-		
 		aConstraint = components.conditionalConstraints(1, 1, 0, 0,	GridBagConstraints.NONE);
 		aConstraint.anchor = GridBagConstraints.FIRST_LINE_END;
 		aConstraint.gridwidth =1;
-		
 		aConstraint.insets = new Insets (0,0,0,18);
-		
 		originalScreenPrompt = ScreenPrompt.getInstance().createCurrentPromptState();
 		contentPane.add(originalScreenPrompt, aConstraint);
 	}
@@ -510,15 +488,12 @@ public class VirtualKeyboard {
 		aConstraint = components.conditionalConstraints(1, 1, 0, 0,GridBagConstraints.NONE);
 		aConstraint.anchor = GridBagConstraints.FIRST_LINE_END;
 		aConstraint.gridwidth =1;
-
 		aConstraint.insets = new Insets (0,0,0,18);
-		
 		contentPane.remove(originalScreenPrompt);
 		originalScreenPrompt = ScreenPrompt.getInstance().createCurrentPromptState();
 		contentPane.add(originalScreenPrompt, aConstraint);
 		// Needed to show update of JPanel after remove to update
 		contentPane.validate();
 		contentPane.repaint();
-
 	}
 }

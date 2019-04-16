@@ -240,7 +240,7 @@ public class PlaybackFunctions {
 
 		else if (swingComponents.getColorToggleStatus()) {
 			storedPreColorNotes(intervalNote);
-			colorChordsAndScales(intervalNote, Color.BLUE);
+			colorChordsAndScales(intervalNote, Color.YELLOW);
 		}
 		ShortMessage noteOne = new ShortMessage(ShortMessage.NOTE_ON, 0, intervalNote.getPitch(), 50);
 		PlayBackDevices.getInstance().send(noteOne, -1);
@@ -275,7 +275,7 @@ public class PlaybackFunctions {
 		for (Note aNote : notesInChord) {
 			if (swingComponents.getColorToggleStatus()) {
 				storedPreColorNotes(aNote);
-				colorChordsAndScales(aNote, Color.BLUE);
+				colorChordsAndScales(aNote, Color.YELLOW);
 			}
 
 			ShortMessage noteOne = new ShortMessage(ShortMessage.NOTE_ON, 0, aNote.getPitch(), 50);
@@ -300,7 +300,7 @@ public class PlaybackFunctions {
 			// Add second condition to other methods if needed
 			else if (swingComponents.getColorToggleStatus() || swingComponents.getRangeColorToggleStatus()) {
 				storedPreColorNotes(aNote);
-				colorChordsAndScales(aNote, Color.BLUE);
+				colorChordsAndScales(aNote, Color.YELLOW);
 
 			}
 		}
