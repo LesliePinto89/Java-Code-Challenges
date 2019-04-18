@@ -6,6 +6,10 @@ import javax.sound.midi.InvalidMidiDataException;
 import keyboard.Note;
 import tools.PlaybackFunctions;
 
+/**
+ * This class creates a support list of defined arpeggios for the user to select
+ * when playing a chord progression.
+ */
 public class TypesOfArpeggios {
 
 	private ArrayList<Note> brokenNotes = new ArrayList<Note>();
@@ -31,25 +35,34 @@ public class TypesOfArpeggios {
 		return instance;
 	}
 
+	/**
+	 * The implemented arpeggios for the user to choose. Each selection affects
+	 * the set of notes played in addition to the base "Clear" progression.
+	 * 
+	 * @param name
+	 *            - The select arpeggio name from the list of names
+	 * @param currentProgChord
+	 *            - The progression created to play
+	 */
 	public void createApreggio(String name, Chord currentProgChord) {
 		try {
 			switch (name) {
 			case "Clean":
 				break;
-			
+
 			case "Adventure":
 				adventureApreggio(currentProgChord);
 				playApreggio(200, 62);
 				break;
-			
+
 			case "Fine":
 				fineApreggio(currentProgChord);
 				playApreggio(300, 62);
 				break;
-			
+
 			case "Reflective":
 				reflectiveApreggio(currentProgChord);
-				playApreggio(400, 62);
+				playApreggio(400, 1000);
 				break;
 
 			case "Exciting":
@@ -70,6 +83,7 @@ public class TypesOfArpeggios {
 		return boxChoice;
 	}
 
+	/** Arpeggio 1 */
 	public void fineApreggio(Chord currentProgChord) {
 		brokenNotes = new ArrayList<Note>();
 		int size = currentProgChord.getChordNotes().size() - 1;
@@ -84,6 +98,7 @@ public class TypesOfArpeggios {
 		brokenNotes.add(brokenNotes.get(1));
 	}
 
+	/** Arpeggio 2 */
 	public void reflectiveApreggio(Chord currentProgChord) {
 		brokenNotes = new ArrayList<Note>();
 		int size = currentProgChord.getChordNotes().size() - 1;
@@ -98,6 +113,7 @@ public class TypesOfArpeggios {
 		brokenNotes.add(brokenNotes.get(1));
 	}
 
+	/** Arpeggio 3 */
 	public void excitingApreggio(Chord currentProgChord) {
 		brokenNotes = new ArrayList<Note>();
 		int size = currentProgChord.getChordNotes().size() - 1;
@@ -115,6 +131,7 @@ public class TypesOfArpeggios {
 		brokenNotes.add(brokenNotes.get(1));
 	}
 
+	/** Arpeggio 4 */
 	public void adventureApreggio(Chord currentProgChord) {
 		brokenNotes = new ArrayList<Note>();
 		int i = 0;
@@ -135,6 +152,17 @@ public class TypesOfArpeggios {
 		Collections.reverse(brokenNotes);
 	}
 
+	/**
+	 * Plays the arpeggio during and outside the timings of the current
+	 * progression. Acts as a form of melody as it is uses broken arpeggios.
+	 * 
+	 * @param intervalTime
+	 *            - The amount of time for all intervals to wait while the
+	 *            arpeggio is playing.
+	 * @param restTime
+	 *            - The amount of time to wait after arpeggio has finished to
+	 *            play next chord in progression sequence.
+	 */
 	public void playApreggio(int intervalTime, int restTime) throws InvalidMidiDataException {
 		for (Note aNote : brokenNotes) {
 			PlaybackFunctions.playIntervalNote(aNote);

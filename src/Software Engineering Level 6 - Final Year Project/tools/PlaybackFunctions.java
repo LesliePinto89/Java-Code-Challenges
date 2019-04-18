@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.ShortMessage;
-import javax.speech.AudioException;
-import javax.speech.EngineException;
-import javax.speech.EngineStateError;
 import javax.swing.JButton;
 import keyboard.Note;
 import keyboard.VirtualKeyboard;
@@ -18,6 +15,9 @@ import midi.MidiMessageTypes;
 import midi.Scale;
 import midiDevices.PlayBackDevices;
 
+/**
+ * This class defines all interaction MIDI play back and colour mode.
+ */
 public class PlaybackFunctions {
 
 	private static ArrayList<Note> storedPreColorChords = new ArrayList<Note>();
@@ -30,18 +30,33 @@ public class PlaybackFunctions {
 	private static int direction;
 	private static boolean displayOrPlayScale;
 
-	public static void colorChordsAndScales(Note aNote, Color aColor) {
+	/**
+	 * This method updates the argument note's colour on the internal
+	 * controller. The system traverses all piano keys in memory (data structure
+	 * of JButtons), and when it finds button whose pitch matches the note's
+	 * pitch, it changes the colour using the argument colour.
+	 * 
+	 * @param aNote
+	 *            - The note to have its colour changed
+	 * @param aColor
+	 *            - The colour to change the note to.
+	 */
+	public static void colorChordsAndScales(Note aNote, Color aColour) {
 		JButton foundButton;
 		Collection<JButton> buttonNotes = VirtualKeyboard.getInstance().getButtons();
 		for (JButton buttonNote : buttonNotes) {
 			if (buttonNote.getText().equals(aNote.getName())) {
 				foundButton = buttonNote;
-				foundButton.setBackground(aColor);
+				foundButton.setBackground(aColour);
 				break;
 			}
 		}
 	}
 
+	/**
+	 * Retrieves the last stored set of chord notes, and resets them back to
+	 * their original colour. Used mainly in feature 1 and 2.
+	 */
 	public static void resetChordsColor() {
 		ArrayList<Note> getOriginal = getStoredPreNotes();
 		for (Note aNote : getOriginal) {
@@ -53,8 +68,11 @@ public class PlaybackFunctions {
 		}
 	}
 
+	/**
+	 * Retrieves the last stored scale's notes, and resets them back to their
+	 * original colour. Used mainly in feature 3 and 4.
+	 */
 	public static void resetScaleDisplayColor() {
-		// ArrayList<Note> getOriginal = getStoredPreNotes();
 		Scale currentScale = ListOfScales.getInstance().getDisplayedScaleNotes();
 		for (Note aNote : currentScale.getScaleNotesList()) {
 			if (aNote.getType().equals("Sharp")) {
@@ -65,9 +83,14 @@ public class PlaybackFunctions {
 		}
 	}
 
+	/**
+	 * This method is used in the feature set 4: relative pitch. It resets the
+	 * colour of the previously stored note in memory one at a time. This
+	 * includes when a random note is chosen, or the next traversal note is
+	 * chosen.It is also used in feature set 3.
+	 */
 	public static void resetLastNoteColor() {
 		Note lastNote = null;
-		// boolean test = MidiMessageTypes.getInstance().getRandomState();
 		if (MidiMessageTypes.getInstance().getRandomState()) {
 			lastNote = storedPreColorChords.get(randomIntervalCounter - 1);
 		} else if (MidiMessageTypes.getInstance().getMelodyInterval()) {
@@ -84,15 +107,22 @@ public class PlaybackFunctions {
 
 		} else {
 			colorChordsAndScales(lastNote, Color.WHITE);
-
 		}
 	}
-	
-	//Only use when the user plays using an actual MIDI keyboard
+
+	/**
+	 * This method resets the colour of the notes playing on an external MIDI
+	 * keyboard during live play, and in a recorded sequence for the internal
+	 * controller and external keyboard. Both input methods work with the same
+	 * automatic colour mode, but the external keyboard provides the pitch
+	 * argument, rather than getting it through a JButton / note. It also resets
+	 * a JButton's colour on the internal controller while the MIDI file player
+	 * is playing a song.
+	 */
 	public static void resetLastNotePianoColor(int pitch) {
 		Note lastNote = null;
-		for (Note aNote : storedPreColorChords){
-			if(aNote.getPitch() == pitch){
+		for (Note aNote : storedPreColorChords) {
+			if (aNote.getPitch() == pitch) {
 				lastNote = aNote;
 				break;
 			}
@@ -102,24 +132,6 @@ public class PlaybackFunctions {
 
 		} else {
 			colorChordsAndScales(lastNote, Color.WHITE);
-		}
-	}
-
-	public static void resetNextNoteColor() {
-		Note lastNote = null;
-		// boolean test = MidiMessageTypes.getInstance().getRandomState();
-		if (MidiMessageTypes.getInstance().getRandomState()) {
-			lastNote = storedPreColorChords.get(randomIntervalCounter - 1);
-		} else if (MidiMessageTypes.getInstance().getMelodyInterval()) {
-			lastNote = storedPreColorChords.get(intervalPrevCounter - 1);
-		}
-
-		if (lastNote.getType().equals("Sharp")) {
-			colorChordsAndScales(lastNote, Color.BLACK);
-
-		} else {
-			colorChordsAndScales(lastNote, Color.WHITE);
-
 		}
 	}
 
@@ -195,6 +207,7 @@ public class PlaybackFunctions {
 		return direction;
 	}
 
+	/** Uses epoch time to create a res-usable, custom time delay feature. */
 	public static void timeDelay(int fixedTime) {
 		Instant instantOnTime = Instant.now();
 		long startTime = instantOnTime.toEpochMilli();
@@ -210,6 +223,15 @@ public class PlaybackFunctions {
 
 	///////////////////////////////////
 
+	/**
+	 * Used in feature set 4: Relative pitch. This processes the user's
+	 * interactions with the random and next traversal actions. Each time an
+	 * action is triggered, its pitch sound is played while its representation
+	 * on the internal controller has its colour changed.
+	 * 
+	 * @param intervalNote
+	 *            - The type of note selected by the user
+	 */
 	public static void playIntervalNote(Note intervalNote) throws InvalidMidiDataException {
 		SwingComponents swingComponents = SwingComponents.getInstance();
 		MidiMessageTypes messages = MidiMessageTypes.getInstance();
@@ -222,11 +244,6 @@ public class PlaybackFunctions {
 		// Only applied to relative pitch mode, with next interval
 		else if (swingComponents.getColorToggleStatus() && messages.getMelodyInterval() && medoldicIndexCounter >= 1) {
 			resetLastNoteColor();
-		}
-
-		// Only applied to relative pitch mode, with next interval
-		else if (swingComponents.getColorToggleStatus() && messages.getMelodyInterval() && intervalPrevCounter >= 1) {
-			resetNextNoteColor();
 		}
 
 		// Use for feature set 3 only
@@ -269,6 +286,15 @@ public class PlaybackFunctions {
 		}
 	}
 
+	/**
+	 * The chord to be played through the user's interactions with the feature
+	 * sets. Each chord played has its matching JButtons on the internal
+	 * controller change colour.
+	 * 
+	 * @param foundChord
+	 *            - The chord to be played on the internal controller, and to
+	 *            also have the matching JButton changes colour in relation.
+	 */
 	public static void playAnyChordLength(Chord foundChord) throws InvalidMidiDataException, InterruptedException {
 		SwingComponents swingComponents = SwingComponents.getInstance();
 		ArrayList<Note> notesInChord = foundChord.getChordNotes();
@@ -283,9 +309,18 @@ public class PlaybackFunctions {
 		}
 	}
 
-	// This function display scale's notes and plays the indidivuasl notes only,
-	// when the
-	// first condition is true
+	/**
+	 * This is used in feature set 3 and 4's display scale command. For feature
+	 * set 3, this method only plays the degrees in a scale one a time, without
+	 * colour automatically enabled. For the latter, it does not play the
+	 * scale's degree pitches, it only displays their degrees on the internal
+	 * controller in colour mode.
+	 * 
+	 * @param foundScale
+	 *            - The scale to play output without colour mode enable, or
+	 *            enter colour mode on the internal controller, without pitch
+	 *            output.
+	 */
 	public static void displayOrPlayScale(Scale foundScale) throws InvalidMidiDataException, InterruptedException {
 
 		SwingComponents swingComponents = SwingComponents.getInstance();

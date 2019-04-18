@@ -1,5 +1,4 @@
 package tools;
-
 import java.util.ArrayList;
 import java.util.Locale;
 import javax.speech.AudioException;
@@ -34,18 +33,20 @@ public class TTS {
 	}
 
 	/**
-	 * When the system plays the current selected progression,
-	 * each chord in the progression has its name out utilises the "FreetTTS" engine to output speech for given feature
-	 * text.
+	 * When the system plays the current selected progression,is converted 
+	 * from music theory notation to natural language numbers.
+	 * @param sequence - The text name of the given progressoin's sequence name
+	 * @return  The list containing the natural language version of the 
+	 * argument's sequence
 	 */
-	public ArrayList<String> createProgressionTTS(String text) {
+	public ArrayList<String> createProgressionTTS(String sequence) {
 		ArrayList<String> convertToNumerals = new ArrayList<String>();
 		int numeralListIndex = 0;
 		ArrayList<String> getStoredInnerNumerals = ChordProgression.getNamedNumberOfNumeral();
 		ArrayList<String> getStoredOuterNumerals = ChordProgression.getNamedOnlyNumberOfNumeral();
 
 		for (int l = 0; l < getStoredOuterNumerals.size(); l++) {
-			if (text.equals(getStoredOuterNumerals.get(numeralListIndex))) {
+			if (sequence.equals(getStoredOuterNumerals.get(numeralListIndex))) {
 				convertToNumerals.add(getStoredInnerNumerals.get(numeralListIndex).toString());
 				break;
 			}
@@ -54,6 +55,12 @@ public class TTS {
 		return convertToNumerals;
 	}
 
+	/**
+	 * This function takes in a chord or inverted chord, and
+	 * creates in natural language name from its music theory notation name.
+	 * @param foundChord - This given type of chord to output its name.
+	 * @return  The natural language version of the chord argument's name.
+	 */
 	public String theoryToTTS(Chord foundChord) {
 		PlaybackFunctions.timeDelay(1000);
 		String name = foundChord.getChordNotes().get(0).getName();
@@ -128,6 +135,12 @@ public class TTS {
 		return editedNote;
 	}
 
+	/**
+	 * When the system plays the current selected progression,is converted 
+	 * from music theory notation to natural language numbers.
+	 * @param feature - The name of the given feature set to process TTS.
+	 * @param text - The type of text to process with the specified feature
+	 */
 	public void prepareFunction(String feature, String text)
 			throws EngineException, EngineStateError, IllegalArgumentException, InterruptedException, AudioException {
 
@@ -135,7 +148,7 @@ public class TTS {
 			@Override
 			public void run() {
 				try {
-					// Use shared volative boolean, is triggered to true
+					// Use shared volatile boolean, is triggered to true
 					// depending on which feature state uses it.
 					// This is because previous and home makes it true and this
 					// is reflected here

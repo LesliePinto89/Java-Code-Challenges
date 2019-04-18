@@ -1,5 +1,4 @@
 package midi;
-
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import keyboard.Note;
@@ -7,6 +6,10 @@ import midi.ChordProgression.chordSymbol;
 import midi.ChordProgression.majorChordProgressions;
 import midi.ChordProgression.minorChordProgressions;
 
+/**
+ * This class handles the data structures that creates the chord progression
+ * feature, its quiz feature, and elements of the genre feature.
+ */
 public class ChordProgressionActions {
 
 	private ChordProgression chordProgression;
@@ -46,7 +49,6 @@ public class ChordProgressionActions {
 	}
 
 	public void storeMajorProgressionInList() {
-
 		majorChordProgressions[] majorProgressions = majorChordProgressions.values();
 		for (majorChordProgressions prog : majorProgressions) {
 			String progresion = prog.chord;
@@ -54,8 +56,8 @@ public class ChordProgressionActions {
 			storeMajorChordProgressions.addElement(progresion);
 		}
 	}
-	
-	public ArrayList <String> getMajorProgsNames(){
+
+	public ArrayList<String> getMajorProgsNames() {
 		return majorAsString;
 	}
 
@@ -87,10 +89,24 @@ public class ChordProgressionActions {
 		return storeAllChordProgressions;
 	}
 
-	// Makes a standard progression called Strong, rather than a fractured
-	// progression
-	public ChordProgression makeChordProgression(String name, Scale currentScale, String[] sections) {
-
+	/**
+	 * This function can create a custom progression by using the required
+	 * parameter data from arguments. The type of progression is "Strong",
+	 * rather than fractured.
+	 * 
+	 * @param sequenceName
+	 *            - The sequence used to get chords from either the minor or
+	 *            major scale
+	 * @param currentScale
+	 *            - The scale used to get chords from the argument sequence
+	 *            string.
+	 * @param sections
+	 *            - This array contains the sequence split into its individual
+	 *            char values.
+	 * @return aProgression - The new chord progression to be used by the
+	 *         calling function
+	 */
+	public ChordProgression makeChordProgression(String sequenceName, Scale currentScale, String[] sections) {
 		ArrayList<Chord> tempProgression = new ArrayList<Chord>();
 		Chord rootChord = null;
 		for (String aString : sections) {
@@ -109,7 +125,7 @@ public class ChordProgressionActions {
 			tempProgression.add(editedChord);
 		}
 		tempProgression.add(rootChord);
-		ChordProgression aProgression = new ChordProgression(name, tempProgression);
+		ChordProgression aProgression = new ChordProgression(sequenceName, tempProgression);
 		return aProgression;
 	}
 

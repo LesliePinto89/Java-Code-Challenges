@@ -5,50 +5,45 @@ import java.util.Collections;
 import javax.sound.midi.InvalidMidiDataException;
 import keyboard.Note;
 import keyboard.Note.allNotesType;
-import tools.PlaybackFunctions;
 
+/**
+ * This class handles all the variations of chord manipulation in the system.
+ * This includes chords from a given scale, storing all chords in memory to be
+ * gathered later, and chord inversion.
+ */
 public class ListOfChords {
 
-	private Note rootNote; // tonic
-	private Note secondNote; // supertonic
-	private Note thirdNote; // mediant
-	private Note fourthNote; // subdominant
-	private Note fifthNote; // dominant
-	private Note sixthNote; // submediant
-	private Note seventhNote; // subtonic
-	private Note newTonicNote; // tonal note / new tonic
+	// Traditional note positions in a chord
+	////////////////////////////////////////
+	private Note rootNote; // tonic (first)
+	private Note secondNote; // supertonic (second)
+	private Note thirdNote; // mediant (third)
+	private Note fourthNote; // subdominant (fourth)
+	private Note fifthNote; // dominant (fifth)
+	private Note sixthNote; // submediant (sixth)
+	private Note seventhNote; // subtonic (seventh)
 
 	private boolean inverted = false;
-	private int scalesWithKeysChordsIndex =0;
-
-	private ArrayList<Chord> allMajorChords;	
+	private ArrayList<Chord> allMajorChords;
 	private ArrayList<Chord> allMinorChords;
 	private ArrayList<Chord> allHalfDimishedChords;
 	private ArrayList<Chord> allBlueChords;
 	private ArrayList<Chord> fillerBlueChord;
 	private ArrayList<Chord> allFullyDimishedChords;
 	private ArrayList<Chord> allDominantDimishedChords;
-	
-	private ArrayList <Note> noteNames = new ArrayList<Note>(); 
-	private ArrayList <String> noteNamesStrings = new ArrayList<String>(); 
-	private ArrayList<GivenKeyChords> allKeysChords = new ArrayList<GivenKeyChords>(); //Store all key chords to link back to the name
+
+	private ArrayList<Note> noteNames = new ArrayList<Note>();
+	private ArrayList<String> noteNamesStrings = new ArrayList<String>();
+	private ArrayList<GivenKeyChords> allKeysChords = new ArrayList<GivenKeyChords>();
+
+	// Store all key chords to link back to the name
 	private ArrayList<GivenKeyScales> allScalesChords = new ArrayList<GivenKeyScales>();
 	private ArrayList<Chord> keptMajors = new ArrayList<Chord>();
 	private ArrayList<Chord> keptMinors = new ArrayList<Chord>();
-	
-	
-	//Omit for now due to time constraints
-//	private ArrayList<Chord> allNonScaleChords;
-//	private ArrayList<Chord> allLydianChords;	
-//	private ArrayList<Chord> allMixolydianChords;
-//	private ArrayList<Chord> allDorianChords;
-	
 	private Chord currentInversion; // Store any chord inversions
 	private Chord firstInversion; // Store any chord inversions
-	
-
-	
 	private static volatile ListOfChords instance = null;
+
 	private ListOfChords() {
 	}
 
@@ -60,267 +55,277 @@ public class ListOfChords {
 				}
 			}
 		}
-
 		return instance;
 	}
-	
-	//Add support for more octaves
-	public void setAllKeyNotes(){
+
+	/**
+	 * Creates the range of notes to allocate to the feature sets to be used for
+	 * their content played on the internal controller.E.G. C Thirteen wont have
+	 * notes any higher than C3 or C5.
+	 */
+	public void setAllKeyNotes() {
 		allNotesType[] enumsToString = Note.allNotesType.values();
-	for (allNotesType enumNote : enumsToString){
-		String foundNote = enumNote.getNote();
-		Note aNote = Note.getNotes(foundNote+3);
-		noteNames.add(aNote);	
-		noteNamesStrings.add(aNote.getName());
+		for (allNotesType enumNote : enumsToString) {
+			String foundNote = enumNote.getNote();
+			Note aNote = Note.getNotes(foundNote + 3);
+			noteNames.add(aNote);
+			noteNamesStrings.add(aNote.getName());
+		}
+		for (allNotesType enumNote : enumsToString) {
+			String foundNote = enumNote.getNote();
+			Note aNote = Note.getNotes(foundNote + 4);
+			noteNames.add(aNote);
+		}
+
+		for (allNotesType enumNote : enumsToString) {
+			String foundNote = enumNote.getNote();
+			Note aNote = Note.getNotes(foundNote + 5);
+			noteNames.add(aNote);
+		}
 	}
-	for (allNotesType enumNote : enumsToString){
-		String foundNote = enumNote.getNote();
-		Note aNote = Note.getNotes(foundNote+4);
-		noteNames.add(aNote);	
-	}
-	
-	//Cant add this one has 61 key keybaod does not support at max for major 13 chord, C7
-	for (allNotesType enumNote : enumsToString){
-		String foundNote = enumNote.getNote();
-		Note aNote = Note.getNotes(foundNote+5);
-		noteNames.add(aNote);	
-	    }
-	}
-	
-	public ArrayList<Note> getAllKeyNotes (){
+
+	public ArrayList<Note> getAllKeyNotes() {
 		return noteNames;
 	}
-	
-	public ArrayList<String> getAllKeyNotesStrings (){
+
+	public ArrayList<String> getAllKeyNotesStrings() {
 		return noteNamesStrings;
 	}
-	
-	public void loadMajorChords (ArrayList <Note> noteNames){
-		allKeysChords = new ArrayList <GivenKeyChords>();
-	Scale ionionScale = null;
-	for (Note aNote : noteNames){
-		if(aNote.getName().equals("G#5")){break;}
-		 ionionScale = ListOfScales.getInstance().majorOrIonianScale(aNote);
-		
-		//Keep major for quizes
-		ListOfScales.getInstance().keyDiatonicMajorScales(ionionScale);
-		/////////////////////////
-		
-		ListOfChords.getInstance().setMajorChords(ionionScale);
-		ArrayList<Chord> loadedScaleChords = getMajorChords();
-		keepMajor(loadedScaleChords);
-		
-		GivenKeyChords givenKeyChords = new GivenKeyChords(aNote.getName(),loadedScaleChords);
-		allKeysChords.add(givenKeyChords);
+
+	public void loadMajorChords(ArrayList<Note> noteNames) {
+		allKeysChords = new ArrayList<GivenKeyChords>();
+		Scale ionionScale = null;
+		for (Note aNote : noteNames) {
+			if (aNote.getName().equals("G#5")) {
+				break;
+			}
+			ionionScale = ListOfScales.getInstance().majorOrIonianScale(aNote);
+
+			// Keep major for quizzes
+			ListOfScales.getInstance().keyDiatonicMajorScales(ionionScale);
+			/////////////////////////
+
+			ListOfChords.getInstance().setMajorChords(ionionScale);
+			ArrayList<Chord> loadedScaleChords = getMajorChords();
+			keepMajor(loadedScaleChords);
+
+			GivenKeyChords givenKeyChords = new GivenKeyChords(aNote.getName(), loadedScaleChords);
+			allKeysChords.add(givenKeyChords);
+		}
+		GivenKeyScales givenKeyScale = new GivenKeyScales(ionionScale.getScaleName(), allKeysChords);
+		storeKeyScaleChords(givenKeyScale);
 	}
-	GivenKeyScales givenKeyScale = new GivenKeyScales(ionionScale.getScaleName(),allKeysChords);
-	storeKeyScaleChords(givenKeyScale);
-}
-		
-	public void keepMajor(ArrayList<Chord> current){
+
+	public void keepMajor(ArrayList<Chord> current) {
 		keptMajors.addAll(current);
 	}
-	
-	public ArrayList<Chord> getKeptMajors(){
+
+	public ArrayList<Chord> getKeptMajors() {
 		return keptMajors;
 	}
-	
-	public void loadMinorChords (ArrayList <Note> noteNames){
-		allKeysChords = new ArrayList <GivenKeyChords>();
+
+	public void loadMinorChords(ArrayList<Note> noteNames) {
+		allKeysChords = new ArrayList<GivenKeyChords>();
 		Scale minorScale = null;
-		for (Note aNote : noteNames){
-			if(aNote.getName().equals("G#5")){break;}
-			 minorScale = ListOfScales.getInstance().minorOrAeolianScale(aNote);
-			 
-			//Keep minor scales for quizes
-				ListOfScales.getInstance().keyDiatonicMinorScales(minorScale);
-				/////////////////////////
-				
+		for (Note aNote : noteNames) {
+			if (aNote.getName().equals("G#5")) {
+				break;
+			}
+			minorScale = ListOfScales.getInstance().minorOrAeolianScale(aNote);
+
+			// Keep minor scales for quizzes
+			ListOfScales.getInstance().keyDiatonicMinorScales(minorScale);
+			/////////////////////////
+
 			ListOfChords.getInstance().setMinorChords(minorScale);
 			ArrayList<Chord> loadedScaleChords = getMinorChords();
 			keepMinor(loadedScaleChords);
-			
-			GivenKeyChords givenKeyChords = new GivenKeyChords(aNote.getName(),loadedScaleChords);
+
+			GivenKeyChords givenKeyChords = new GivenKeyChords(aNote.getName(), loadedScaleChords);
 			allKeysChords.add(givenKeyChords);
 		}
-		GivenKeyScales givenKeyScale = new GivenKeyScales(minorScale.getScaleName(),allKeysChords);
+		GivenKeyScales givenKeyScale = new GivenKeyScales(minorScale.getScaleName(), allKeysChords);
 		storeKeyScaleChords(givenKeyScale);
 	}
-	
-	public void keepMinor(ArrayList<Chord> current){
+
+	public void keepMinor(ArrayList<Chord> current) {
 		keptMinors.addAll(current);
 	}
-	
-	public ArrayList<Chord> getKeptMinors(){
+
+	public ArrayList<Chord> getKeptMinors() {
 		return keptMinors;
 	}
-	
-	public void loadHalfDimishedChords (ArrayList <Note> noteNames){
-		allKeysChords = new ArrayList <GivenKeyChords>();
+
+	public void loadHalfDimishedChords(ArrayList<Note> noteNames) {
+		allKeysChords = new ArrayList<GivenKeyChords>();
 		Scale halfDiminishedScale = null;
-		for (Note aNote : noteNames){
+		for (Note aNote : noteNames) {
 			halfDiminishedScale = ListOfScales.getInstance().halfDiminishedScale(aNote);
 			ListOfChords.getInstance().setHalfDimishedChords(halfDiminishedScale);
 			ArrayList<Chord> loadedScaleChords = getHalfDimishedChords();
-			GivenKeyChords givenKeyChords = new GivenKeyChords(aNote.getName(),loadedScaleChords);
+			GivenKeyChords givenKeyChords = new GivenKeyChords(aNote.getName(), loadedScaleChords);
 			allKeysChords.add(givenKeyChords);
 		}
-		GivenKeyScales givenKeyScale = new GivenKeyScales(halfDiminishedScale.getScaleName(),allKeysChords);
+		GivenKeyScales givenKeyScale = new GivenKeyScales(halfDiminishedScale.getScaleName(), allKeysChords);
 		storeKeyScaleChords(givenKeyScale);
 	}
-	
-	public void loadFullyDiminishedScaleChords (ArrayList <Note> noteNames){
-		allKeysChords = new ArrayList <GivenKeyChords>();
+
+	public void loadFullyDiminishedScaleChords(ArrayList<Note> noteNames) {
+		allKeysChords = new ArrayList<GivenKeyChords>();
 		Scale fullyDiminishedScaleChords = null;
-		for (Note aNote : noteNames){
+		for (Note aNote : noteNames) {
 			fullyDiminishedScaleChords = ListOfScales.getInstance().fullyDiminishedScale(aNote);
 			ListOfChords.getInstance().setFullyDimishedScaleChords(fullyDiminishedScaleChords);
 			ArrayList<Chord> loadedScaleChords = getFullyDimishedScaleChords();
-			GivenKeyChords givenKeyChords = new GivenKeyChords(aNote.getName(),loadedScaleChords);
+			GivenKeyChords givenKeyChords = new GivenKeyChords(aNote.getName(), loadedScaleChords);
 			allKeysChords.add(givenKeyChords);
-		
+
 		}
-		GivenKeyScales givenKeyScale = new GivenKeyScales("No Scale",allKeysChords);
+		GivenKeyScales givenKeyScale = new GivenKeyScales("No Scale", allKeysChords);
 		storeKeyScaleChords(givenKeyScale);
 	}
-	
-	//Adds each full set of chords for each key in all scales 
+
+	// Adds each full set of chords for each key in all scales
 	public void storeKeyScaleChords(GivenKeyScales givenKeyScale) {
 		allScalesChords.add(givenKeyScale);
 	}
-	
+
 	public ArrayList<GivenKeyScales> getKeyScaleChords() {
 		return allScalesChords;
 	}
-	
-	
-	public Chord findChord (String noteName, String chordName){
-		GivenKeyChords found = null;
-		int i= 0;
-		if(chordName.equals("min")){
-			i =1;
-		}
-		
-		else if(chordName.equals("maj")){
-			i=0;
-		}
-		
-		for (GivenKeyChords test: allScalesChords.get(i).getScaleKeys()){
-                   if (test.getKeyName().equals(noteName)){
-                	   found = test;
-                	   break;
-                   }
-		}
-		Chord foundChord = null;
-		for (Chord findChord: found.getKeyChords()){
-            if (findChord.getChordName().equals(chordName)){
-            	foundChord = findChord;
-         	   break;
-            }
-        }
-		return foundChord;
-	}
-	
-	public Chord getChordFromKeyScale(String noteName,String scaleName) {
-		noteName +=3;
-		int i = 0;
-		ArrayList <String> MajorChords= Chord.getMajorEnums();
-		ArrayList <String> MinorChords= Chord.getMinorEnums();
-		ArrayList <String> HalfDimishedChords= Chord.getHalfDimsEnums();
-		ArrayList <String> FullyDimishedChords= Chord.getFullDimsEnums();
-		
-		
-		
-				if (MajorChords.contains(scaleName)){
-					i =0;
-				}
-				else if (MinorChords.contains(scaleName)){
-					i =1;
-				}
-				else if (HalfDimishedChords.contains(scaleName)){
-					i =2;
-				}
-				else if (FullyDimishedChords.contains(scaleName)){
-					i =3;
-				}
-				else {return null;}
 
+	/**
+	 * Processes a chord or scale name (for feature 1 and 5 respectfully), to
+	 * find the desired chord in memory.
+	 * 
+	 * @param i
+	 *            - index used to traverse chords from all scale in memory.
+	 * @param noteName
+	 *            - The name of the note (single letter) to find
+	 * @param chordOrScale
+	 *            - The argument for either feature 1 or 5
+	 * @return The found chord that matches the arguments provided.
+	 */
+	public <T> Chord getChord(int i, T noteName, T chordOrScale) {
 		GivenKeyChords found = null;
-		for (GivenKeyChords test: allScalesChords.get(i).getScaleKeys()){
-                   if (test.getKeyName().equals(noteName)){
-                	   found = test;
-                	   break;
-                   }
+		for (GivenKeyChords test : allScalesChords.get(i).getScaleKeys()) {
+			if (test.getKeyName().equals(noteName)) {
+				found = test;
+				break;
+			}
 		}
 		Chord foundChord = null;
-		for (Chord findChord: found.getKeyChords()){
-            if (findChord.getChordName().equals(scaleName)){
-            	foundChord = findChord;
-         	   break;
-            }
-        }
+		for (Chord findChord : found.getKeyChords()) {
+			if (findChord.getChordName().equals(chordOrScale)) {
+				foundChord = findChord;
+				break;
+			}
+		}
 		return foundChord;
 	}
-	
-	
+
+	/**
+	 * Feature set 5: Used to find the chords to create a chord progression by
+	 * search for them in memory.
+	 * 
+	 * @param noteName
+	 *            - The name of the note (single letter) to find
+	 * @param chordName
+	 *            - The name of the chord name joined to the noteName.
+	 * @return The found chord in either major or minor scale to create a
+	 *         progression.
+	 */
+	public Chord findChord(String noteName, String chordName) {
+		int i = 0;
+		if (chordName.equals("min")) {
+			i = 1;
+		} else if (chordName.equals("maj")) {
+			i = 0;
+		}
+		return getChord(i, noteName, chordName);
+	}
+
+	/**
+	 * Feature set 1: Used to find the selected chord stored in memory.
+	 * 
+	 * @param noteName
+	 *            - The name of the note (single letter) to find
+	 * @param scaleName
+	 *            - The name of the scale of which the chord is found in memory.
+	 * @return The found chord in memory from all scales.
+	 */
+	public Chord getChordFromKeyScale(String noteName, String scaleName) {
+		noteName += 3;
+		int i = 0;
+		ArrayList<String> MajorChords = Chord.getMajorEnums();
+		ArrayList<String> MinorChords = Chord.getMinorEnums();
+		ArrayList<String> HalfDimishedChords = Chord.getHalfDimsEnums();
+		ArrayList<String> FullyDimishedChords = Chord.getFullDimsEnums();
+
+		if (MajorChords.contains(scaleName)) {
+			i = 0;
+		} else if (MinorChords.contains(scaleName)) {
+			i = 1;
+		} else if (HalfDimishedChords.contains(scaleName)) {
+			i = 2;
+		} else if (FullyDimishedChords.contains(scaleName)) {
+			i = 3;
+		} else {
+			return null;
+		}
+		return getChord(i, noteName, scaleName);
+	}
+
+	/**
+	 * All chords from major (Ionian) scale are stored in memory
+	 */
 	public void setMajorChords(Scale carriedScale) {
-		
+
 		allMajorChords = new ArrayList<Chord>();
 		allMajorChords.add(majorTetraChord(carriedScale));
 		allMajorChords.add(majorChord(carriedScale));
 		allMajorChords.add(majorSeventhChord(carriedScale));
-		allMajorChords.add(majorNinthChord(carriedScale));	
-		
-		allMajorChords.add(majorThirteenChord(carriedScale));
-		
-		
-		allMajorChords.add(majorSixthChord(carriedScale));
+		allMajorChords.add(majorNinthChord(carriedScale));
 
+		allMajorChords.add(majorThirteenChord(carriedScale));
+		allMajorChords.add(majorSixthChord(carriedScale));
 		allMajorChords.add(suspendedFourthChord(carriedScale));
 		allMajorChords.add(suspendedSecondChord(carriedScale));
-		
-		allMajorChords.add(dominantNinthChord(carriedScale)); 
-		
 
+		allMajorChords.add(dominantNinthChord(carriedScale));
 		allMajorChords.add(dominantThirteenChord(carriedScale));
-		
-		
 		allMajorChords.add(dominantEleventhChord(carriedScale));
-	
-		//Takes part of major scale
+
+		// Takes part of major scale
 		allMajorChords.add(augmentedChord(carriedScale));
 		allMajorChords.add(addTwoChord(carriedScale));
 		allMajorChords.add(addNineChord(carriedScale));
 		allMajorChords.add(dominantNinthChord(carriedScale));
 		allMajorChords.add(dominantSeventhChord(carriedScale));
-		
-		//allMajorChords.add(sevenSharpFiveChord(carriedScale));
-		//allMajorChords.add(sevenFlatFiveChord(carriedScale));
+
+		// EXPERIMENTAL
+		////////////////
+		// allMajorChords.add(sevenSharpFiveChord(carriedScale));
+		// allMajorChords.add(sevenFlatFiveChord(carriedScale));
 	}
 
 	public ArrayList<Chord> getMajorChords() {
 		return allMajorChords;
 	}
-	
-	public void permenantMajor(){
-		
-	}
-	
+
 	public Chord getChordsFromMajor(String chordName) {
-		
-		for (Chord aChord : allMajorChords){
-			if(aChord.getChordName().equals(chordName))
-			{
-       		return aChord;
+
+		for (Chord aChord : allMajorChords) {
+			if (aChord.getChordName().equals(chordName)) {
+				return aChord;
 			}
 		}
-	
 		return null;
 	}
-	
-	
-	//NATURAL MINOR SCALE (AOELIAN) AND MINOR MODE SCALE CHORDS
-	////////////////////////////////////////////////////////////
+
+	/**
+	 * All chords from the minor (Aeolian) scale are stored in memory.
+	 */
 	public void setMinorChords(Scale carriedScale) {
 		allMinorChords = new ArrayList<Chord>();
 		allMinorChords.add(minorTetraChord(carriedScale));
@@ -328,173 +333,89 @@ public class ListOfChords {
 		allMinorChords.add(minorSeventhChord(carriedScale));
 		allMinorChords.add(minorNinthChord(carriedScale));
 		allMinorChords.add(minorThirteenChord(carriedScale));
-		
+
 		allMinorChords.add(minorSixthChord(carriedScale));
 		allMinorChords.add(minorEleventhChord(carriedScale));
-		
-		//Based on minor scale
+
+		// Based on minor scale
 		allMinorChords.add(minorMajorSevenChord(carriedScale));
 	}
-	
+
 	public ArrayList<Chord> getMinorChords() {
 		return allMinorChords;
 	}
-	
-//	//Just like the Ionian scale, but with an augmented fourth
-//	public void setLydianChords(Scale carriedScale) {
-//		allLydianChords = new ArrayList<Chord>();
-//		allLydianChords.add(majorSeventhChord(carriedScale)); 												
-//	}
-//	
-//	public void setAllMixolydianChords(Scale carriedScale) {
-//		allMixolydianChords = new ArrayList<Chord>();
-//		allMixolydianChords.add(dominantSeventhChord(carriedScale));
-//	}
 
-	
-	//NATURAL MINOR SCALE (AOELIAN) AND MINOR MODE SCALE CHORDS
-	////////////////////////////////////////////////////////////
-//	public void setNonScaleChords(Scale carriedScale) {
-//		allNonScaleChords = new ArrayList<Chord>();
-//		
-//		//Kind of based of major scales
-//		allNonScaleChords.add(sevenFlatFiveChord(carriedScale));
-//		allNonScaleChords.add(sevenSharpFiveChord(carriedScale));
-//		
-//		//This is not based on half dim, fully dim or dom dim due to the 7th note pitch step
-//		//allFullyDimishedChords.add(dimishedMajorSeventh(carriedScale));
-//
-//	}
-	
-//	public ArrayList<Chord> getNonScaleChords() {
-//		return allNonScaleChords;
-//	}
-	
-	
-	    //Fully diminished chords
-		////////////////////////////////////////////////////////////
-		public void setFullyDimishedScaleChords(Scale carriedScale) {
-			allFullyDimishedChords = new ArrayList<Chord>();	
-			allFullyDimishedChords.add(dimishedChord(carriedScale));
-			allFullyDimishedChords.add(dimishedSeventhChord(carriedScale));
-			
-			//sevenFlatFive chord
-		}
-		
-		public ArrayList<Chord> getFullyDimishedScaleChords() {
-			return allFullyDimishedChords;
-		}
-		
-		
-		 //Dominant diminished chords
-		////////////////////////////////////////////////////////////
-		public void setDominantDimishedScaleChords(Scale carriedScale) {
-			allDominantDimishedChords = new ArrayList<Chord>();	
-			//C7FLAT9
-			
-			//13b9,#9,#11 
-			
-		}
-		
-		public ArrayList<Chord> getDominantDimishedScaleChords() {
-			return allDominantDimishedChords;
-		}
-	
-	
-		
-		
-		//HALF DIMINISHED SCALE CHORDS ////////////////////////
-		public void setBluesChords(Scale carriedScale) {
-			allBlueChords = new ArrayList<Chord>();
-			allBlueChords.add(bluesChord(carriedScale));
-			
-		}
-		public ArrayList<Chord> getBluesChords() {
-			return allBlueChords;
-		}
-		
-		
-		public void setFillerBluesChord(Scale carriedScale) {
-			fillerBlueChord = new ArrayList<Chord>();
-			fillerBlueChord.add(fillerBluesChord(carriedScale));
-					
-		}
-		public ArrayList<Chord> getFillerBluesChord() {
-					return fillerBlueChord;
-		}
-		//////////////////////////////
-		
-		
-		
-	
-	//HALF DIMINISHED SCALE CHORDS ////////////////////////
+	/**
+	 * All chords from fully diminished scale are stored in memory.
+	 */
+	public void setFullyDimishedScaleChords(Scale carriedScale) {
+		allFullyDimishedChords = new ArrayList<Chord>();
+		allFullyDimishedChords.add(dimishedChord(carriedScale));
+		allFullyDimishedChords.add(dimishedSeventhChord(carriedScale));
+	}
+
+	public ArrayList<Chord> getFullyDimishedScaleChords() {
+		return allFullyDimishedChords;
+	}
+
+	/**
+	 * Experimental: Dominant diminished chords
+	 */
+	public void setDominantDimishedScaleChords(Scale carriedScale) {
+		allDominantDimishedChords = new ArrayList<Chord>();
+	}
+
+	public ArrayList<Chord> getDominantDimishedScaleChords() {
+		return allDominantDimishedChords;
+	}
+
+	/**
+	 * All chords from blues scale are stored in memory.
+	 */
+	public void setBluesChords(Scale carriedScale) {
+		allBlueChords = new ArrayList<Chord>();
+		allBlueChords.add(bluesChord(carriedScale));
+
+	}
+
+	public ArrayList<Chord> getBluesChords() {
+		return allBlueChords;
+	}
+
+	/**
+	 * All bridge or "filler" chords from blues scale stored in memory.
+	 */
+	public void setFillerBluesChord(Scale carriedScale) {
+		fillerBlueChord = new ArrayList<Chord>();
+		fillerBlueChord.add(fillerBluesChord(carriedScale));
+
+	}
+
+	public ArrayList<Chord> getFillerBluesChord() {
+		return fillerBlueChord;
+	}
+
+	/**
+	 * All chords from half diminished scale are stored in memory.
+	 */
 	public void setHalfDimishedChords(Scale carriedScale) {
 		allHalfDimishedChords = new ArrayList<Chord>();
 		allHalfDimishedChords.add(minorSevenFlatFiveChord(carriedScale));
-		
 	}
+
 	public ArrayList<Chord> getHalfDimishedChords() {
 		return allHalfDimishedChords;
 	}
-	//////////////////////////////
-	
-	
-	//Dorian mode is similar to Aoelian model, the only difference is the 6th degree is
-	// major 6th above root than a minor 6
-//	public void setDorianChords(Scale carriedScale) {
-//		allDorianChords = new ArrayList<Chord>();
-//		allDorianChords.add(minorSixthChord(carriedScale));
-//		allDorianChords.add(minorSeventhChord(carriedScale));
-//		allDorianChords.add(minorNinthChord(carriedScale));
-//	}
-//	
-//	//Also like Aoelian, but it has a minor second note, not a major.
-//	public void setPhrygianChords(Scale carriedScale) {
-//		allDorianChords = new ArrayList<Chord>();
-//		allDorianChords.add(minorSixthChord(carriedScale));
-//		allDorianChords.add(minorSeventhChord(carriedScale));
-//		allDorianChords.add(minorNinthChord(carriedScale));
-//	}
 
-//	// Generics omitted to allow multiple enum types to be arguments in the
-//	// function public void findSpecificChordType(ArrayList <Chord> loadedChords, 
-//	// Enum [] chordNames) throws InvalidMidiDataException{
-	public void findSpecificChordType(ArrayList<Chord> loadedChords) throws InvalidMidiDataException {
-		// ADD USER INPUT DETECTION FROM AVAILABLE SCALES
-		String chordName = "dom9";
-		Chord foundChord = null;
-		for (Chord aChord : loadedChords) {
-			if (aChord.getChordName().equals(chordName)) {
-				foundChord = aChord;
-				break;
-			}
-		}
-		// Play chord through sequencer
-		// Option 1
-		// playAnyChordLength(foundChord);
+	/**
+	 * If user types first inversion for chord, then to get second inversion,
+	 * recall this function with a boolean condition.
+	 * 
+	 * @param carriedChord
+	 *            - The chord to invert.
+	 */
+	public void chordInversion(Chord carriedChord) throws InvalidMidiDataException {
 
-		// Play first inversion - option 2
-		firstAndSecondInversion(foundChord);
-
-		// Or play second inversion
-		// secondInversion(foundChord);
-
-	}
-
-	// PLAY CHORDS
-	//////////////////////////////
-//	public void playAnyChordLength(Chord foundChord) throws InvalidMidiDataException {
-//		ArrayList<Note> notesInChord = foundChord.getChordNotes();
-//		for (Note aNote : notesInChord) {
-//			ShortMessage noteOne = new ShortMessage(ShortMessage.NOTE_ON, 0, aNote.getPitch(), 100);
-//			MidiReceiver.getInstance().send(noteOne, -1);
-//		}
-//	}
-
-	// If user types first inversion for chord, then to get second inversion,
-	// recall this function with a boolean condition
-	public void firstAndSecondInversion(Chord carriedChord) throws InvalidMidiDataException {
-		
 		// Repeat using previous stored array for second inversion.
 		// Must have done first inversion first though
 		if (inverted == true) {
@@ -502,15 +423,13 @@ public class ListOfChords {
 
 		}
 		ArrayList<Note> notesInChord = new ArrayList<Note>();
-		for (Note aNote : carriedChord.getChordNotes())	{
+		for (Note aNote : carriedChord.getChordNotes()) {
 			notesInChord.add(aNote);
-		}	
-		
+		}
 
 		// Replace key with one octave higher, swap with last element, and
 		// save array in memory
 		Note increaseRootOctave = ListOfScales.getInstance().getKey(notesInChord.get(0), 12);
-		
 		notesInChord.set(0, increaseRootOctave);
 
 		switch (notesInChord.size()) {
@@ -530,64 +449,29 @@ public class ListOfChords {
 			Collections.rotate(notesInChord, 6);
 			break;
 		}
-		// aList.toArray(notesInChord);
 		Chord editedChord = new Chord(carriedChord.getChordName(), notesInChord);
 		storeCurrentInversion(editedChord);
 		inverted = true;
-
 	}
 
-	public void resetInversion (){
+	public void resetInversion() {
 		inverted = false;
 	}
-	
+
 	public void storeFirstInversion(Chord original) {
 		firstInversion = original;
 	}
-	
+
 	public Chord getFirstInversion() {
 		return firstInversion;
 	}
-	
-	
+
 	public void storeCurrentInversion(Chord current) {
 		currentInversion = current;
 	}
 
 	public Chord getCurrentInversion() {
 		return currentInversion;
-	}
-
-	// This function can be used to jump straight to 2nd inversion, whilst
-	// the first inversion can be used twice for 1st to 2nd inversion
-	public void secondInversion(Chord carriedChord) throws InvalidMidiDataException, InterruptedException {
-		// Note [] second = getCurrentFirstInversion();
-		ArrayList<Note> notesInChord = new ArrayList<Note>();
-		for (Note aNote : carriedChord.getChordNotes())	{
-			notesInChord.add(aNote);
-		}	
-		
-		// List <Note> aList = Arrays.asList(notesInChord);
-		switch (notesInChord.size()) {
-		case 3:
-			Collections.rotate(notesInChord, 4);
-			break;
-		case 4:
-			Collections.rotate(notesInChord, 6);
-			break;
-		case 5:
-			Collections.rotate(notesInChord, 8);
-			break;
-		case 6:
-			Collections.rotate(notesInChord, 10);
-			break;
-		case 7:
-			Collections.rotate(notesInChord, 12);
-			break;
-		}
-		// aList.toArray(notesInChord);
-		Chord editedChord = new Chord(carriedChord.getChordName(), notesInChord);
-		PlaybackFunctions.playAnyChordLength(editedChord);
 	}
 
 	// Uses Ionian scale's first 4 scale degrees
@@ -599,7 +483,7 @@ public class ListOfChords {
 		Chord aChord = new Chord("majTetra", rootNote, secondNote, thirdNote, fourthNote);
 		return aChord;
 	}
-	
+
 	// Uses Aeolian scale's first 4 scale degrees
 	public Chord minorTetraChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
@@ -608,7 +492,7 @@ public class ListOfChords {
 		fourthNote = carriedScale.getSubDominant(); // 5
 		Chord aChord = new Chord("minTetra", rootNote, secondNote, thirdNote, fourthNote);
 		return aChord;
-		}
+	}
 
 	// Uses Ionian scale
 	public Chord majorChord(Scale carriedScale) {
@@ -632,7 +516,7 @@ public class ListOfChords {
 	public Chord augmentedChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
 		secondNote = carriedScale.getMediant(); // 4
-		thirdNote = ListOfScales.getInstance().getKey(secondNote, 4); //8
+		thirdNote = ListOfScales.getInstance().getKey(secondNote, 4); // 8
 		Chord aChord = new Chord("aug", rootNote, secondNote, thirdNote);
 		return aChord;
 	}
@@ -641,15 +525,19 @@ public class ListOfChords {
 	public Chord dimishedChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
 		secondNote = carriedScale.getMediant(); // 3
-		thirdNote = carriedScale.getDominant(); //6
+		thirdNote = carriedScale.getDominant(); // 6
 		Chord aChord = new Chord("dim", rootNote, secondNote, thirdNote);
 		return aChord;
 	}
 
-	// This chord is based of the 5th degree of the diatonic scale, and has
-	// a root, a major third, a perfect fifth, and a diminished 7th. The
-	// dominant chord uses
-	// the mixolydian diatonic scale
+	/**
+	 * This chord is based of the 5th degree of the diatonic scale, and has a
+	 * root, a major third, a perfect fifth, and a diminished 7th. The dominant
+	 * chord uses the mixolydian diatonic scale.
+	 * 
+	 * @param carriedScale
+	 *            - The scale to use as a base to create the chord.
+	 */
 	public Chord dominantSeventhChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
 		secondNote = carriedScale.getMediant(); // 4
@@ -688,6 +576,7 @@ public class ListOfChords {
 		return aChord;
 	}
 
+	// Can use Ionion scale
 	public Chord suspendedSecondChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
 		secondNote = carriedScale.getSubTonic(); // 2
@@ -698,10 +587,10 @@ public class ListOfChords {
 
 	// Can use IonionScale
 	public Chord majorSixthChord(Scale carriedScale) {
-		rootNote = carriedScale.getTonic();  //0
-		secondNote = carriedScale.getMediant();  //4
-		thirdNote = carriedScale.getDominant();  //7
-		fourthNote = carriedScale.getSubMediant(); //9
+		rootNote = carriedScale.getTonic(); // 0
+		secondNote = carriedScale.getMediant(); // 4
+		thirdNote = carriedScale.getDominant(); // 7
+		fourthNote = carriedScale.getSubMediant(); // 9
 		Chord aChord = new Chord("maj6", rootNote, secondNote, thirdNote, fourthNote);
 		return aChord;
 	}
@@ -721,10 +610,10 @@ public class ListOfChords {
 		secondNote = carriedScale.getMediant(); // 4
 		thirdNote = carriedScale.getDominant(); // 7
 		fourthNote = ListOfScales.getInstance().getKey(thirdNote, 3); // 10
-		//fourthNote = carriedScale.getSubMediant(); // 9
-		// Not as part of a known scale, but rather an added ninth to the Ionian
-		// scale. Uses below function to get next step pitch against former from map of
-		// notes
+
+		// Not as part of a known scale, but rather an added ninth to the
+		// Ionian scale. Uses below function to get next step pitch against
+		// former from map of notes
 		fifthNote = ListOfScales.getInstance().getKey(fourthNote, 4); // 14
 		Chord aChord = new Chord("9", rootNote, secondNote, thirdNote, fourthNote, fifthNote);
 		return aChord;
@@ -776,14 +665,14 @@ public class ListOfChords {
 	}
 
 	// Ionian scale's 1st,3rd and 5th degree with added ninth
-		public Chord addTwoChord(Scale carriedScale) {
-			rootNote = carriedScale.getTonic(); // 0
-			secondNote = ListOfScales.getInstance().getKey(rootNote, 2); // 2
-			thirdNote = ListOfScales.getInstance().getKey(secondNote, 2); // 4
-			fourthNote = ListOfScales.getInstance().getKey(thirdNote, 3); // 7
-			Chord aChord = new Chord("add2", rootNote, secondNote, thirdNote, fourthNote);
-			return aChord;
-		}
+	public Chord addTwoChord(Scale carriedScale) {
+		rootNote = carriedScale.getTonic(); // 0
+		secondNote = ListOfScales.getInstance().getKey(rootNote, 2); // 2
+		thirdNote = ListOfScales.getInstance().getKey(secondNote, 2); // 4
+		fourthNote = ListOfScales.getInstance().getKey(thirdNote, 3); // 7
+		Chord aChord = new Chord("add2", rootNote, secondNote, thirdNote, fourthNote);
+		return aChord;
+	}
 
 	public Chord minorEleventhChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
@@ -803,7 +692,7 @@ public class ListOfChords {
 		fourthNote = ListOfScales.getInstance().getKey(thirdNote, 3); // 10
 		fifthNote = ListOfScales.getInstance().getKey(fourthNote, 4); // 14
 		sixthNote = ListOfScales.getInstance().getKey(fifthNote, 3); // 17
-		Chord aChord = new Chord("11", rootNote, secondNote, thirdNote, fourthNote, fifthNote,sixthNote);
+		Chord aChord = new Chord("11", rootNote, secondNote, thirdNote, fourthNote, fifthNote, sixthNote);
 		return aChord;
 	}
 
@@ -815,7 +704,7 @@ public class ListOfChords {
 		fifthNote = ListOfScales.getInstance().getKey(fourthNote, 4); // 14
 		sixthNote = ListOfScales.getInstance().getKey(fifthNote, 3); // 17
 		seventhNote = ListOfScales.getInstance().getKey(sixthNote, 4); // 21
-		Chord aChord = new Chord("13", rootNote, secondNote, thirdNote, fourthNote, fifthNote, sixthNote,seventhNote);
+		Chord aChord = new Chord("13", rootNote, secondNote, thirdNote, fourthNote, fifthNote, sixthNote, seventhNote);
 		return aChord;
 
 	}
@@ -828,26 +717,32 @@ public class ListOfChords {
 		fifthNote = ListOfScales.getInstance().getKey(fourthNote, 4); // 14
 		sixthNote = ListOfScales.getInstance().getKey(fifthNote, 3); // 17
 		seventhNote = ListOfScales.getInstance().getKey(sixthNote, 4); // 21
-		Chord aChord = new Chord("min13", rootNote, secondNote, thirdNote, fourthNote, fifthNote, sixthNote,seventhNote);
+		Chord aChord = new Chord("min13", rootNote, secondNote, thirdNote, fourthNote, fifthNote, sixthNote,
+				seventhNote);
 		return aChord;
 	}
 
 	public Chord majorThirteenChord(Scale carriedScale) {
-		rootNote = carriedScale.getTonic(); // 0  
+		rootNote = carriedScale.getTonic(); // 0
 		secondNote = carriedScale.getMediant(); // 4
-		thirdNote = carriedScale.getDominant(); // 7  
-		fourthNote = ListOfScales.getInstance().getKey(thirdNote, 4); // 11 
-		fifthNote = ListOfScales.getInstance().getKey(fourthNote,3); // 14  
-		sixthNote = ListOfScales.getInstance().getKey(fifthNote, 3); // 17 
+		thirdNote = carriedScale.getDominant(); // 7
+		fourthNote = ListOfScales.getInstance().getKey(thirdNote, 4); // 11
+		fifthNote = ListOfScales.getInstance().getKey(fourthNote, 3); // 14
+		sixthNote = ListOfScales.getInstance().getKey(fifthNote, 3); // 17
 		seventhNote = ListOfScales.getInstance().getKey(sixthNote, 4); // 21
-		Chord aChord = new Chord("maj13", rootNote, secondNote, thirdNote, fourthNote, fifthNote, sixthNote,seventhNote);
+		Chord aChord = new Chord("maj13", rootNote, secondNote, thirdNote, fourthNote, fifthNote, sixthNote,
+				seventhNote);
 		return aChord;
 	}
-	
-	//NON SCALE BASED CHORDS
-	/////////////////////////////////////
-	//Based of major
-	// Enharmonically equivalent to the French sixth chord.
+
+	/**
+	 * NON SCALE BASED CHORDS
+	 */
+
+	/**
+	 * Based of ionian scale: Enharmonically equivalent to the French sixth
+	 * chord.
+	 */
 	public Chord sevenFlatFiveChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
 		secondNote = carriedScale.getMediant(); // 4
@@ -856,18 +751,17 @@ public class ListOfChords {
 		Chord aChord = new Chord("7b5", rootNote, secondNote, thirdNote, fourthNote);
 		return aChord;
 	}
-	
-		public Chord sevenSharpFiveChord(Scale carriedScale) {
-			rootNote = carriedScale.getTonic(); // 0
-			secondNote = carriedScale.getMediant(); // 4
-			thirdNote = ListOfScales.getInstance().getKey(secondNote, 4); // 8
-			fourthNote = ListOfScales.getInstance().getKey(thirdNote, 2); // 10
-			Chord aChord = new Chord("7#5", rootNote, secondNote, thirdNote, fourthNote);
-			return aChord;
-		}
-	
 
-	//Based of minor scale
+	public Chord sevenSharpFiveChord(Scale carriedScale) {
+		rootNote = carriedScale.getTonic(); // 0
+		secondNote = carriedScale.getMediant(); // 4
+		thirdNote = ListOfScales.getInstance().getKey(secondNote, 4); // 8
+		fourthNote = ListOfScales.getInstance().getKey(thirdNote, 2); // 10
+		Chord aChord = new Chord("7#5", rootNote, secondNote, thirdNote, fourthNote);
+		return aChord;
+	}
+
+	// Based of minor scale
 	////////////////////////////////////
 	public Chord minorMajorSevenChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
@@ -877,29 +771,28 @@ public class ListOfChords {
 		Chord aChord = new Chord("minMaj7", rootNote, secondNote, thirdNote, fourthNote);
 		return aChord;
 	}
-	
-	
-	//Based on locrian #2 (half-Diminished scale)
-		public Chord minorSevenFlatFiveChord(Scale carriedScale) {
+
+	// Based on locrian #2 (half-Diminished scale)
+	public Chord minorSevenFlatFiveChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
-			secondNote = carriedScale.getMediant(); // 4
-			thirdNote = carriedScale.getDominant(); // 6
-			fourthNote = carriedScale.getSuperTonic(); // 10
-			Chord aChord = new Chord("min7b5", rootNote, secondNote, thirdNote, fourthNote);
-			return aChord;
-		}
-		
-		public Chord bluesChord(Scale carriedScale) {
+		secondNote = carriedScale.getMediant(); // 4
+		thirdNote = carriedScale.getDominant(); // 6
+		fourthNote = carriedScale.getSuperTonic(); // 10
+		Chord aChord = new Chord("min7b5", rootNote, secondNote, thirdNote, fourthNote);
+		return aChord;
+	}
+
+	public Chord bluesChord(Scale carriedScale) {
 		rootNote = carriedScale.getTonic(); // 0
 		secondNote = carriedScale.getDominant(); // 7
 		Chord aChord = new Chord("Number Chord", rootNote, secondNote);
-			return aChord;
-		}
-		
-		public Chord fillerBluesChord(Scale carriedScale) {
-			rootNote = carriedScale.getTonic(); // 0
-			secondNote = ListOfScales.getInstance().getKey(rootNote, 12); // 12
-			Chord aChord = new Chord("Adjusted Chord", rootNote, secondNote);
-				return aChord;
-			}
+		return aChord;
+	}
+
+	public Chord fillerBluesChord(Scale carriedScale) {
+		rootNote = carriedScale.getTonic(); // 0
+		secondNote = ListOfScales.getInstance().getKey(rootNote, 12); // 12
+		Chord aChord = new Chord("Adjusted Chord", rootNote, secondNote);
+		return aChord;
+	}
 }

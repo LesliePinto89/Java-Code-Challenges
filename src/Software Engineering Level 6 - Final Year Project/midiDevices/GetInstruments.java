@@ -3,10 +3,13 @@ package midiDevices;
 import javax.sound.midi.Instrument;
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.Patch;
-import javax.sound.midi.Synthesizer;
 import javax.swing.DefaultListModel;
 import midiDevices.PlayBackDevices;
 
+/**
+ * This class defines all GM MIDI device instruments supported by the
+ * synthesiser.
+ */
 public class GetInstruments {
 
 	private Instrument[] instruments;
@@ -16,8 +19,9 @@ public class GetInstruments {
 	private int programNumber = 0;
 	private boolean instrumentChanged = false;
 	private DefaultListModel<String> allInstruments = new DefaultListModel<String>();
-    private PlayBackDevices midiReceiever = PlayBackDevices.getInstance();	
+	private PlayBackDevices midiReceiever = PlayBackDevices.getInstance();
 	private static volatile GetInstruments instance = null;
+
 	private GetInstruments() {
 	}
 
@@ -31,7 +35,6 @@ public class GetInstruments {
 				}
 			}
 		}
-
 		return instance;
 	}
 
@@ -39,12 +42,12 @@ public class GetInstruments {
 		instruments = midiReceiever.returnSynth().getDefaultSoundbank().getInstruments();
 		channel = midiReceiever.returnSynth().getChannels()[0];
 	}
-	
+
 	public Instrument[] getListOfInstruments() {
 		return instruments;
 	}
-	
-	public MidiChannel getChannelSetToInstrument(){
+
+	public MidiChannel getChannelSetToInstrument() {
 		return channel;
 	}
 
@@ -55,15 +58,21 @@ public class GetInstruments {
 	protected String getInstrumentName() {
 		return instrumentName;
 	}
-	
-	public void instrumentChanged(boolean change){
+
+	public void instrumentChanged(boolean change) {
 		instrumentChanged = change;
-	} 
-	
-	public boolean checkIfinstrumentChanged(){
+	}
+
+	public boolean checkIfinstrumentChanged() {
 		return instrumentChanged;
-	} 
-	
+	}
+
+	/**
+	 * Updates the currently selected instrument on the default synthesiser.
+	 * 
+	 * @param choice
+	 *            - The name of the instrument from the instruments pane
+	 */
 	public void selectInstrument(String choice) {
 		Patch patch = null;
 		int tempBankNumber = 0;
@@ -84,31 +93,33 @@ public class GetInstruments {
 			}
 		}
 	}
-	
-	public void storeBank (int tempBankNumber){
+
+	public void storeBank(int tempBankNumber) {
 		this.bankNumber = tempBankNumber;
 	}
-	public void storeProgramNumber (int tempProgramNumber){
+
+	public void storeProgramNumber(int tempProgramNumber) {
 		this.programNumber = tempProgramNumber;
 	}
-	
-	public int getBank (){
+
+	public int getBank() {
 		return bankNumber;
 	}
-	public int getProgramNumber (){
+
+	public int getProgramNumber() {
 		return programNumber;
 	}
 
-	public void storeInstrumentsList(){
-		for (int i =0;i<instruments.length;i++) {
+	public void storeInstrumentsList() {
+		for (int i = 0; i < instruments.length; i++) {
 			allInstruments.addElement(instruments[i].getName());
-		}	
+		}
 	}
-	
-	public DefaultListModel<String> getAllInstruments (){
+
+	public DefaultListModel<String> getAllInstruments() {
 		return allInstruments;
 	}
-	
+
 	public String[] allInstruments(Instrument[] channels) {
 		String[] tempStorage = new String[channels.length];
 		for (int i = 0; i < channels.length; i++) {
