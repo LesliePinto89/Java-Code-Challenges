@@ -12,6 +12,7 @@ public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+    private String user;
     private String date;
     private String title;
     private String message;
@@ -20,7 +21,8 @@ public class Task {
     public Task() {
     }
 
-    public Task(String date,String title, String message, String hash) {
+    public Task(String user, String date,String title, String message, String hash) {
+    	this.user = user;
     	this.date = date;
     	this.title = title;
         this.message = message;
@@ -33,6 +35,14 @@ public class Task {
 
     public void setId(long id) {
         this.id = id;
+    }
+    
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
     }
     
     public String getDate() {
@@ -71,6 +81,7 @@ public class Task {
     public String toString() {
         return "Task{" +
                 "id=" + id +
+                ", user='" + user + '\'' +
                 ", date='" + date + '\'' +
                 ", title='" + title + '\'' +
                 ", message='" + message + '\'' +

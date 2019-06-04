@@ -22,9 +22,9 @@ public class DataLoader implements CommandLineRunner {
     	String DATE_FORMAT_NOW = "dd-MM-yyyy";
     	Calendar cal = Calendar.getInstance();SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT_NOW);
     	
-        taskRepository.save(new Task(sdf.format(cal.getTime()),"Sample Title 1", "Sample Message 1","hashtag1"));
-        taskRepository.save(new Task(sdf.format(cal.getTime()),"Sample Title 2", "Sample Message 2","hashtag2"));
-        taskRepository.save(new Task(sdf.format(cal.getTime()),"Sample Title 2", "Sample Message 3","hashtag3"));
-        taskRepository.save(new Task(sdf.format(cal.getTime()),"Sample Title 3", "Sample Message 4","hashtag4"));
+        taskRepository.save(new Task("John",sdf.format(cal.getTime()),"Sample Title 1", "Sample Message 1","hashtag1"));
+        taskRepository.save(new Task("Clifford",sdf.format(cal.getTime()),"Sample Title 2", "Sample Message 2","hashtag2"));
+        taskRepository.save(new Task("Amy",sdf.format(cal.getTime()),"Sample Title 2", "Sample Message 3","hashtag3"));
+        taskRepository.save(new Task("Jenny",sdf.format(cal.getTime()),"Sample Title 3", "Sample Message 4","hashtag4"));
     }
 }
