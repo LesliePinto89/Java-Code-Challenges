@@ -7,6 +7,6 @@ import com.yuzu.security.UserRegistrationDto;
 
 public interface UserService extends UserDetailsService{
 
-    User findByLastName(String lastName);
-	 User save(UserRegistrationDto registration);
+    User findByUsername(String username);
+    User save(UserRegistrationDto registration);
 }

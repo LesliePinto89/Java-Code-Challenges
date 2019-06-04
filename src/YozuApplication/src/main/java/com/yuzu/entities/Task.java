@@ -1,5 +1,6 @@
 package com.yuzu.entities;
 
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -11,6 +12,7 @@ public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+    private String date;
     private String title;
     private String message;
     private String hash;
@@ -18,8 +20,9 @@ public class Task {
     public Task() {
     }
 
-    public Task(String title, String message, String hash) {
-        this.title = title;
+    public Task(String date,String title, String message, String hash) {
+    	this.date = date;
+    	this.title = title;
         this.message = message;
         this.hash = hash;
     }
@@ -30,6 +33,14 @@ public class Task {
 
     public void setId(long id) {
         this.id = id;
+    }
+    
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     public String getTitle() {
@@ -60,6 +71,7 @@ public class Task {
     public String toString() {
         return "Task{" +
                 "id=" + id +
+                ", date='" + date + '\'' +
                 ", title='" + title + '\'' +
                 ", message='" + message + '\'' +
                 ", hash='" + hash + '\'' +

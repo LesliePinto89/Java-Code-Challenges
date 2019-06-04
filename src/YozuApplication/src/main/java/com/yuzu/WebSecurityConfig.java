@@ -8,8 +8,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
 
 import com.yuzu.service.UserService;
 
@@ -27,21 +28,32 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
        
-    	http.httpBasic().disable();
     	
-//    	http
-//            .authorizeRequests()
-//                .antMatchers("/resources/**", "/registration").permitAll()
-//                .anyRequest().authenticated()
-//                .and()
-//            .formLogin()
-//                .loginPage("/login")
-//                .permitAll()
-//                .and()
-//            .logout()
-//                .permitAll();
+    	http
+        .authorizeRequests()
+            .antMatchers(
+                    "/registration",
+                    "/js/**",
+                    "/css/**",
+                    "/img/**",
+                    "/webjars/**").permitAll().and()
+            .formLogin()
+                .loginPage("/login")
+                    .permitAll()
+        .and()
+            .logout()
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/login?logout")
+        .permitAll();
     }
 
+    @Bean
+    public SpringSecurityDialect springSecurityDialect(){
+        return new SpringSecurityDialect();
+    }
+    
     @Bean
     public AuthenticationManager customAuthenticationManager() throws Exception {
         return authenticationManager();

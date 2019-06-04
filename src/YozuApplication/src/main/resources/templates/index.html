@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <!-- Required meta tags -->
@@ -17,13 +18,28 @@
 </head>
 <body>
 <div class="container">
-    <button class="btn btn-success nBtn">New</button>
+
+<h1>Today I have</h1>
+<div sec:authorize="isAuthenticated()">
+<div class="form-group label-floating ">
+    Welcome <h1 th:text="${currentUser.username}"></h1>
+    Roles: <span sec:authentication="principal.authorities">[ROLE_USER, ROLE_ADMIN]</span>
+    
+    <form th:action="@{/logout}" method="post">
+    <input type="submit" value="Logout"></input>
+</form>
+</div>
+</div>
+    <div sec:authorize="isAuthenticated()">
+    <button class="btn btn-success nBtn">New Update</button>
+    </div>
     <div class="card">
         <div class="card-block">
             <table class="table table-hover">
                 <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Date</th>
                     <th>Title</th>
                     <th>Message</th>
                      <th>HashTag</th>
@@ -32,6 +48,7 @@
                 <tbody>
                 <tr th:each="task : ${data}">
                     <td th:text="${task.id}"></td>
+                    <td th:text="${task.date !=null} ? ${task.date} : ${#dates.format(#dates.createNow(), 'dd-MM-yyyy')}"></p></td>
                     <td th:text="${task.title}"></td>
                     <td th:text="${task.message}"></td>
                     <td th:text="${task.hash}"></td>
@@ -68,10 +85,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <div class="form-group">
-                                <label class="col-form-label" for="id">ID:</label>
-                                <input class="form-control" id="id" name="id" type="text" value=""/>
-                            </div>
+                            
                             <div class="form-group">
                                 <label class="col-form-label" for="title">Title:</label>
                                 <input class="form-control" id="title" name="title" type="text" value=""/>
@@ -84,6 +98,10 @@
                                 <label class="col-form-label" for="hash">#HashTag:</label>
                                 <input class="form-control" id="hash" name="hash" type="text" value=""/>
                             </div>
+                            
+                             <div class="form-group">
+                            <p th:text="${#dates.format(#dates.createNow(), 'dd MMM yyyy HH:mm')}"></p>
+                             </div>
                             
                         </div>
                         <div class="modal-footer">

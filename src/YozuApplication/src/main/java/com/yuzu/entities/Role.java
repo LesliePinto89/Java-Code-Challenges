@@ -1,7 +1,6 @@
 package com.yuzu.entities;
 
 import javax.persistence.*;
-import java.util.Set;
 
 @Entity
 @Table(name = "role")

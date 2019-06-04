@@ -27,22 +27,23 @@ public class UserServiceImpl implements UserService {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Override
-    public UserDetails loadUserByUsername(String lastName) throws UsernameNotFoundException {
-        User user = userRepository.findByLastName(lastName);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username);
         if (user == null){
             throw new UsernameNotFoundException("Invalid username or password.");
         }
-        return new org.springframework.security.core.userdetails.User(user.getFirstName(),
+        return new org.springframework.security.core.userdetails.User(user.getUsername(),
                 user.getPassword(),
                 mapRolesToAuthorities(user.getRoles()));
     }
 
-    public User findByLastName(String lastName){
-        return userRepository.findByLastName(lastName);
+    public User findByUsername(String username){
+        return userRepository.findByUsername(username);
     }
 
     public User save(UserRegistrationDto registration){
         User user = new User();
+        user.setUsername(registration.getUsername());
         user.setFirstName(registration.getFirstName());
         user.setLastName(registration.getLastName());
         user.setPassword(passwordEncoder.encode(registration.getPassword()));
