@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Create an account</title>
+    <link href="${contextPath}/resources/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <c:if test="${pageContext.request.userPrincipal.name != null}">
+        <form id="logoutForm" method="POST" action="${contextPath}/logout">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </form>
+
+        <h2>Welcome ${pageContext.request.userPrincipal.name} | <a onclick="document.forms['logoutForm'].submit()">Logout</a></h2>
+    </c:if>
+    
+    
+    <div class="myForm"><form th:action="@{/save}" method="post">
+    
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="exampleModalLabel">Add Update</h4>
+      </div>
+      <div class="modal-body">
+        
+          <div class="form-group">
+            <label for="title" class="control-label">Title:</label>
+            <input type="text" class="form-control" id="title" name="title" value=""/>
+          </div>
+          
+          
+          <div class="form-group">
+            <label for="message" class="control-label">Update Message:</label>
+            <textarea class="form-control" id="message"></textarea>
+          </div>
+          
+           <div class="form-group">
+            <label for="hashTag" class="control-label">HashTag</label>
+            <input type="text" class="form-control" id="hashTag" name="hashTag" value=""/>
+          </div>
+       
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-primary" value="update" />
+      </div>
+    </div>
+  </div>
+   </form>
+</div>
+    
+    </div>
+    
+    
+    
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script src="${contextPath}/resources/js/bootstrap.min.js"></script>
+</body>
+</html>
