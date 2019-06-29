@@ -60,7 +60,7 @@ public class UnitTesting {
 		 * TEST 4 - Check that the user can end the simulation after a new
 		 * generation successfully passes
 		 */
-		assertEquals(true, startTest.nextIteration("N"));
+		assertEquals(true, startTest.nextIteration("3"));
 
 		/*
 		 * TEST 5 - Check that a given dish/matrix is populated with grid like
