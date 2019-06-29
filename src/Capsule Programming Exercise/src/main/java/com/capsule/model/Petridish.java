@@ -239,8 +239,8 @@ public class Petridish {
 	}
 
 	/**
-	 * Gives user the choice of ending the simulation or moving to the next
-	 * generation using the output results
+	 * Gives a user the choice of 1) Starting a new simulation using new keypressed input,
+	 * 2) Moving to the next generation using the current output results, or 3) Ending the simulation.
 	 * 
 	 * @param choice
 	 *            : user key-pressed string parsed by scanner
