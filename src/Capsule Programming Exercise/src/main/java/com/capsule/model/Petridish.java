@@ -9,7 +9,8 @@ import com.google.common.collect.Multimap;
 /**
  * Capsule Code Challenge : Bacteria. Author: Leslie Pinto
  * 
- * This class stores the
+ * This class creates the simulation of life and death of bacteria based
+ * on the set rules.
  */
 public class Petridish {
 
@@ -28,9 +29,10 @@ public class Petridish {
 		Multimap<Integer, Integer> pairings = storePairings();
 		prepareDishes();
 		addDishBacteria(pairings, petriDish);
-		GridView.printGenerationGrid(petriDish, nRows);
+		GridView.printGeneratedGrid(petriDish, nRows);
 		bacteriaSimulation(pairings);
-		outputResults();
+		String userChoice = GridView.outputResults(nextGenerationDish,nRows,aScanner);
+		nextIteration(userChoice);
 	}
 
 	/**
@@ -99,8 +101,8 @@ public class Petridish {
 	public void prepareDishes() {
 		petriDish = new String[nCols + 2][nRows + 2];
 		nextGenerationDish = new String[nCols + 2][nRows + 2];
-		GridView.prepareDish(petriDish);
-		GridView.prepareDish(nextGenerationDish);
+		GridView.prepareDishGridLines(petriDish);
+		GridView.prepareDishGridLines(nextGenerationDish);
 	}
 
 	/**
@@ -226,28 +228,5 @@ public class Petridish {
 			}
 		}
 		return true;
-
-	}
-
-	/**
-	 * Prints out the output grid on the console and the output results
-	 */
-	public void outputResults() {
-		System.out.println("\nOutput of next generation grid\n");
-		GridView.printGenerationGrid(nextGenerationDish, nRows);
-		System.out.println("Output results");
-		System.out.println("------------------------------");
-		for (int i = 0; i < nextGenerationDish.length; i++) {
-			for (int j = 0; j < nextGenerationDish[i].length; j++) {
-				if (nextGenerationDish[i][j].contains("X")) {
-					System.out.println(new String(String.valueOf(j) + "," + String.valueOf(i)));
-				}
-			}
-		}
-		System.out.println("end");
-		System.out.println("------------------------------");
-		System.out.println("Proceed into next generation? Type Y or N");
-		String choice = aScanner.nextLine();
-		nextIteration(choice);
 	}
 }
