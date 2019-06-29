@@ -3,6 +3,8 @@ package com.capsule.visuals;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import com.capsule.model.Petridish;
+
 /** This class handles the view of the application */
 public class GridView {
 
@@ -11,6 +13,8 @@ public class GridView {
 	 * 
 	 * @param dish
 	 *            : Current matrix (dish)
+	 * @param nRows
+	 *            : the dish's row count limit
 	 */
 	public static void printGeneratedGrid(String[][] dish, int nRows) {
 		String axis = "";
@@ -33,7 +37,7 @@ public class GridView {
 	 * 
 	 * @param dish
 	 *            : Current matrix (dish)
-	 * @return filled dish with grid lines
+	 * @return dish with indexes filled with grid lines
 	 */
 	public static String[][] prepareDishGridLines(String[][] dish) {
 		for (String[] row : dish) {
@@ -52,7 +56,8 @@ public class GridView {
 	 *            : the active scanner used for user input
 	 * @return a string that contains user input
 	 */
-	public static String outputResults(String[][] nextGenerationDish, int nRows, Scanner carriedScanner) {
+	public static String outputResults(String[][] nextGenerationDish, int nRows) {
+		StringBuilder output = new StringBuilder();
 		System.out.println("\nOutput of next generation grid\n");
 		GridView.printGeneratedGrid(nextGenerationDish, nRows);
 		System.out.println("Output results");
@@ -60,13 +65,19 @@ public class GridView {
 		for (int i = 0; i < nextGenerationDish.length; i++) {
 			for (int j = 0; j < nextGenerationDish[i].length; j++) {
 				if (nextGenerationDish[i][j].contains("X")) {
+					output.append(String.valueOf(j) + "," + String.valueOf(i) + "\n");
 					System.out.println(new String(String.valueOf(j) + "," + String.valueOf(i)));
 				}
 			}
 		}
+		output.append("end\n");
 		System.out.println("end");
 		System.out.println("------------------------------");
-		System.out.println("Proceed into next generation? Type Y or N");
-		return new String(carriedScanner.nextLine());
+		System.out.println("1) Start simulation again. 2) proceed into next generation, 3) end simulation? "
+				+ "Type \"1\", \"2\" or \"3\":");
+		Petridish.storeOutput(output.toString());
+		// Left open for now since messes with scanner as is a reference
+		String choice = Petridish.currentScanner().next();
+		return new String(choice);
 	}
 }

@@ -2,6 +2,8 @@ package com.capsule.model;
 
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 import com.capsule.visuals.GridView;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -9,8 +11,8 @@ import com.google.common.collect.Multimap;
 /**
  * Capsule Code Challenge : Bacteria. Author: Leslie Pinto
  * 
- * This class creates the simulation of life and death of bacteria based
- * on the set rules.
+ * This class creates the simulation of life and death of bacteria based on the
+ * set rules.
  */
 public class Petridish {
 
@@ -19,19 +21,23 @@ public class Petridish {
 	// and column count for row count.
 	private int nRows = 0;
 	private int nCols = 0;
-	private Scanner aScanner;
+	private static Scanner aScanner;
 	private String[][] petriDish;
 	private String[][] nextGenerationDish;
+	private static String output = null;
+	private String userChoice = "";
+
+	public static Scanner currentScanner() {
+		return aScanner;
+	}
 
 	public void createPetridish() {
-		// Allows taking in a format such as 1,2 | 2,2 etc
-		// or 2,2 | 2,3| 2,4
 		Multimap<Integer, Integer> pairings = storePairings();
 		prepareDishes();
 		addDishBacteria(pairings, petriDish);
 		GridView.printGeneratedGrid(petriDish, nRows);
 		bacteriaSimulation(pairings);
-		String userChoice = GridView.outputResults(nextGenerationDish,nRows,aScanner);
+		userChoice = GridView.outputResults(nextGenerationDish, nRows);
 		nextIteration(userChoice);
 	}
 
@@ -58,29 +64,25 @@ public class Petridish {
 		return String.valueOf(nRows) + "," + String.valueOf(nCols);
 	}
 
-	/**
-	 * Create custom sized grid columns and rows based input, while storing pair
-	 * values from input to later add to grid for first generation
-	 * 
-	 * @return MultiMap of final sized record of parings to populate dish
-	 */
-	public Multimap<Integer, Integer> storePairings() {
+	public Multimap<Integer, Integer> bindPairings(String input) {
 		Multimap<Integer, Integer> map = ArrayListMultimap.create();
 		String extractRow = "";
 		String extractCol = "";
 		boolean iteration = false;
-		aScanner = new Scanner(System.in);
-		System.out.println("Input: Type in integer x,y pairing per new line");
-		System.out.println("-----------------------------------------");
-
-		String input = "";
-		input = aScanner.nextLine();
 		while (input.equals("end") == false) {
+			boolean matches = Pattern.matches("\\d+\\,+\\d+", input);
+			// These conditions only allow pair format or "end" string
 			if (input.equals("End")) {
-				System.out.println("Type in end");
+				System.out.println("Please type in \"end\" to finish input");
+				input = aScanner.nextLine();
+				continue;
+			} else if (!matches) {
+				System.out.println("Type in pairing seperated by comma: e.g: 2,3 on current line,"
+						+ "and or type \"end \" to finish input");
 				input = aScanner.nextLine();
 				continue;
 			}
+
 			if (iteration) {
 				dynamicGridDimensions(input, extractRow, extractCol);
 				map.put(nRows, nCols);
@@ -94,8 +96,35 @@ public class Petridish {
 			}
 			input = aScanner.nextLine();
 		}
-
 		return map;
+	}
+
+	/**
+	 * Create custom sized grid columns and rows based input, while storing pair
+	 * values from input to later add to grid for first generation
+	 * 
+	 * @return MultiMap of final sized record of parings to populate dish
+	 */
+	public Multimap<Integer, Integer> storePairings() {
+		String carriedOutput = getOutput();
+		Multimap<Integer, Integer> baseMap = ArrayListMultimap.create();
+		String input = "";
+		System.out.println("Input stage\n" + StringUtils.repeat("-", 15));
+		System.out.println("Please type in pairing value on each new" + "line and type \"end\" to finish input");
+		System.out.println(StringUtils.repeat("-", 75));
+		if (carriedOutput == null || userChoice.equals("1")) {
+			aScanner = new Scanner(System.in);
+			input = aScanner.nextLine();
+			baseMap = bindPairings(input);
+		} else if (carriedOutput != null || userChoice.equals("2")) {
+			aScanner = new Scanner(carriedOutput);
+			input = aScanner.nextLine();
+			baseMap = bindPairings(input);
+			// reverts input back to console input
+			aScanner = new Scanner(System.in);
+		}
+		System.out.println(StringUtils.repeat("=", 75));
+		return baseMap;
 	}
 
 	public void prepareDishes() {
@@ -147,7 +176,6 @@ public class Petridish {
 	public int checkNeighbours(int i, int j, String[][] dish, int cols, int rows) {
 		int count = 0;
 		for (int[] offset : BACTERIA_NEIGHBOURS) {
-
 			if (i + offset[0] < 0 || j + offset[1] < 0) {
 				continue;
 			}
@@ -174,28 +202,35 @@ public class Petridish {
 			for (int j = 0; j < petriDish[i].length; j++) {
 				neighbourCounter = checkNeighbours(i, j, petriDish, nCols, nRows);
 
-				/*  Any dead bacteria cell with exactly three live
-				 neighbours becomes a live bacteria cell, as if by
-				 reproduction. */
+				/*
+				 * Any dead bacteria cell with exactly three live neighbours
+				 * becomes a live bacteria cell, as if by reproduction.
+				 */
 				if (petriDish[i][j].contains("  |") && (neighbourCounter == 3)) {
 					nextGenerationDish[i][j] = "X | ";
 				}
 
-				/*  Any live bacteria cell with fewer than two live
-				 neighbours dies, as if caused by under-population*/
+				/*
+				 * Any live bacteria cell with fewer than two live neighbours
+				 * dies, as if caused by under-population
+				 */
 				else if (neighbourCounter < 2) {
 					nextGenerationDish[i][j] = "  |";
 				}
 
-				/*  Any live bacteria cell with two or three
-				 live neighbours lives on to the next generation.*/
+				/*
+				 * Any live bacteria cell with two or three live neighbours
+				 * lives on to the next generation.
+				 */
 				else if (petriDish[i][j].contains("X") && neighbourCounter == 2
 						|| petriDish[i][j].contains("X") && neighbourCounter == 3) {
 					nextGenerationDish[i][j] = "X | ";
 				}
 
-				/*  Any live bacteria cell with more than three
-				 live neighbours dies, as if by overcrowding.*/
+				/*
+				 * Any live bacteria cell with more than three live neighbours
+				 * dies, as if by overcrowding.
+				 */
 				else if (neighbourCounter > 3) {
 					nextGenerationDish[i][j] = "  |";
 				}
@@ -213,20 +248,30 @@ public class Petridish {
 	 */
 	public boolean nextIteration(String choice) {
 		while (choice.equals(" ") == false) {
-			if (choice.equals("Y")) {
+			if (choice.equals("1") || choice.equals("2")) {
 				createPetridish();
 				break;
-			} else if (choice.equals("N")) {
+			} else if (choice.equals("3")) {
 				System.out.println("Finished simulation");
 				if (aScanner != null) {
 					aScanner.close();
 				}
 				break;
-			} else {
+			}
+
+			else {
 				System.out.println("Incorrect input : Type Y or N");
 				choice = aScanner.next();
 			}
 		}
 		return true;
+	}
+
+	public static void storeOutput(String carriedOutput) {
+		output = carriedOutput;
+	}
+
+	public static String getOutput() {
+		return output;
 	}
 }
