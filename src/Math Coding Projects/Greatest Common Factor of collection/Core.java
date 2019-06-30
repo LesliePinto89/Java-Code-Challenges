@@ -77,7 +77,6 @@ public class Core {
 	 * @return the found HCF
 	 */
 	public static int foundHighestCommonFactor() {
-		List<Integer> commonFactors = new ArrayList<Integer>();
 		int x = 0;
 		int highestCommonFactor = 0;
 
@@ -97,12 +96,18 @@ public class Core {
 					// and move to next value i.e. x
 					if (i + 1 == holdFactors.length) {
 						highestCommonFactor = holdFactors[0][x];
-						commonFactors.add(holdFactors[0][x]);
 						break;
 					}
+					//Else move onto next array : Made j =-1 as loop 
+					// increments it back to 0
 					i++;
 					j = -1;
-				} else if (j == holdFactors[i].length - 1) {
+				} 
+				//If current holdFactors[0][x] is not found by end
+				//of current i, then its not a common factor, so
+				//leave loop, reset i back to 0,
+				// and move to next value i.e. x
+				else if (j == holdFactors[i].length - 1) {
 					break;
 				}
 			}
@@ -116,7 +121,7 @@ public class Core {
 	}
 	
 	 /**Kept this method to show comparison of finding factors from 1 to number approach,
-	 * and divide value by increments (2,3, and 2 continually until value is 1) approach.*/
+	 * and divide value by increments (2,3,5,7 and add 2 continually until value is 1) approach.*/
 	/*  public static void divideToFindFactorsApproach(Integer [] currentSample) {
 		int increment = 2;
 		List<Integer> tempFactors;
